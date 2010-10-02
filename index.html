@@ -1,0 +1,116 @@
+<!DOCTYPE HTML />
+<html>
+<!--
+
+Licensed under the MIT License
+Copyright (c) 2010 dutchsoftware.com
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+
+-->
+<head>
+    <title>elvis webclient samples</title>
+	<style type="text/css">
+	
+	body {
+		font-family: Arial, sans-serif;
+		font-size: 14px;
+		color: #444;
+	}
+	
+	.backdrop {
+		position: absolute;
+		width: 900px;
+		/*height: 500px;*/
+		font-size: 140px;
+		z-index: -1;
+		margin: 0px;
+		color: #F6F6F6;
+	}
+	
+	#wrapper {
+		padding-top: 90px;
+		padding-left: 90px;
+		width: 620px;
+		/*
+		background: #FFF;
+		opacity: 0.8;
+		*/
+	}
+	.logo {
+		position: absolute;
+		top: 20px;
+		left: 660px;
+	}
+	dt a {
+		font-weight: bold;
+		font-size: 18px;
+		color: #222288;
+		text-decoration: none;
+	}
+	dt a:hover {
+		color: #5555AA;
+		text-decoration: underline;
+	}
+	dd {
+		margin-top: 10px;
+		margin-bottom: 40px;
+	}
+	.howto {
+		border: 1px solid #CCCCCC;
+		padding: 0px 20px;
+		font-style: italic;
+	}
+	p {
+		margin: 20px 0px;
+	}
+	
+	</style>
+</head>
+<body>
+<div class="backdrop">elvis<br/>Open Source<br/>API Samples</div>
+<div id="wrapper">
+	<img class="logo" src="shared_resources/images/elvis/elvis_on_white_trans_reflection_160x90.png"/>
+	<dl>
+		<dt><a href="approval_tool">Approval tool - Collection viewer</a></dt>
+		<dd>This sample demonstrates how to update metadata, for example to update a status, change a rating or enter comments.
+		It incorporates dynamic thumbnail rendering and a full-screen preview lightbox that supports swipe gestures on mobile devices.
+		Also demonstrates and how to search and display the contents of a collection.</dd>
+		<dt><a href="live_feed">Live feed</a></dt>
+		<dd>This sample demonstrates a live feed of incoming material.
+		It auto-refreshes at a configurable interval.
+		It also greys out thumbnails by date, giving a visual indication of the age of items from the feed.</dd>
+		<dt><a href="syndication_site">Syndication site - DAM photo</a></dt>
+		<dd>This sample demonstrates how to filter a search with various facets.
+		It uses an off-the-shelf lightbox to display previews, supporting both images and videos.
+		Also demonstrates result paging and custom thumbnail buttons.</dd>
+		<dt><a href="upload_portal">Upload portal - DAM tube</a></dt>
+		<dd>This sample demonstrates how to allow your site visitors to upload files directly into elvis.
+		You can upload videos and images and browse and play uploaded material.
+		Also demonstrates how to build a tag cloud.</dd>
+	</dl>
+	<div class="howto">
+		<p>To use these samples place them in the "&lt;config&gt;/html_public" folder of your elvis server.</p>
+		<p>The samples all login using the 'guest' user. You will have to either change that, 
+		or enable the guest user in "&lt;config&gt;/internal-users.properties.txt" and setup appropriate
+		permissions for that user in elvis.</p>
+	</div>
+</div>
+</body>
+</html>

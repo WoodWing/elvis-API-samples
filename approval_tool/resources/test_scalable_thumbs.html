@@ -1,0 +1,260 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<!--
+
+Licensed under the MIT License
+Copyright (c) 2010 dutchsoftware.com
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+
+-->
+
+<head>
+    <title>Elvis Collection Viewer</title>
+    <link rel="stylesheet" type="text/css" href="../shared_resources/elvis.css" />
+    <link rel="Stylesheet" type="text/css" href="resources/collection_viewer.css" />
+	<script type='text/javascript' src='http://ajax.googleapis.com/ajax/libs/prototype/1.6.1/prototype.js'></script>
+	<!--
+	<script type='text/javascript' src='http://ajax.googleapis.com/ajax/libs/scriptaculous/1.8.2/scriptaculous.js'></script>
+	-->
+    <script src="../shared_resources/elvis.js" type="text/javascript"></script>
+    <script type="text/javascript">
+
+        var elvisApi = new ElvisAPI("");
+
+        var previewLightbox = new PreviewLightbox();
+
+        var hitRenderer = new HitRenderer();
+        hitRenderer.sharedResources = "../shared_resources";
+        hitRenderer.target = "resultContainer";
+        hitRenderer.infoTarget = "infoContainer";
+        hitRenderer.squareThumbs = true;
+        hitRenderer.metadataToDisplay = ["name", "rating"];
+        hitRenderer.itemClick = function (hit) {
+            if (hit.assetDomain == "container") {
+                showCollection(hit);
+            }
+            else if (hit.previewUrl) {
+                previewLightbox.show(hit.previewUrl);
+            }
+        };
+
+        var collectionRenderer = new HitRenderer();
+        collectionRenderer.sharedResources = "../shared_resources";
+        collectionRenderer.target = "selectedCollectionContainer";
+        collectionRenderer.metadataToDisplay = ["name", "rating", "assetModifier", "assetModified"];
+
+
+        function searchCollections() {
+            var query = "";
+            if ($F('querystring') == "") {
+                query = "assetDomain:container";
+            }
+            else {
+                query = $F('querystring');
+            }
+            //var query = "assetDomain:container " + $F('querystring');
+
+    		$("resultContainer").update("");
+            elvisApi.search({ q: query, sort: "assetCreated", descending: true }, hitRenderer.render);
+
+            $("crumbPart2").hide();
+            $("resultWrapper").removeClassName("collection");
+            $("selectedCollectionContainer").hide();
+            $("search").show();
+        }
+
+        function showCollection(collectionHit) {
+            var query = "relatedTo:" + collectionHit.id + " relationTarget:child relationType:contains";
+
+    		$("resultContainer").update("");
+            elvisApi.search({ q: query, sort: "name" }, hitRenderer.render);
+
+            collectionRenderer.render(collectionHit);
+
+            $("search").hide();
+            $("selectedCollectionContainer").show();
+            $("resultWrapper").addClassName("collection");
+
+            $("crumbName2").update(collectionHit.name);
+            $("crumbPart2").show();
+        }
+
+        document.observe("dom:loaded", function() {
+            elvisApi.login("guest", "guest", function (loginResponse) {
+                if (loginResponse.loginSuccess) {
+                    searchCollections();
+                }
+                else {
+                    alert("Login failed: " + loginResponse.loginFaultMessage);
+                }
+            });
+        });
+
+
+
+		var oldRange = 100;
+        function updateThumbSize(range) {
+            //var range = range / 100;
+            //alert("range: " + range + ", oldRange: " + oldRange + ", difference: " + (range - oldRange) );
+            //range = 100 + (range - oldRange);
+            //oldRange = range;
+            range = range / 100;
+
+            var boxArray = $$("#resultContainer .elvisHitBox");
+            for (var i = 0; i < boxArray.length; i++) {
+                boxArray[i].setStyle({
+                    width: '',
+                    height: '',
+                    maxWidth: '',
+                    maxHeight: '',
+                    top: '',
+                    left: '',
+                    padding: '',
+                    margin: '',
+                    marginTop: '',
+                    marginLeft: '',
+                    marginBottom: '',
+                    marginRight: '',
+                    fontSize: ''
+                    //width: '1.5em',
+                    //height: '1.5em'
+                });
+                boxArray[i].setStyle({
+                    width: (boxArray[i].getWidth() * range).toString() + 'px',
+                    height: (boxArray[i].getHeight() * range).toString() + 'px',
+                    maxWidth: (boxArray[i].getStyle('max-width') * range).toString() + 'px',
+                    maxHeight: (boxArray[i].getStyle('max-height') * range).toString() + 'px',
+                    top: (boxArray[i].getStyle('top') * range).toString() + 'px',
+                    left: (boxArray[i].getStyle('left') * range).toString() + 'px',
+                    padding: (boxArray[i].getStyle('padding') * range).toString() + 'px',
+                    margin: (boxArray[i].getStyle('margin') * range).toString() + 'px',
+                    marginTop: (boxArray[i].getStyle('margin-top') * range).toString() + 'px',
+                    marginLeft: (boxArray[i].getStyle('margin-left') * range).toString() + 'px',
+                    marginBottom: (boxArray[i].getStyle('margin-bottom') * range).toString() + 'px',
+                    marginRight: (boxArray[i].getStyle('margin-right') * range).toString() + 'px',
+                    fontSize: (boxArray[i].getStyle('font-size') * range).toString() + 'px'
+                    //width: '1.5em',
+                    //height: '1.5em'
+                });
+
+                var childElementArray = boxArray[i].select(
+                ".elvisThumbnailText",
+                ".elvisThumbnailText span",
+                ".elvisHitBox.square a",
+                ".elvisThumbnailImage",
+                ".elvisThumbnailImage img",
+                ".elvisContainerBox",
+                ".elvisContainerThumb",
+                ".elvisContainerIcon img",
+                "img",
+                "span",
+                "a"
+            );
+
+                for (var j = 0; j < childElementArray.length; j++) {//alert(childElementArray[j].className);
+                    childElementArray[j].setStyle({
+                        width: '',
+                        height: '',
+                        maxWidth: '',
+                        maxHeight: '',
+                        top: '',
+                        left: '',
+                        padding: '',
+                        margin: '',
+                        marginTop: '',
+                        marginLeft: '',
+                        marginBottom: '',
+                        marginRight: '',
+                        fontSize: ''
+                        //width: '1.5em',
+                        //height: '1.5em'
+                    }); alert(childElementArray[j].Layout.get('margin-top'));
+                    childElementArray[j].setStyle({
+                        width: (childElementArray[j].getWidth() * range).toString() + 'px',
+                        height: (childElementArray[j].getHeight() * range).toString() + 'px',
+                        maxWidth: (childElementArray[j].getStyle('max-width') * range).toString() + 'px',
+                        maxHeight: (childElementArray[j].getStyle('max-height') * range).toString() + 'px',
+                        top: (childElementArray[j].getStyle('top') * range).toString() + 'px',
+                        left: (childElementArray[j].getStyle('left') * range).toString() + 'px',
+                        padding: (childElementArray[j].getStyle('padding') * range).toString() + 'px',
+                        margin: (childElementArray[j].getStyle('margin') * range).toString() + 'px',
+                        marginTop: (childElementArray[j].getStyle('margin-top') * range).toString() + 'px',
+                        marginLeft: (childElementArray[j].getStyle('margin-left') * range).toString() + 'px',
+                        marginBottom: (childElementArray[j].getStyle('margin-bottom') * range).toString() + 'px',
+                        marginRight: (childElementArray[j].getStyle('margin-right') * range).toString() + 'px',
+                        fontSize: (childElementArray[j].getStyle('fontSize') * range).toString() + 'px'
+                        //width: '1.5em',
+                        //height: '1.5em'
+                    });
+                }
+            }
+        }
+
+    </script>
+</head>
+<body>
+    <header>
+        <nav class="crumb">
+			<div class="crumbText"><a href="#" onclick="searchCollections(); return false">Collection list</a></div>
+            <div id="crumbPart2" style="display:none">
+                <div class="crumbArrow"></div>
+                <div class="crumbText"><a id="crumbName2" onclick="return (false)">...</a></div>
+            </div>
+            <div class="crumbArrowLast"></div>
+		</nav>
+        <div id="infoContainer">
+            <!-- result info is rendered here -->
+        </div>
+        <form id="search" action="#" onSubmit="searchCollections(); return false">
+            <label>
+                <input id="querystring" type="search" placeholder="Search"/>
+                <input type="image" class="searchicon" src="resources/search_button.png" value="Search"/>
+            </label>
+            <!--TODO implement <label><input type="checkbox" />Show only my own collections</label>-->
+
+        </form>
+        <input style="position:absolute; top: 50px; right: 50px; z-index: 5;" type="range" min="50" max="150" value="100" step="5" onchange="updateThumbSize(this.value)" />
+        <input style="position:absolute; top: 50px; right: 50px; z-index: 5;" type="button" onclick="resetSize()" />
+
+        <div id="selectedCollectionContainer" style="display:none">
+            <!-- selected collection will be rendered here -->
+        </div>
+        <span class="logo">
+            <img style="padding-top:11px;" src="resources/logo.png" alt="logo" />
+        </span>
+    </header>
+    <div id="resultWrapper">
+        <!--img id="slider" src="resources/fake_slider.png" alt="slider" />
+        <br /-->
+        <div id="resultContainer">
+            <!-- result hits will be rendered here -->
+        </div>
+    </div>
+    <!--mag weg
+    <div id="elvisPreview" style="display: none;">
+        <input id="elvisPreviewClose" type="image" src="../shared_resources/close_button.png" onClick="previewLightbox.close(); return false" />
+
+    </div>-->
+    <div id="throbber" style="display:none;">
+        <img src="../shared_resources/ajax-loader.gif" width="32" height="32"/>
+    </div>
+    <!-- <div id="debugDiv" style="position:fixed; z-index:10000; color:#999"></div> -->
+</body>
+</html>

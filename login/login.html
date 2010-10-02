@@ -1,0 +1,78 @@
+<!DOCTYPE HTML />
+<html>
+<!--
+
+Licensed under the MIT License
+Copyright (c) 2010 dutchsoftware.com
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+
+-->
+<head>
+    <title>Login to elvis</title>
+	<script type='text/javascript' src='http://ajax.googleapis.com/ajax/libs/prototype/1.6.1/prototype.js'></script>
+    <link rel="stylesheet" type="text/css" href="login_resources/login.css" />
+    <script type="text/javascript">
+
+	// parse url querystring    
+	/*
+	location.queryString = new Array();
+	var pairs = location.search.split( "&" );
+	for ( i in pairs )
+	{
+	    var keyval = pairs[ i ].split( "=" );
+	    location.queryString[ keyval[0] ] = keyval[1];
+	}
+	*/
+
+	// initialize
+    document.observe("dom:loaded", function() {
+    	/*
+    	if (location.queryString["nextUrl"]) {
+    		$("nextUrl").setValue( location.queryString["nextUrl"] );
+    	}
+    	if (location.queryString["failUrl"]) {
+    		$("failUrl").setValue( location.queryString["failUrl"] );
+    	}
+    	*/
+    
+        if (location.hash == "#failed") {
+            $("failed").show();
+        }
+    
+        $("username").activate();
+    });
+    
+    </script>
+</head>
+<body>
+<div id="wrapper">
+	<form action="/services/login">
+		<input id="nextUrl" name="nextUrl" type="hidden" value="/controller/html_public/samples/approval_tool"/>
+		<input id="failUrl" name="failUrl" type="hidden" value="/controller/html_public/samples/login/login.html#failed"/>
+        <img src="../shared_resources/images/elvis/elvis_on_black_trans_reflection_160x90.png"/>
+		<h1>Login to elvis</h1>
+        <div id="failed" style="display:none">Invalid username or password</div>
+		<input type="text" name="username" id="username"/>
+		<input type="password" name="password"/>
+        <input type="submit" value="Log in"/>
+	</form>
+</div>
+</body>
+</html>

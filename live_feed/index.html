@@ -1,0 +1,138 @@
+<!DOCTYPE HTML />
+<html>
+<!--
+
+Licensed under the MIT License
+Copyright (c) 2010 dutchsoftware.com
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+
+-->
+<head>
+    <title>Live Screen</title>
+    <link href="../shared_resources/css/elvis.css" rel="stylesheet" type="text/css"/>
+    <link href="resources/styles.css" rel="stylesheet" type="text/css"/>
+	<!--
+	<script type='text/javascript' src='http://ajax.googleapis.com/ajax/libs/prototype/1.6.1/prototype.js'></script>
+	<script type='text/javascript' src='http://ajax.googleapis.com/ajax/libs/scriptaculous/1.8.2/scriptaculous.js'></script>
+	-->
+    <script src="../shared_resources/js/prototype.js" type="text/javascript"></script>
+    <script src="../shared_resources/js/elvis.js" type="text/javascript"></script>
+    <script type="text/javascript">
+
+        var elvisApi = new ElvisAPI("");
+        
+		elvisApi.login("guest", "guest");
+	
+	    var previewLightbox = new PreviewLightbox();
+	    
+        var FadingHitRenderer = Class.create(HitRenderer, {
+        
+        	// redefine method
+			postProcessTarget: function ($super, targetElement) {
+        		// calculate date range
+        		this.maxDate = parseInt(this.hits[0].metadata.assetCreated.value);
+        		var min = parseInt(this.hits[this.hits.length - 1].metadata.assetCreated.value);
+        		var delta = this.maxDate - min;
+        		
+        		this.dateToOpacityFactor = (delta == 0) ? 0 : 0.5 / (delta);
+        		
+				// call super method
+        		$super(targetElement);
+    		},
+        
+        	// redefine method
+			postProcessHit: function ($super, hitElement, hit, index) {
+				// call super method
+        		$super(hitElement, hit, index);
+        		
+        		// calculate opacity
+        		var delta = this.maxDate - hit.metadata.assetCreated.value;
+        		var opacity = 1 - this.dateToOpacityFactor * delta;
+        		
+        		// apply opacity
+            	hitElement.setOpacity(opacity);
+    		}
+        });
+        
+        //var testOpacity = "";
+        var hitRenderer = new FadingHitRenderer();
+        hitRenderer.sharedResources = "../shared_resources";
+        hitRenderer.hitsTarget = "resultContainer";
+        hitRenderer.squareThumbs = true;
+        hitRenderer.metadataToDisplay = [];
+        hitRenderer.itemClick = function (hit, hitElement, hits, index) {
+        	previewLightbox.showGallery(hits, index);
+        };
+
+
+		var timeoutInterval;
+
+	    function refreshResults() {
+	        elvisApi.search({
+	            q: "assetDomain:image",
+	            sort: "assetCreated",
+	            descending: true,
+	            num: 100
+	        }, hitRenderer.render);
+	        
+	        // auto-rehresh if turned on
+	        if ($F("refreshAuto")) {
+	            timeoutInterval = setTimeout("refreshResults()", $F("refreshInterval"));
+		    }
+	    }
+	    
+	    function toggleRefresh() {
+	    	clearInterval(timeoutInterval);
+	    	
+	    	if ($('refreshAuto').checked) {
+	    		refreshResults();
+	    	}
+	    }
+	
+	    document.observe("dom:loaded", refreshResults);
+    
+    </script>
+</head>
+<body>
+    <header>
+        <img class="logo" src="resources/logo_trans.png" alt="Elvis">
+        <nav class="sitenav">
+            <h1><span class="small">Live feed showing:</span> latest images</h1>
+            <div class="refresh">
+				Refresh:
+				<input type="checkbox" id="refreshAuto" onChange="toggleRefresh()" />
+				<select id="refreshInterval">
+					<option value="5000">5 sec</option>
+					<option value="10000" selected="selected">10 sec</option>
+					<option value="30000">30 sec</option>
+				</select>				
+			    <div id="throbber" style="display:none;">
+			        <img src="../shared_resources/images/elvis/ajax-loader.gif" width="16" height="16"/>
+			    </div>
+			</div>
+            <!--input type="button" value="slider_goes_here"/-->
+            <!--img src="resources/fake_slider.png" alt="Fake slider"/-->
+        </nav>
+    </header>
+    <div id="results">
+        <div id="resultContainer"></div>
+    </div>
+</body>
+</html>

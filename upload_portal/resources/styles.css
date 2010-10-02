@@ -1,0 +1,214 @@
+/**
+ * Licensed under the MIT License
+ * Copyright (c) 2010 dutchsoftware.com
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
+html, body, table, form {
+    height: 100%;
+    width: 100%;
+    border: none;
+    padding: 0px;
+    margin: 0px;
+}
+
+body {
+    background: #ffffff url(background.jpg) repeat fixed;
+	background-size: cover;
+    font-family: Verdana;
+    font-size: 11px;
+    color: black;
+}
+
+#wrapper {
+	position: absolute;
+	top: 20px;
+	left: 50%;
+	margin-left: -450px;
+	width: 900px;
+}
+
+#throbber
+{
+    position:fixed;
+    bottom: 10px;
+	left: 10px;
+}
+
+/* elvis hit styling */
+
+.elvisHitBox {
+	/* make hitBox higher so we can fit 2 metadata fields */
+	height: 170px;
+}
+
+.videoDuration {
+	background: black;
+	bottom: 1.2em;
+	color: white;
+	left: 0px;
+	position: relative;
+	width: 50px;
+	padding: 2px 4px;
+	/*opacity: 0.75;*/
+}
+
+/* Header */
+
+#header {
+   	border-bottom: 1px solid #D8D8D8;
+   	padding-top: 20px;
+}
+
+#header .logo {
+	margin: 0px 40px;
+}
+
+#header .upload {
+	position: absolute;
+	top: 20px;
+	right: 20px;
+}
+
+/* Homepage */
+
+h2 {
+	font-size: 14px;
+	margin-top: 0px;
+	margin-bottom: 8px;
+}
+
+.tagcloud {
+   	border-bottom: 1px solid #D8D8D8;
+	padding: 15px 0px;
+	margin-bottom: 15px;
+}
+#tags {
+	padding: 5px;
+   	text-align: center;
+   	font-size: 16px;
+}
+#tags a {
+	color: #000033;
+	text-decoration: none;
+}
+#tags a:hover {
+	color: #0000CC;
+	text-decoration: underline;
+}
+
+#homePage td {
+	vertical-align: top;
+}
+
+#homePage .col1, #homePage .col2 {
+	width: 170px;
+	border-right: 1px solid #cccccc;
+}
+
+#homePage .col2, #homePage .col3 {
+	padding: 0px 10px;
+}
+
+#homePage .more {
+	text-align: right;
+	padding-right: 10px;
+	display: block;
+	clear: both;
+	text-decoration: none;
+	color: 0000FF;
+	padding-bottom: 30px;
+}
+
+/* Results */
+
+#searchPage {
+	position: absolute
+}
+
+#resultInfo {
+	position: absolute;
+	left: 0px;
+	font-weight: bold;
+}
+
+#resultPage {
+	position: absolute;
+	right: 0px;
+}
+
+#resultHits {
+	margin-top: 20px;
+}
+
+/* Upload */
+
+#upload {
+    margin-top: 20px;
+	margin-left: 100px;
+}
+
+.uploadbox {
+	color: #D9D9D9;
+	background: #b1b1b1 url(upload-light-bg.png) repeat-x scroll center top;
+	float: left;
+	width: 400px;
+	height: 175px;
+	padding-top: 115px;
+    text-align: center;
+	border: #929292 thin inset;
+	border-bottom-left-radius: 15px 15px;
+	border-bottom-right-radius: 15px 15px;
+	border-top-left-radius: 15px 15px;
+	-moz-border-radius-bottomleft:15px;
+	-moz-border-radius-bottomright:15px;
+	-moz-border-radius-topleft:15px;
+}
+.uploadbox h2, .meta h2 {
+	font-size: 18px;
+	font-weight: normal;
+	margin-bottom: 20px;
+	text-align: center;
+}
+
+.meta {
+   	display: inline-block;
+   	border: 1px solid #CCC;
+   	border-left: none;
+	border-top-right-radius: 15px 15px;
+	border-bottom-right-radius: 15px 15px;
+	-moz-border-radius-bottomright:15px;
+	-moz-border-radius-topright:15px;
+   	padding: 15px;
+}
+.meta td {
+	vertical-align: top;
+}
+.meta label {
+	display: block;
+	padding-top: 6px;
+    text-align: right;
+}
+.meta table input, .meta table textarea {
+    min-width: 200px;
+}
+.meta .submit {
+	text-align: center;
+}

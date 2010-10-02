@@ -1,0 +1,322 @@
+﻿/**
+ * Licensed under the MIT License
+ * Copyright (c) 2010 dutchsoftware.com
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
+* { margin: 0; padding: 0; }
+
+html, body {
+    height: 100%;
+    width: 100%;
+    border: 0px none #000000;
+    padding: 0px;
+    margin: 0px;
+}
+
+body {
+    background: #CDCDCD url(bg_gradient.png) repeat-x;
+    font-family: Verdana, Geneva, sans-serif;
+    font-size: 12px;
+    color: black;
+	
+}
+#mainWrapper {
+	background: url(bg_header.png) no-repeat;
+	/*background: url(bottom_bg_single.png) no-repeat right bottom;*/
+	width:100%;
+	height:100%;
+}
+
+#main {
+	width: 98%;
+	margin: 0px auto;
+}
+
+h1 {
+    font-size: 12px;
+}
+
+/* Header */
+
+#header  {
+    margin: 0px auto 0px auto;
+    width: 98%;
+    border: 0px solid #000000;  
+	overflow:auto;  
+}
+
+.logo {
+	float: left;
+}
+
+.sitenav {
+	float: right;
+	margin: 40px 0px 0px 0px;
+}
+
+.sitenav a {
+	font-size: 11px;
+	color: #000000;
+	text-decoration: underline;
+}
+
+.sitenav ul {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+
+.sitenav li {
+	display: inline;
+	padding: 5px;
+}
+
+#cart {
+	border-top:#666 thin solid;
+	border-bottom:#666 thin solid;
+	margin: 5px auto;
+	padding: 5px 0px;
+}
+
+#cart img {
+	float: left;
+	margin: 0px 10px 0px 10px;
+}
+
+#cart p {
+	display: block;
+	margin: 8px 0px;
+	font-size:11px;
+	color: #000000;
+}
+
+/* Left menu */
+
+.searchfilter {
+	text-align: center;
+	padding: 5px;
+	margin-top: 25px;
+	width: 176px;
+}
+
+.searchfilter h1 {
+	margin-top: 12px;
+}
+
+.querybar 
+{
+    /*position: relative;
+    display: block;
+    width: 150px;
+    height: 20px;*/
+}
+
+.querybar input
+{
+    display: block;
+    width: 100%;
+    height: 18px;
+    padding: 0px;
+    -moz-border-radius: 8px;
+    border: #CCC thin solid;
+}
+
+.querybar img
+{
+    position: relative;
+    top: -17px;
+    width: 15px;
+    height: 15px;
+    float: right;
+}
+
+.facet a 
+{
+	background-color: #FFFFFF;
+	color: #424242;
+ 	text-decoration: none;
+    display: block;
+	border-style: solid;
+ 	padding: 2px;
+ 	padding-left: 6px;
+	margin-bottom: 2px;
+	border-radius: 8px;
+ 	border: #CCC thin solid;
+	-moz-border-radius:8px;
+	width: 150px;
+	text-align: left;
+	font: 12px;
+}
+
+.facet a span
+{
+    background-color: #ebeef8;
+	color: #424242;
+    position: relative;
+    display: inline-block;
+    height: 14px;
+    width: 30px;
+    float: right;
+    top: -1px;
+    -moz-border-radius: 9px;
+    border: 1px solid #ebeef8;
+	border-radius: 9px;
+    font-size: 10px;
+    text-align: center;
+}
+
+.facet a:hover, .facet a.selected {
+	background-color:#f2f9fc;
+}
+
+.facet ul {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+	text-align: center;
+}
+
+.facet li {
+	padding: 1px 5px;
+	width: 100%;
+}
+
+.clearBtn a {
+	display: block;
+	margin-top: 10px;
+	color: #424242;
+ 	text-decoration: none;
+}
+.clearBtn a:hover {
+ 	text-decoration: underline;
+}
+
+/* Results */
+
+#throbber
+{
+    position:fixed;
+    bottom: 23px;
+	left: 221px;
+}
+
+#resultInfo {
+	position: absolute;
+	top: 100px;
+	left: 50%;
+	padding: 7px;
+	background-color:#ffffff;
+	border:thin solid #CCC;
+	border-top-left-radius: 6px 6px;
+	border-top-right-radius: 6px 6px;
+	-moz-border-radius-topleft:6px;
+	-moz-border-radius-topright:6px;
+	-moz-box-shadow: -1px 1px 2px #000000;
+	opacity: 0.8;
+}
+.resultBg {
+	position: absolute;
+	top: 130px;
+	left: 210px;
+	right: 12px;
+	bottom: 12px;
+	background-color:#ffffff;
+	border:thin solid #CCC;
+	border-radius: 6px;
+	-moz-border-radius-bottomleft:6px;
+	-moz-border-radius-bottomright:6px;
+	-moz-border-radius-topleft:6px;
+	-moz-border-radius-topright:6px;
+	-moz-box-shadow: -1px 1px 2px #000000;
+	opacity: 0.8;
+}
+.resultWrapper {
+	position: absolute;
+	top: 130px;
+	left: 210px;
+	right: 12px;
+	bottom: 12px;
+	padding: 8px;
+}
+#resultContainer {
+}
+
+
+/* Thumbnails */
+
+.elvisHitBox {
+	height: 170px;
+}
+
+.hitButtons {
+	text-align: center;
+	padding-top: 3px;
+}
+.hitButtons input {
+	margin: 0px 3px;
+}
+
+
+.asset
+{
+    position: relative;
+    display: inline-block;
+    width: 140px;
+    height: 140px;
+	margin: 5px 0px 5px 10px;
+    text-align: center;
+    vertical-align: middle;
+    overflow:hidden;/*
+    background-color: #424242;*/
+    text-align: center;
+}
+.asset div
+{
+    position: absolute;
+    margin: 0px auto;
+    width: 100%;
+    bottom: 10px;
+    text-align: center;
+}
+.asset input
+{/*Don't take this seriously, this is to be replaced with images.*/
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    /*background-color: #424242;*/
+    overflow: hidden;
+}
+
+/* Pagination */ 
+
+#resultPager {
+	position:absolute;
+	right: 20px;
+	bottom: 12px;
+}
+/*
+.pagenav {
+	clear:both;
+	position:static;
+	width: 100%;
+	text-align:right;
+}
+*/

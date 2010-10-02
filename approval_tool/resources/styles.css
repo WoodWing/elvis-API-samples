@@ -1,0 +1,198 @@
+/**
+ * Licensed under the MIT License
+ * Copyright (c) 2010 dutchsoftware.com
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
+html, body {
+    height: 100%;
+    width: 100%;
+    border: 0px none #000000;
+    padding: 0px;
+    margin: 0px;
+}
+
+body {
+	background: url("main_bg.jpg") repeat-x scroll #000000;
+    color: #D9D9D9;
+}
+
+#throbber
+{
+    position:fixed;
+    top: 50%;
+    left: 50%;
+    margin-left: -16px;
+    margin-top: -16px;
+}
+
+body {
+    font-family: Verdana, Geneva, sans-serif;
+    font-size: 12px;
+}
+
+header {
+    display: block;
+    margin: 0px;
+    padding: 0px;
+    width: 100%;
+ 	background: transparent url(header_bg.png) repeat-x;
+}
+
+.crumb div {
+	display: table-cell;
+    height: 22px;
+}
+.crumbText {
+	margin:0px;
+	padding: 0px 10px 0px 10px;
+	vertical-align: middle;
+    background: url(nav_bg.png) repeat-x;
+    color: #F1F1F1;
+    font-size: 12px;
+}
+.crumbText a {
+    color: #F1F1F1;
+    text-decoration: none;
+}
+.crumbArrow {
+    background: url('nav_arrow.png') no-repeat;
+    width: 11px;
+}
+.crumbArrowLast {
+    background: url('nav_last_arrow.png') no-repeat;
+    width: 11px;
+}
+
+#infoContainer
+{
+    display: inline-block;
+    position: absolute;
+    font-size: 12px;
+    color: white;
+    text-align:center;
+    top:15px;
+    width:100%;
+}
+
+header form {
+    position: relative;
+    display: table-cell;
+    margin: 0px;
+    padding: 15px;
+    vertical-align: middle;
+    text-align: center;
+}
+
+header form label {
+    position: relative;
+    display: block;
+    padding: 0px;
+    margin: 0px;
+    height: 40px
+}
+
+#querystring {
+    position: relative;
+    top: -7px;
+	width: 220px;
+	height: 24px;
+    border: 2px solid #4D4D6B;
+    padding: 2px 30px 2px 8px;
+    font-size: 16px;
+    color: #000000;
+}
+
+.searchicon {
+    position: relative;
+	width: 24px;
+	height: 24px;
+}
+
+.logo {
+    position: absolute;
+    top: 0px;
+    right: 20px;
+    text-align: center;
+}
+
+#selectedCollection {
+	padding: 10px;
+	overflow: hidden;
+}
+.backBtn {
+	float:left;
+	display: block;
+	padding: 35px 10px;
+}
+.backBtn img {
+	border: 0px none;
+}
+
+#resultWrapper {
+    border-top: 1px solid #424242;
+}
+#resultContainer {
+    padding: 15px;
+}
+
+/*
+Custom styling for items rendered by elvis HitRenderer
+*/
+
+.elvisHitBox {
+    height: 175px;
+}
+.elvisMetadata {
+	margin-top: 140px;
+    color: #DDD;
+}
+
+.elvisThumbnailWrapper {
+	position: absolute;
+}
+.hitOverlay {
+	position: absolute;
+	bottom: 0px;
+	right: 0px;
+}
+.hitOverlay a {
+	display: block;
+	padding: 9px;
+}
+
+/*
+Custom styling for collection detail rendered by elvis HitRenderer
+*/
+
+#selectedCollectionContainer .elvisHitBox {
+    width: auto;
+    height: 140px;
+}
+#selectedCollectionContainer .elvisMetadata {
+    position: relative;
+    top: -110px;
+    left: 155px;
+    max-width: none;
+    width: 400px;
+}
+#selectedCollectionContainer .elvisMetadata div {
+    text-align: left;
+}
