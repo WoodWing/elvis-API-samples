@@ -10,7 +10,7 @@ All the samples are open-source and licensed under the MIT License so you can us
 
 Demo
 --------
-An online demo version of these samples can be found at: [demo.elvisready.com](http://demo.elvisready.com)
+An online demo version of these samples can be found at: [demo.elviscloud.com](http://demo.elviscloud.com)
 
 
 Use them yourself
