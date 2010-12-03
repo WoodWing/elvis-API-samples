@@ -7,20 +7,21 @@ We encourage you to download the samples and customize them. They can provide a 
 
 All the samples are open-source and licensed under the MIT License so you can use the code in your own projects and change it as much as you need.
 
+
 Demo
 --------
-
 An online demo version of these samples can be found at: [demo.elvisready.com](http://demo.elvisready.com)
+
 
 Use them yourself
 --------
-
 To use the samples on your own elvis server, place them in the "<config>/html_public" folder of your elvis server. They will then be available on the following url: http://<yourserver>/controller/html_public/...
 
 The samples all login using the 'guest' user. You will have to either change that, or enable the guest user in "<config>/internal-users.properties.txt" and setup appropriate permissions for that user in elvis.
 
---------
 
+About elvis
+--------
 elvis is a digital asset management system. It's main features:
 
 - Intuitive user interface
