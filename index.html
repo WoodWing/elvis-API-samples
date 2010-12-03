@@ -36,9 +36,9 @@ THE SOFTWARE.
 	
 	.backdrop {
 		position: absolute;
-		width: 900px;
+		width: 730px;
 		/*height: 500px;*/
-		font-size: 140px;
+		font-size: 120px;
 		z-index: -1;
 		margin: 0px;
 		color: #F6F6F6;
@@ -47,7 +47,7 @@ THE SOFTWARE.
 	#wrapper {
 		padding-top: 90px;
 		padding-left: 90px;
-		width: 620px;
+		width: 520px;
 		/*
 		background: #FFF;
 		opacity: 0.8;
@@ -56,7 +56,7 @@ THE SOFTWARE.
 	.logo {
 		position: absolute;
 		top: 20px;
-		left: 660px;
+		left: 560px;
 	}
 	dt a {
 		font-weight: bold;
@@ -86,7 +86,7 @@ THE SOFTWARE.
 <body>
 <div class="backdrop">elvis<br/>Open Source<br/>API Samples</div>
 <div id="wrapper">
-	<img class="logo" src="shared_resources/images/elvis/elvis_on_white_trans_reflection_160x90.png"/>
+	<a href="http://www.elvisready.com"><img class="logo" src="shared_resources/images/elvis/elvis_on_white_trans_reflection_160x90.png"/></a>
 	<dl>
 		<dt><a href="approval_tool">Approval tool - Collection viewer</a></dt>
 		<dd>This sample demonstrates how to update metadata, for example to update a status, change a rating or enter comments.
@@ -106,10 +106,21 @@ THE SOFTWARE.
 		Also demonstrates how to build a tag cloud.</dd>
 	</dl>
 	<div class="howto">
-		<p>To use these samples place them in the "&lt;config&gt;/html_public" folder of your elvis server.</p>
-		<p>The samples all login using the 'guest' user. You will have to either change that, 
-		or enable the guest user in "&lt;config&gt;/internal-users.properties.txt" and setup appropriate
-		permissions for that user in elvis.</p>
+		<p>These samples are open-source and can be downloaded from <a href="https://github.com/dutchsoftware/elvis-API-samples">github</a></p>
+		
+		<p>To install and customize the samples on your own server, view the instructions in the <a href="README.md">readme</a>.</p>
+		
+		<p>elvis is a digital asset management system. It's main features:</p>
+		
+		<ul>
+		<li>Intuitive user interface</li>
+		<li>Easy collaboration and sharing</li>
+		<li>High performance search engine</li>
+		<li>Scalable processing engine to support images, video, office documents, Adobe CS files, PDF, XML and more.</li>
+		<li>Powerful metadata based permission rules</li>
+		</ul>
+		
+		<p>For more information, go to: <a href="http://www.elvisready.com">www.elvisready.com</a></p>
 	</div>
 </div>
 </body>
