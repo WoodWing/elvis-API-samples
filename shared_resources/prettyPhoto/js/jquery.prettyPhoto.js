@@ -2,7 +2,7 @@
 	Class: prettyPhoto
 	Use: Lightbox clone for jQuery
 	Author: Stephane Caron (http://www.no-margin-for-errors.com)
-	Version: 3.0
+	Version: 3.0.1
 ------------------------------------------------------------------------- */
 
 (function($) {
@@ -78,6 +78,7 @@
 			image_markup: '<img id="fullResImage" src="" />',
 			flash_markup: '<object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000" width="{width}" height="{height}"><param name="wmode" value="{wmode}" /><param name="allowfullscreen" value="true" /><param name="allowscriptaccess" value="always" /><param name="movie" value="{path}" /><embed src="{path}" type="application/x-shockwave-flash" allowfullscreen="true" allowscriptaccess="always" width="{width}" height="{height}" wmode="{wmode}"></embed></object>',
 			quicktime_markup: '<object classid="clsid:02BF25D5-8C17-4B23-BC80-D3488ABDDC6B" codebase="http://www.apple.com/qtactivex/qtplugin.cab" height="{height}" width="{width}"><param name="src" value="{path}"><param name="autoplay" value="{autoplay}"><param name="type" value="video/quicktime"><embed src="{path}" height="{height}" width="{width}" autoplay="{autoplay}" type="video/quicktime" pluginspage="http://www.apple.com/quicktime/download/"></embed></object>',
+			video_markup: '<video src="{path}" height="{height}" width="{width}" autoplay="{autoplay}" controls="true"></video>',
 			iframe_markup: '<iframe src ="{path}" width="{width}" height="{height}" frameborder="no"></iframe>',
 			inline_markup: '<div class="pp_inline clearfix">{content}</div>',
 			custom_markup: ''
@@ -152,11 +153,11 @@
 		* @param title {String,Array} The title to be displayed with the picture, can also be an array containing all the titles.
 		* @param description {String,Array} The description to be displayed with the picture, can also be an array containing all the descriptions.
 		*/
-		$.prettyPhoto.open = function() {
+		$.prettyPhoto.open = function(event) {
 			if(typeof settings == "undefined"){ // Means it's an API call, need to manually get the settings and set the variables
 				settings = pp_settings;
 				if($.browser.msie && $.browser.version == 6) settings.theme = "light_square"; // Fallback to a supported theme for IE6
-				_buildOverlay(this); // Build the overlay {this} being the caller
+				_buildOverlay(event.target); // Build the overlay {this} being the caller
 				pp_images = $.makeArray(arguments[0]);
 				pp_titles = (arguments[1]) ? $.makeArray(arguments[1]) : $.makeArray("");
 				pp_descriptions = (arguments[2]) ? $.makeArray(arguments[2]) : $.makeArray("");
@@ -183,7 +184,7 @@
 			$pp_pic_holder.find('.pp_description').show().html(unescape(pp_descriptions[set_position]));
 
 			// Set the title
-			(settings.show_title && pp_titles[set_position] != "") ? $ppt.html(unescape(pp_titles[set_position])) : $ppt.html('&nbsp;');
+			(settings.show_title && pp_titles[set_position] != "" && typeof pp_titles[set_position] != "undefined") ? $ppt.html(unescape(pp_titles[set_position])) : $ppt.html('&nbsp;');
 			
 			// Get the dimensions
 			movie_width = ( parseFloat(grab_param('width',pp_images[set_position])) ) ? grab_param('width',pp_images[set_position]) : settings.default_width.toString();
@@ -255,6 +256,12 @@
 						toInject = settings.iframe_markup.replace(/{width}/g,vimeo_width).replace(/{height}/g,correctSizes['height']).replace(/{path}/g,movie);
 					break;
 				
+					case 'video':
+						correctSizes = _fitToViewport(movie_width,movie_height); // Fit item to viewport
+
+						toInject = settings.video_markup.replace(/{width}/g,correctSizes['width']).replace(/{height}/g,correctSizes['height']).replace(/{path}/g,pp_images[set_position]).replace(/{autoplay}/g,settings.autoplay);
+					break;
+
 					case 'quicktime':
 						correctSizes = _fitToViewport(movie_width,movie_height); // Fit item to viewport
 						correctSizes['height']+=15; correctSizes['contentHeight']+=15; correctSizes['containerHeight']+=15; // Add space for the control bar
@@ -599,6 +606,8 @@
 				return 'youtube';
 			}else if (itemSrc.match(/vimeo\.com/i)) {
 				return 'vimeo';
+			}else if(itemSrc.indexOf('.mp4') != -1){ 
+				return 'video';
 			}else if(itemSrc.indexOf('.mov') != -1){ 
 				return 'quicktime';
 			}else if(itemSrc.indexOf('.swf') != -1){

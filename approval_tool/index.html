@@ -25,190 +25,218 @@ THE SOFTWARE.
 
 -->
 <head>
-    <title>Elvis Collection Viewer</title>
-    <link href="../shared_resources/css/elvis.css" rel="stylesheet" type="text/css"/>
-    <link href="../shared_resources/css/metadata_editor.css" rel="stylesheet" type="text/css"/>
+	<title>elvis Approval Tool</title>
+	<link href="../shared_resources/elvis_api/css/elvis.css" rel="stylesheet" type="text/css"/>
+	<link href="../shared_resources/elvis_api/css/metadata_editor.css" rel="stylesheet" type="text/css"/>
 	<link href="resources/styles.css" rel="stylesheet" type="text/css"/>
-	<script src="../shared_resources/js/jquery-1.3.2.min.js" type="text/javascript"></script>
-	<script src="../shared_resources/js/jquery.jswipe-0.1.2.js" type="text/javascript"></script>
+	<script src="../shared_resources/jquery-1.3.2.min.js" type="text/javascript"></script>
+	<script src="../shared_resources/jquery.jswipe-0.1.2.js" type="text/javascript"></script>
 	<script type="text/javascript">
-		JQ = $;  //rename $ function
+		JQ = $;	 //rename $ function
 	</script>
 	<!--
 	<script type='text/javascript' src='http://ajax.googleapis.com/ajax/libs/prototype/1.6.1/prototype.js'></script>
 	<script type='text/javascript' src='http://ajax.googleapis.com/ajax/libs/scriptaculous/1.8.2/scriptaculous.js'></script>
 	-->
-    <script src="../shared_resources/js/prototype.js" type="text/javascript"></script>
-    <script src="../shared_resources/js/elvis.js" type="text/javascript"></script>
-    <script src="../shared_resources/js/metadata_editor.js" type="text/javascript"></script>
-    <script type="text/javascript">
+	<script src="../shared_resources/prototype.js" type="text/javascript"></script>
+	<script src="../shared_resources/elvis_api/js/elvis.js" type="text/javascript"></script>
+	<script src="../shared_resources/elvis_api/js/metadata_editor.js" type="text/javascript"></script>
+	<script type="text/javascript">
 
-        var SwipingPreviewLightbox = Class.create(PreviewLightbox, {
-        
-        	// redefine method
-			insertHtml: function ($super) {
-				// call super method
-        		$super();
-        		
-        		// add swipe handlers
-				JQ("#elvisPreview").swipe({
-					threshold: {
-						x: 30,
-						y: 50
-					},
-					swipeLeft: function(changeX, changeY) {
-						this.next();
-					}.bind(this),
-					swipeRight: function() {
-						this.prev();
-					}.bind(this)
-				});
-    		}
-        });
+// Custom PreviewLightbox that supports left and right swipe gestures on touch screens
+var SwipingPreviewLightbox = Class.create(PreviewLightbox, {
 
-        var InfoIconHitRenderer = Class.create(HitRenderer, {
-        
-        	// redefine method
-			postProcessHit: function ($super, hitElement, hit, index) {
-				// call super method
-        		$super(hitElement, hit, index);
-        		
-        		// add buttons
-				hitElement.select(".elvisThumbnailWrapper")[0].insert('<div class="hitOverlay">'
-					+'<a href="#" title="Info"><img src="resources/info.png" /></a>'
-					+'</div>');
-    		}
-        });
+	// redefine method
+	insertHtml: function($super) {
+		// call super method
+		$super();
 
-        var elvisApi = new ElvisAPI("");
-        
-        var previewLightbox = new SwipingPreviewLightbox();
-        
-		var metadataEditor = new MetadataEditor(elvisApi);
-        
-        var hitRenderer = new InfoIconHitRenderer();
-        hitRenderer.sharedResources = "../shared_resources";
-        hitRenderer.hitsTarget = "resultContainer";
-        hitRenderer.infoTarget = "infoContainer";
-        hitRenderer.squareThumbs = true;
-        hitRenderer.metadataToDisplay = ["name", "rating"];
-        hitRenderer.itemClick = function (hit, element, hits, index) {
-        	if (element.title == "Info"
-        		|| (element.up("a") != null && element.up("a").title == "Info")
-        		|| element.up(".elvisMetadata") != null) {
-        		metadataEditor.show(hit, applyNewMetadata);
-        	}
-        	else if (hit.assetDomain == "container") {
-                showCollection(hit);
-            }
-            else if (hit.previewUrl) {
-                previewLightbox.showGallery(hits, index);
-            }
-        };
+		// add swipe handlers
+		JQ("#elvisPreview").swipe({
+			threshold: {
+				x: 30,
+				y: 50
+			},
+			swipeLeft: function(changeX, changeY) {
+				this.next();
+			}.bind(this),
+			swipeRight: function() {
+				this.prev();
+			}.bind(this)
+		});
+	}
+	
+});
 
-        var collectionRenderer = new InfoIconHitRenderer();
-        collectionRenderer.sharedResources = "../shared_resources";
-        collectionRenderer.hitsTarget = "selectedCollectionContainer";
-        collectionRenderer.metadataToDisplay = ["name", "rating", "assetModifier", "assetModified"];
-        collectionRenderer.itemClick = function (hit, element) {
-        	metadataEditor.show(hit, applyNewMetadata);
-        };
+// Custom HitRenderer that adds info and download buttons to each hit thumbnail
+var InfoIconHitRenderer = Class.create(HitRenderer, {
+
+	// redefine method
+	postProcessHit: function($super, hitElement, hit, index) {
+		// call super method
+		$super(hitElement, hit, index);
+
+		// add buttons
+		var html = '<div class="hitOverlay">';
+		
+		// download btn
+		if (hit.originalUrl && hit.metadata.assetDomain != "container"
+			&& AssetPermissions.hasUseOriginal(hit.permissions))
+		{
+			html += '<a href="' + hit.originalUrl + '?forceDownload=true" title="Download"><img src="resources/download.png" /></a>';
+		}
+		
+		// info btn
+		html += '<a href="#" title="Info"><img src="resources/info.png" /></a>';
+		
+		html += '</div>';
+		
+		hitElement.select(".elvisThumbnailWrapper")[0].insert(html);
+	}
+
+});
+
+// Initialize and setup components
+var elvisApi = new ElvisAPI("");
+elvisApi.useLoginPage("../login/login.html?nextUrl=" + encodeURIComponent(location));
+
+HitRenderer.resources = "../shared_resources/elvis_api";
+
+var previewLightbox = new SwipingPreviewLightbox();
+
+var metadataEditor = new MetadataEditor(elvisApi);
+
+var hitRenderer = new InfoIconHitRenderer();
+hitRenderer.hitsTarget = "resultContainer";
+hitRenderer.infoTarget = "infoContainer";
+hitRenderer.squareThumbs = true;
+hitRenderer.metadataToDisplay = ["name", "rating"];
+hitRenderer.itemClick = function(hit, element, hits, index) {
+	var btnLink = (element.nodeName == "a") ? element : element.up("a");
+	if (btnLink.title == "Info"
+		|| element.up(".elvisMetadata") != null)
+	{
+		metadataEditor.show(hit, applyNewMetadata);
+	}
+	else if (btnLink.title == "Download")
+	{
+		window.location = btnLink.href;
+	}
+	else if (hit.metadata.assetDomain == "container") {
+		showCollection(hit);
+	}
+	else if (hit.previewUrl) {
+		previewLightbox.showGallery(hits, index);
+	}
+};
+
+var collectionRenderer = new InfoIconHitRenderer();
+collectionRenderer.hitsTarget = "selectedCollectionContainer";
+collectionRenderer.metadataToDisplay = ["name", "rating", "assetModifier", "assetModified"];
+collectionRenderer.itemClick = function(hit, element) {
+	metadataEditor.show(hit, applyNewMetadata);
+};
 
 
-        function searchCollections() {
-            var query = "";
-            if ($F('querystring') == "") {
-                query = "assetDomain:container";
-            }
-            else {
-                query = $F('querystring');
-            }
-            //var query = "assetDomain:container " + $F('querystring');
+function searchCollections() {
+	var query = "";
+	if ($F('querystring') == "") {
+		query = "assetDomain:container";
+	}
+	else {
+		query = $F('querystring');
+	}
+	//var query = "assetDomain:container " + $F('querystring');
+	$("resultContainer").update("");
+	document.getElementById('resultWrapper').style.top = '100px';
+	
+	elvisApi.search({
+		q: query,
+		sort: "assetCreated",
+		descending: true
+	}, hitRenderer.render);
 
-    		$("resultContainer").update("");
-            elvisApi.search({ q: query, sort: "assetCreated", descending: true }, hitRenderer.render);
+	$("crumbPart2").hide();
+	//$("resultWrapper").removeClassName("collection");
+	$("selectedCollection").hide();
+	$("search").show();
+}
 
-            $("crumbPart2").hide();
-            //$("resultWrapper").removeClassName("collection");
-            $("selectedCollection").hide();
-            $("search").show();
-        }
+function showCollection(collectionHit) {
+	if (!collectionHit) {
+		return;
+	}
 
-        function showCollection(collectionHit) {
-            var query = "relatedTo:" + collectionHit.id + " relationTarget:child relationType:contains";
+	var query = "relatedTo:" + collectionHit.id + " relationTarget:child relationType:contains";
 
-    		$("resultContainer").update("");
-            elvisApi.search({ q: query, sort: "name" }, hitRenderer.render);
+	$("resultContainer").update("");
+	document.getElementById('resultWrapper').style.top = '200px';
+	elvisApi.search({
+		q: query,
+		sort: "name"
+	},
+	hitRenderer.render);
 
-            collectionRenderer.render(collectionHit);
+	collectionRenderer.render(collectionHit);
 
-            $("search").hide();
-            $("selectedCollection").show();
-            //$("resultWrapper").addClassName("collection");
+	$("search").hide();
+	$("selectedCollection").show();
+	//$("resultWrapper").addClassName("collection");
+	$("crumbName2").update(collectionHit.metadata.name);
+	$("crumbPart2").show();
+}
 
-            $("crumbName2").update(collectionHit.name);
-            $("crumbPart2").show();
-        }
-        
-        function applyNewMetadata(hit, newMetadata) {
-        	// find hit and replace it with new hit including updated metadata  
-            var hits = hitRenderer.hits;
-          	var hitCount = hits.length;
-            for (var i = 0; i < hitCount; i++) {
-            	if (hits[i].id == hit.id) {
-            	
-            		// update hit
-            		hits[i] = hit;
-            	
-            		// re-render hits
-        		    hitRenderer.render(hits);       
-        
-            		break;
-            	}
-            }
-            
-        	// update metadata on server        	
-        	elvisApi.update(hit.id, newMetadata);
-        }
+function applyNewMetadata(hit, newMetadata) {
+	// find hit and replace it with new hit including updated metadata
+	var hits = hitRenderer.hits;
+	var hitCount = hits.length;
+	for (var i = 0; i < hitCount; i++) {
+		if (hits[i].id == hit.id) {
 
-        document.observe("dom:loaded", function() {
-            elvisApi.login("guest", "guest", function (loginResponse) {
-                if (loginResponse.loginSuccess) {
-                    searchCollections();
-                }
-                else {
-                    alert("Login failed: " + loginResponse.loginFaultMessage);
-                }
-            });
-        });
+			// update hit
+			hits[i] = hit;
 
-    </script>
+			// re-render hits
+			hitRenderer.render(hits);
+
+			break;
+		}
+	}
+
+	// update metadata on server			
+	elvisApi.update(hit.id, newMetadata);
+}
+
+document.observe("dom:loaded", function() {
+	searchCollections();
+});
+
+	</script>
 </head>
 <body>
-    <header>
-        <nav class="crumb">
-			<div class="crumbText"><a href="#" onclick="searchCollections(); return false">Collection list</a></div>
-            <div id="crumbPart2" style="display:none">
-                <div class="crumbArrow"></div>
-                <div class="crumbText"><a id="crumbName2" onclick="return (false)">...</a></div>
-            </div>
-            <div class="crumbArrowLast"></div>
+	<header>
+		<nav class="crumb">
+			<div class="crumbBG">
+				<div class="crumbRoot">
+					<div class="crumbText"><a href="#" onclick="searchCollections(); return false">Collection list</a></div>
+				</div>
+				<div id="crumbPart2" class="crumbExtend" style="display:none">
+					<div class="crumbText"><a id="crumbName2" onclick="return false">...</a></div>
+				</div>
+			</div>
 		</nav>
-        <div id="infoContainer">
-            <!-- result info is rendered here -->
-        </div>
-        <form id="search" action="#" onSubmit="searchCollections(); return false">
-            <label>
-                <input id="querystring" type="search" placeholder="Search"/>
-                <input type="image" class="searchicon" src="resources/search_button.png" value="Search"/>
-            </label>
-            <!--TODO implement <label><input type="checkbox" />Show only my own collections</label>-->
-
-        </form>
-
-        <!--input style="position:absolute; top: 50px; right: 50px; z-index: 5;" type="range" min="50" max="150" value="100" step="5" onchange="updateThumbSize(this.value)" />
-        <input style="position:absolute; top: 50px; right: 50px; z-index: 5;" type="button" onclick="resetSize()" /-->
-
+		<div id="infoContainer">
+			<!-- result info is rendered here -->
+		</div>
+		<form id="search" action="#" onSubmit="searchCollections(); return false">
+			<label>
+				<input id="querystring" type="search" placeholder="Search"/>
+				<input type="image" class="searchicon" src="resources/search_button.png" value="Search"/>
+			</label>
+			<!--TODO implement <label><input type="checkbox" />Show only my own collections</label>-->
+		</form>
+		<!--input style="position:absolute; top: 50px; right: 50px; z-index: 5;" type="range" min="50" max="150" value="100" step="5" onchange="updateThumbSize(this.value)" />
+		<input style="position:absolute; top: 50px; right: 50px; z-index: 5;" type="button" onclick="resetSize()" /-->
 		<div id="selectedCollection" style="display:none">
 			<a class="backBtn" href="#" onclick="searchCollections(); return false">
 				<img src="resources/back_arrow.png" width="39" height="90" />
@@ -216,27 +244,22 @@ THE SOFTWARE.
 			<div id="selectedCollectionContainer">
 				<!-- selected collection will be rendered here -->
 			</div>
-
-        </div>
-        <span class="logo">
-            <img style="padding-top:11px;" src="resources/logo.png" alt="logo" />
-        </span>
-    </header>
-    <div id="resultWrapper">
-        <!--img id="slider" src="resources/fake_slider.png" alt="slider" />
-        <br /-->
-        <div id="resultContainer">
-            <!-- result hits will be rendered here -->
-        </div>
-    </div>
-    <!--mag weg
-    <div id="elvisPreview" style="display: none;">
-        <input id="elvisPreviewClose" type="image" src="../shared_resources/close_button.png" onClick="previewLightbox.close(); return false" />
-
-    </div>-->
-    <div id="throbber" style="display:none;">
-        <img src="../shared_resources/images/elvis/ajax-loader.gif" width="32" height="32"/>
-    </div>
-    <!-- <div id="debugDiv" style="position:fixed; z-index:10000; color:#999"></div> -->
+		</div>
+		<div class="logo">
+			<img style="padding-top:11px;" src="resources/logo.png" alt="logo" />
+			<div class="logout">
+				<a href="#" onclick="elvisApi.logout(window.location); return false">Logout</a>
+			</div>
+		</div>
+	</header>
+	<div id="resultWrapper">
+		<div id="resultContainer">
+			<!-- result hits will be rendered here -->
+		</div>
+	</div>
+	<div class="elvisCopyright">Powered by <a href="http://www.elvisready.com">elvis</a> &copy; <a href="http://www.dutchsoftware.com">dutchsoftware.com</a></div>
+	<div id="throbber" style="display:none;">
+		<img src="../shared_resources/elvis_api/images/ajax-loader.gif" width="32" height="32"/>
+	</div>
 </body>
 </html>

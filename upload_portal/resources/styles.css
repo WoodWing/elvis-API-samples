@@ -79,6 +79,7 @@ body {
 
 #header .logo {
 	margin: 0px 40px;
+	border: 0px;
 }
 
 #header .upload {
@@ -110,7 +111,7 @@ h2 {
 	text-decoration: none;
 }
 #tags a:hover {
-	color: #0000CC;
+	color: #3399CC;
 	text-decoration: underline;
 }
 
@@ -133,8 +134,18 @@ h2 {
 	display: block;
 	clear: both;
 	text-decoration: none;
-	color: 0000FF;
+	color: #3399CC;
+	font-weight:bold;
 	padding-bottom: 30px;
+}
+
+#homePage .more a {
+	color: #000033;
+	text-decoration: none;
+}
+#homePage .more a:hover {
+	color: #0000CC;
+	text-decoration: underline;
 }
 
 /* Results */
@@ -163,6 +174,9 @@ h2 {
 #upload {
     margin-top: 20px;
 	margin-left: 100px;
+}
+.upload a img {
+	border: 0px none;
 }
 
 .uploadbox {
@@ -211,4 +225,13 @@ h2 {
 }
 .meta .submit {
 	text-align: center;
+}
+
+.elvisCopyright {
+	position: fixed;
+	background-color: #f3f3f5;
+	opacity: 0.8;
+	padding: 2px;
+	bottom: 0px;
+	right: 0px;
 }

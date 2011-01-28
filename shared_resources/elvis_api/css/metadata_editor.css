@@ -23,25 +23,25 @@
 
 #elvisMetadataEditorOverlay
 {
-    position: fixed;
-    top: 0px;
-    left: 0px;
-    margin: 0px;
-    padding: 0px;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.8);
-    border: 0 none #000000;
-    z-index: 4999;
+	position: fixed;
+	top: 0px;
+	left: 0px;
+	margin: 0px;
+	padding: 0px;
+	width: 100%;
+	height: 100%;
+	background: rgba(0, 0, 0, 0.8);
+	border: 0 none #000000;
+	z-index: 4999;
 }
 
 #elvisMetadataEditor 
 {
 	position: fixed;
-    top: 0px;
-    left: 0px;
-    margin: 0px;
-    padding: 0px;
+	top: 0px;
+	left: 0px;
+	margin: 0px;
+	padding: 0px;
 	width: 100%; 
 	height:100%; 
 	overflow: hidden; 
@@ -64,9 +64,9 @@
 	background: #333333;
 	border: 3px solid #cccccc;
 	/* CSS3 */
-    -moz-border-radius: 16px;
-    -webkit-border-radius: 16px;
-    border-radius: 16px;
+	-moz-border-radius: 16px;
+	-webkit-border-radius: 16px;
+	border-radius: 16px;
 }
 
 #elvisMetadataEditorThumb

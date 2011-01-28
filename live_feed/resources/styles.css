@@ -22,42 +22,42 @@
  */
 
 html, body {
-    height: 100%;
-    width: 100%;
-    border: 0px none #000000;
-    padding: 0px;
-    margin: 0px;
+	height: 100%;
+	width: 100%;
+	border: 0px none #000000;
+	padding: 0px;
+	margin: 0px;
 }
 
 #throbber
 {
-    position:fixed;
-    top: 59px;
-    right: 13px;
+	position:fixed;
+	top: 59px;
+	right: 13px;
 }
 
 header {
-    margin: 0px auto;
-    width: 100%;
-    min-width: 400px;
-    border: 0px solid #000000; 
+	margin: 0px auto;
+	width: 100%;
+	min-width: 400px;
+	border: 0px solid #000000; 
 	overflow: auto;   
 	/*background: url(glass_bg.png) no-repeat center;*/
 }
 
 body {
-    background: #e4e4e4 url(header_glass_bg.png) repeat-x top;
-    min-height: 450px;
-    min-width: 420px;
-    font-family: Verdana;
-    font-size: 12px;
-    color: black;
-    overflow: scroll;
+	background: #e4e4e4 url(header_glass_bg.png) repeat-x top;
+	min-height: 450px;
+	min-width: 420px;
+	font-family: Verdana;
+	font-size: 12px;
+	color: black;
+	overflow: scroll;
 }
 
 h1 {
 	margin: 0px 0px 5px 0px;
-    font-size: 18px;
+	font-size: 18px;
 	font-family: Helvetica, Arial, sans-serif;
 	font-style: normal;
 	color: #424242;
@@ -71,7 +71,7 @@ h1 .small {
 }
 
 h2 {
-    font-size: 12px;
+	font-size: 12px;
 	font-family: Helvetica, Arial, sans-serif;
 	font-style: normal;
 	color: #424242;
@@ -79,67 +79,67 @@ h2 {
 
 #results {
 	margin: 0px;
-    display: inline-block;
-    width: 100%;
-    padding: 0px;
-    text-align: left;
+	display: inline-block;
+	width: 100%;
+	padding: 0px;
+	text-align: left;
 }
 
 .logo {
-    position: relative;
-    display: table-cell;
-    float: left;
-    top: 0px;
-    padding: 0px;
-    margin: 10px;    
-    text-align: center;
+	position: relative;
+	display: table-cell;
+	float: left;
+	top: 0px;
+	padding: 0px;
+	margin: 10px;	 
+	text-align: center;
 }
 
 .sitenav {
 	margin: 10px;
 	padding-top: 20px;
-    position: relative;
-    display: table-cell;
-    float: right;
-    text-align: center;
-    vertical-align: middle;
+	position: relative;
+	display: table-cell;
+	float: right;
+	text-align: center;
+	vertical-align: middle;
 }
 
 .asset {
-    position: relative;
-    display: inline-block;
-    width: 120px;
-    height: 120px;
-    padding: 0px;
-    margin: 15px 0px 15px 30px;
-    text-align: center;
-    overflow:auto;
-    background: rgba(66, 66, 66, 1);
-    text-align: center;
+	position: relative;
+	display: inline-block;
+	width: 120px;
+	height: 120px;
+	padding: 0px;
+	margin: 15px 0px 15px 30px;
+	text-align: center;
+	overflow:auto;
+	background: rgba(66, 66, 66, 1);
+	text-align: center;
 }
 
 .assetOlder {
 	display: inline-block;
-    width: 120px;
-    height: 120px;
-    padding: 0px;
-    margin: 15px 0px 15px 30px;
-    text-align: center;
-    overflow:auto;
-    background: rgba(66, 66, 66, 0.75);
-    text-align: center;
+	width: 120px;
+	height: 120px;
+	padding: 0px;
+	margin: 15px 0px 15px 30px;
+	text-align: center;
+	overflow:auto;
+	background: rgba(66, 66, 66, 0.75);
+	text-align: center;
 }
 
 .assetOldest {
 	display: inline-block;
-    width: 120px;
-    height: 120px;
-    padding: 0px;
-    margin: 15px 0px 15px 30px;
-    text-align: center;
-    overflow:auto;
-    background: rgba(66, 66, 66, 0.4);
-    text-align: center;
+	width: 120px;
+	height: 120px;
+	padding: 0px;
+	margin: 15px 0px 15px 30px;
+	text-align: center;
+	overflow:auto;
+	background: rgba(66, 66, 66, 0.4);
+	text-align: center;
 }
 
 #resultContainer {
@@ -151,6 +151,15 @@ Custom styling for items rendered by elvis HitRenderer
 */
 
 .elvisHitBox {
-    width: 140px;
-    height: 140px;   
+	width: 140px;
+	height: 140px;	 
+}
+
+.elvisCopyright {
+	position: fixed;
+	background-color: #f3f3f5;
+	opacity: 0.8;
+	padding: 2px;
+	bottom: 0px;
+	right: 0px;
 }

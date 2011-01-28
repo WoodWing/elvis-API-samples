@@ -1,5 +1,5 @@
-<!DOCTYPE HTML />
-<html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
 <!--
 
 Licensed under the MIT License
@@ -25,54 +25,66 @@ THE SOFTWARE.
 
 -->
 <head>
-    <title>Login to elvis</title>
+	<title>Login to elvis</title>
+	<!--
 	<script type='text/javascript' src='http://ajax.googleapis.com/ajax/libs/prototype/1.6.1/prototype.js'></script>
-    <link rel="stylesheet" type="text/css" href="login_resources/login.css" />
-    <script type="text/javascript">
+	<script type='text/javascript' src='http://ajax.googleapis.com/ajax/libs/scriptaculous/1.8.2/scriptaculous.js'></script>
+	-->
+	<script src="../shared_resources/prototype.js" type="text/javascript"></script>
+	<link href="../shared_resources/elvis_api/css/elvis.css" rel="stylesheet" type="text/css"/>
+	<link rel="stylesheet" type="text/css" href="login_resources/login.css" />
+	<script type="text/javascript">
 
-	// parse url querystring    
-	/*
-	location.queryString = new Array();
-	var pairs = location.search.split( "&" );
-	for ( i in pairs )
-	{
-	    var keyval = pairs[ i ].split( "=" );
-	    location.queryString[ keyval[0] ] = keyval[1];
+// initialize
+document.observe("dom:loaded", function() {
+	// parse query string parameters
+	// and update hidden form fields
+	var params = (""+location).toQueryParams();
+
+	if (params.nextUrl) {
+		$("nextUrl").setValue( params.nextUrl );
 	}
-	*/
 
-	// initialize
-    document.observe("dom:loaded", function() {
-    	/*
-    	if (location.queryString["nextUrl"]) {
-    		$("nextUrl").setValue( location.queryString["nextUrl"] );
-    	}
-    	if (location.queryString["failUrl"]) {
-    		$("failUrl").setValue( location.queryString["failUrl"] );
-    	}
-    	*/
-    
-        if (location.hash == "#failed") {
-            $("failed").show();
-        }
-    
-        $("username").activate();
-    });
-    
-    </script>
+	var failUrl = location + "#failed";
+	if (params.failUrl) {
+		failUrl = params.failUrl;
+	}
+	$("failUrl").setValue(failUrl);
+
+	// show failure message when authentication failed
+	if (location.hash == "#failed") {
+		$("failed").show();
+	}
+
+	// set focus on usernmme
+	$("username").activate();
+});
+
+// randomize background
+document.observe("dom:loaded", function() {
+	if (Math.random() < 0.3) {
+		$("body").addClassName("blue");
+	}
+	else {
+		$("body").addClassName("flow");
+	}
+});
+
+	</script>
 </head>
-<body>
+<body id="body">
 <div id="wrapper">
 	<form action="/services/login">
-		<input id="nextUrl" name="nextUrl" type="hidden" value="/controller/html_public/samples/approval_tool"/>
-		<input id="failUrl" name="failUrl" type="hidden" value="/controller/html_public/samples/login/login.html#failed"/>
-        <img src="../shared_resources/images/elvis/elvis_on_black_trans_reflection_160x90.png"/>
+		<input id="nextUrl" name="nextUrl" type="hidden" value=""/>
+		<input id="failUrl" name="failUrl" type="hidden" value=""/>
+		<img src="../shared_resources/elvis_api/images/elvis_on_black_trans_reflection_160x90.png"/>
 		<h1>Login to elvis</h1>
-        <div id="failed" style="display:none">Invalid username or password</div>
-		<input type="text" name="username" id="username"/>
-		<input type="password" name="password"/>
-        <input type="submit" value="Log in"/>
+		<div id="failed" style="display:none">Invalid username or password</div>
+		<input type="text" name="username" id="username" value="guest"/>
+		<input type="password" name="password" value="guest"/>
+		<input type="submit" value="Log in"/>
 	</form>
 </div>
+<div class="elvisCopyright">Powered by <a href="http://www.elvisready.com">elvis</a> &copy; <a href="http://www.dutchsoftware.com">dutchsoftware.com</a></div>
 </body>
 </html>
