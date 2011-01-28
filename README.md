@@ -17,7 +17,7 @@ Use them yourself
 --------
 To use the samples on your own elvis server, place them in the "<config>/html_public" folder of your elvis server. They will then be available on the following url: http://<yourserver>/controller/html_public/...
 
-The samples all login using the 'guest' user. You will have to either change that, or enable the guest user in "<config>/internal-users.properties.txt" and setup appropriate permissions for that user in elvis.
+Some of the samples auto-login using the 'guest' user. You will have to either change that, or enable the guest user in "<config>/internal-users.properties.txt" and setup appropriate permissions for that user in elvis.
 
 
 About elvis
