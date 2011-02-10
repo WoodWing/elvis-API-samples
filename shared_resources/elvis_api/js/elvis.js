@@ -357,6 +357,7 @@ var HitRenderer = Class.create({
 		this.pageTarget = null;
 
 		this.itemClick = null;
+		this.pageClick = null;
 
 		this.squareThumbs = false;
 		this.metadataToDisplay = ["name", "fileSize", "assetCreated", "rating"];
