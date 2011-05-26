@@ -1,0 +1,278 @@
+/**
+ * Licensed under the MIT License
+ * Copyright (c) 2010, 2011 dutchsoftware.com
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
+html, body {
+	height: 100%;
+	width: 100%;
+	border: 0px none #000000;
+	padding: 0px;
+	margin: 0px;
+}
+
+body {
+	font-family: Verdana, Geneva, sans-serif;
+	background: url("img/header_bg.png") repeat-x;
+	font-size: 12px;
+}
+
+.header {
+	display: block;
+	margin: 0px;
+	padding: 0px;
+	width: 100%;
+	background: transparent url(header_bg.png) repeat-x;
+}
+
+.search {
+	position: absolute;
+	display: block;
+	margin: 0px;
+	padding: 5px;
+	width: 90%;
+	height: 30px;
+	vertical-align: middle;
+	text-align: left;
+}
+#querystring {
+	margin: 0px;
+	padding: 0px;
+	position: relative;
+	top: -6px;
+	width: 200px;
+	height: 18px;
+	border: 1px solid #4D4D6B;
+	padding: 2px 10px 2px 4px;
+	color: #000000;
+}
+.searchicon {
+	position: relative;
+	width: 24px;
+	height: 24px;
+	margin: 0px;
+	padding: 0px;
+}
+
+.logo {
+	position: absolute;
+	top: 6px;
+	right: 15px;
+}
+
+#infoContainer {
+	display: block;
+	position: absolute;
+	top:10px;
+	right: 0px;
+	left: 0px;
+	font-size: 11px;
+	text-align:center;
+}
+
+#pageControls {
+	font-size: 11px;
+	text-align:center;
+}
+.elvisPager {
+	display: inline-block;
+}
+
+#folderBrowser {
+	top: 60px;
+}
+
+#resultContainer {
+	position: absolute;
+	top: 177px;
+	left: 0px;
+	right: 0px;
+	bottom: 48px;
+	overflow: auto;
+	background: url("img/result_bg.png") repeat-x #fafafa;
+	border-bottom: thin solid #999;
+}
+.hasSelection #resultContainer {
+	bottom: 80px;
+}
+
+#throbber {
+	position:fixed;
+	top: 50%;
+	left: 50%;
+	margin-left: -16px;
+	margin-top: -16px;
+}
+
+.footer {
+	background-color: #F0F0F0;
+	position: absolute;
+	display: inline-table;
+	vertical-align: middle;
+	width: 100%;
+	height: 48px;
+	bottom: 0px;
+}
+.hasSelection .footer {
+	height: 80px;
+}
+
+#helpMessage {
+	position: absolute;
+	width: 100%;
+	text-align: center;
+	line-height: 48px;
+}
+.hasSelection #helpMessage {
+	display: none;
+}
+
+#buttons {
+	position: absolute;
+	bottom: 14px;
+	left: 10px;
+	width: 100px;
+}
+#insertBtn {
+	display: none;
+}
+.hasSelection #insertBtn {
+	display: inline-block;
+}
+.button {
+	height: 22px;
+	width: 74px;
+	display: inline-block;
+	background: url('img/button.png') center no-repeat;
+	text-align: center;
+	font-size: 12px;
+	line-height: 22px;
+	margin-top: 10px;
+	color: black;
+	text-decoration: none;
+	cursor: default;
+}
+.button:hover {
+	background: url('img/button_hilite.png') center no-repeat;
+}
+.insertSettings {
+	display: none;
+	height: 80px;
+	overflow-y: hidden;
+}
+.hasSelection.isImageSelection .insertSettings.image {
+	display: block;
+}
+.hasSelection.isTextSelection .insertSettings.text {
+	display: block;
+}
+.insertSettings span {
+	display: inline-block;
+	width: 100px;
+}
+.insertSettings form {
+	margin-top: 13px;
+	text-align: left;
+	margin-right: 13px;
+}
+.insertSettings textarea {
+	background: transparent;
+	border: none;
+	bottom: 0px;
+	height: 74px;
+	left: 170px;
+	margin: 0px;
+	position: absolute;
+	right: 0px;
+}
+.footerArrow {
+	float: left;
+ 	background: url('img/footer_bg_arrow.png') right center no-repeat;
+ 	padding-right: 32px;
+	margin-right: 20px;
+}
+.footerArrow div {
+ 	background: url('img/footer_bg.png') center repeat-x;
+ 	padding-left: 102px;
+	padding-right: 3px;
+ 	height: 80px;
+	line-height: 74px;
+	color: white;
+	font-size: 24px;
+	font-weight: bold;
+	font-family: Arial;
+}
+
+/*
+.copyright{
+	position:absolute;
+	padding: 2px 0px;
+	bottom: 0px;
+	background-color:#000000;
+	width:100%;
+	text-align:center;
+	font-size:10px;
+	color: #FFFFFF;	
+}
+.copyright a{
+	color: #3399CC;
+	font-weight: bold;
+	text-decoration:none;
+}
+.copyright a.visited{
+	color: #3399CC;
+	font-weight: bold;
+	text-decoration:none;
+}
+.copyright a.active{
+	color: #3399CC;
+	font-weight: bold;
+	text-decoration:underline;
+}
+.copyright a.hover{
+	color: #3399CC;
+	font-weight: bold;
+	text-decoration:underline;
+}
+*/
+
+/*
+Custom styling for items rendered by elvis HitRenderer
+*/
+
+.elvisHitBox:hover {
+	border: 2px solid #b5d4e7;
+}
+.elvisHitBox.selected:hover {
+	border: 2px solid #b5d4e7;
+	background-color: #e4f0f7;
+}
+
+.elvisHitBox .zoom {
+	display: none;
+	position: absolute;
+	right: 0px;
+	top: 0px;
+	padding: 3px;
+}
+.elvisHitBox:hover .zoom {
+	display: block;
+}

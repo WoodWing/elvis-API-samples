@@ -1,0 +1,245 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<!--
+
+Licensed under the MIT License
+Copyright (c) 2010, 2011 dutchsoftware.com
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this а and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+
+-->
+<head>
+	<title></title>
+	<link href="../../../../../../shared_resources/elvis_api/css/elvis.css" rel="stylesheet" type="text/css"/>
+	<link href="styles.css" rel="stylesheet" type="text/css"/>
+	<script src="../../../../../../shared_resources/jquery-1.3.2.min.js" type="text/javascript"></script>
+	<script src="../../../../../../shared_resources/jquery.jswipe-0.1.2.js" type="text/javascript"></script>
+	<script type="text/javascript">
+		JQ = $;//rename $ function
+	</script>
+	<!--
+	<script type='text/javascript' src='http://ajax.googleapis.com/ajax/libs/prototype/1.6.1/prototype.js'></script>
+	<script type='text/javascript' src='http://ajax.googleapis.com/ajax/libs/scriptaculous/1.8.2/scriptaculous.js'></script>
+	-->
+	<script src="../../../../../../shared_resources/prototype.js" type="text/javascript"></script>
+	<script src="../../../../../../shared_resources/elvis_api/js/elvis.js" type="text/javascript"></script>
+	<script type="text/javascript" src="../../tiny_mce_popup.js"></script>
+	<script type="text/javascript">
+
+var elvisApi = new ElvisAPI(tinyMCEPopup ? tinyMCEPopup.editor.settings.elvis_server_url : "");
+elvisApi.useAutoLogin("guest", "guest");
+
+HitRenderer.resources = "../../../../../../shared_resources/elvis_api";
+
+// Custom HitRenderer that adds info and download buttons to each hit thumbnail
+var PreviewIconHitRenderer = Class.create(HitRenderer, {
+
+	// redefine method
+	postProcessHit: function($super, hitElement, hit, index) {
+		// call super method
+		$super(hitElement, hit, index);
+
+		// add zoom button
+		hitElement.select(".elvisMetadata")[0].insert('<img src="img/zoom.png" class="zoom">');
+	}
+
+});
+
+var columnTree = new ColumnTree("folderBrowser", elvisApi, function (o) {
+	refreshResults();
+});
+
+var hitRenderer = new PreviewIconHitRenderer();
+hitRenderer.hitsTarget = "resultContainer";
+hitRenderer.infoTarget = "infoContainer";
+hitRenderer.pageTarget = "pageControls";
+hitRenderer.sizeTarget = "sizeControls";
+hitRenderer.renderSize = "small";
+hitRenderer.metadataToDisplay = ["name"];
+hitRenderer.selectable = true;
+hitRenderer.multiselect = false;
+hitRenderer.itemClick = function (event, hit, hits, index) {
+	if (Event.element(event).hasClassName("zoom")) {
+		previewLightbox.showGallery(hits, index);
+		
+		return false; // prevent selection handling
+	}
+	return true; // handle selection
+};
+hitRenderer.selectionChange = function (selectedHits) {
+	if (selectedHits.length != 0) {
+		$("body").addClassName("hasSelection");
+		
+		var textContent = selectedHits[0].metadata.textContent;
+		if (textContent) {
+			// trim and filter tripple newlines
+			textContent = textContent.replace(/^\s+|\s+$/g, "").replace(/^ +/gm, "").replace(/(\n\s*){3,}/g, "\n\n");
+		
+			$("textContent").update(textContent);
+			
+			$("body").addClassName("isTextSelection");
+			$("body").removeClassName("isImageSelection");
+		}
+		else {
+			$("body").addClassName("isImageSelection");
+			$("body").removeClassName("isTextSelection");
+		}
+	} else {
+		$("body").removeClassName("hasSelection");
+	}
+};
+hitRenderer.pageClick = function (start, num) {
+	refreshResults(start, num);
+};
+
+var previewLightbox = new PreviewLightbox();
+
+function refreshResults(start, num) {
+	// init defaults for optional parameters
+	if (start == null) {
+		start = 0;
+	}
+	if (num == null) {
+		num = 50;
+	}
+	
+	// build query
+	var query = $F('querystring');
+	query += " +(assetDomain:image OR assetDomain:video OR textContent:*)";
+	
+	if (columnTree.containerId) {
+		query = "relatedTo:" + columnTree.containerId + " relationTarget:child relationType:contains " + query;
+	}
+	else if (columnTree.folderPath) {
+		query += ' ancestorPaths:"' + columnTree.folderPath + '"';
+	}
+	
+	var params = {
+		q: query,
+		start: start,
+		num: num,
+		sort: "name",
+		metadataToReturn: hitRenderer.metadataToDisplay.join(",") + ",textContent"
+	};
+	
+	// execute search and update results
+	elvisApi.search(params, hitRenderer.render);
+}
+
+function insertContent() {
+	var contentWidth = tinyMCEPopup.editor.settings.elvis_content_width;
+
+	var sizeFactor = parseFloat( Form.getInputs('optionsForm','radio','sizeFactor').find(function(radio) { return radio.checked; }).value );
+	var imageAlign = Form.getInputs('optionsForm','radio','imageAlign').find(function(radio) { return radio.checked; }).value;
+	
+	var maxSize = Math.round(contentWidth * sizeFactor);
+	
+	var hit = hitRenderer.selectedHits[0];
+	var html = "";
+	if (hit.metadata.assetDomain == "image") {
+		var src = hit.previewUrl;
+		
+		html = '<img src="#{src}" alt="#{alt}" style="#{style}" />'.interpolate({
+			src: src,
+			alt: hit.metadata.name, /* + " " + hit.metadata.copyright*/
+			style: "max-width:"+maxSize+"px; max-height:"+maxSize+"px;" + imageAlign
+		});
+	}
+	else if (hit.metadata.assetDomain == "video") {
+		var src = hit.previewUrl;
+		
+		html = '<video src="#{src}" style="#{style}">#{alt}</video>'.interpolate({
+			src: src,
+			alt: hit.metadata.name,
+			style: "max-width:"+maxSize+"px; max-height:"+maxSize+"px;" + imageAlign
+		});
+	}
+	else if (hit.metadata.textContent) {
+		// Replace all newlines with html breaks
+		html = $("textContent").value.replace(/\n/g, "<br/>");
+	}
+	
+	tinyMCEPopup.editor.execCommand('mceInsertContent', false, html);
+	tinyMCEPopup.close();
+}
+
+</script>
+
+</head>
+<body id="body">
+	<div class="header">
+		<div id="infoContainer">
+			<!-- result info is rendered here -->
+		</div>
+		<form class="search" action="#" onsubmit="refreshResults(); return false">
+			<label>
+				<input id="querystring" type="search" placeholder="Search"/>
+				<input type="image" class="searchicon" src="img/search_button.png" value="Search"/>
+			</label>
+            <div id="sizeControls" class="elvisRenderSize">
+                <!-- size controls will be rendered here -->
+            </div>
+            <div id="pageControls">
+                <!-- size controls will be rendered here -->
+            </div>
+		</form>
+		<img class="logo" style="padding-top:6px;" src="img/logo.png" alt="logo" />
+	</div>
+	<div id="folderBrowser">
+		<!-- folder tree will be rendered here -->		
+	</div>
+	<div id="resultContainer">
+		<!-- result hits will be rendered here -->		
+	</div>
+	<div class="footer">
+		<div id="helpMessage">
+			Select an image or video
+		</div>
+		<div class="insertSettings image">
+			<div class="footerArrow"><div>Options:</div></div>
+			<form id="optionsForm">
+				<span>Size to insert:</span>
+				<label><input type="radio" name="sizeFactor" value="1" checked="checked"/>Full page width</label>
+				<label><input type="radio" name="sizeFactor" value="0.5"/>Half</label>
+				<label><input type="radio" name="sizeFactor" value="0.25"/>Quarter</label>
+				<br/>
+				<br/>
+				<span>Alignment:</span>
+				<label><input type="radio" name="imageAlign" value="" checked="checked"/> None</label>
+				<label><input type="radio" name="imageAlign" value=" float:left; "/> Left</label>
+				<label><input type="radio" name="imageAlign" value=" display: block; margin-left: auto; margin-right: auto; "/> Center</label>
+				<label><input type="radio" name="imageAlign" value=" float:right; "/> Right</label>
+			</form>
+		</div>
+		<div class="insertSettings text">
+			<div class="footerArrow"><div>&nbsp;</div></div>
+			<form>
+				<textarea id="textContent"></textarea>
+			</form>
+		</div>
+		<div id="buttons">
+			<a class="button" id="insertBtn" onclick="insertContent(); return false"><strong>Insert</strong></a>
+			<a class="button" onclick="tinyMCEPopup.close(); return false">Cancel</a>
+		</div>
+	</div>
+	<div id="throbber" style="display:none;">
+		<img src="../../../../../../shared_resources/elvis_api/images/ajax-loader.gif" width="32" height="32"/>
+	</div>
+</body>
+</html>
