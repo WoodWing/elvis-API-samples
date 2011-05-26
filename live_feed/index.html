@@ -47,9 +47,15 @@ var FadingHitRenderer = Class.create(HitRenderer, {
 
 	// redefine method
 	postProcessTarget: function ($super, targetElement) {
+		var first = this.hits[0].metadata.assetCreated;
+		var last = this.hits[this.hits.length - 1].metadata.assetCreated;
+		if (first == undefined || last == undefined) {
+			throw("assetCreated field not available in results");
+		}
+		
 		// calculate date range
-		this.maxDate = parseInt(this.hits[0].metadata.assetCreated.value);
-		var min = parseInt(this.hits[this.hits.length - 1].metadata.assetCreated.value);
+		this.maxDate = parseInt(first.value);
+		var min = parseInt(last.value);
 		var delta = this.maxDate - min;
 		
 		this.dateToOpacityFactor = (delta == 0) ? 0 : 0.5 / (delta);
@@ -74,9 +80,10 @@ var FadingHitRenderer = Class.create(HitRenderer, {
 
 var hitRenderer = new FadingHitRenderer();
 hitRenderer.hitsTarget = "resultContainer";
+hitRenderer.sizeTarget = "sizeControls";
 hitRenderer.squareThumbs = true;
 hitRenderer.metadataToDisplay = [];
-hitRenderer.itemClick = function (hit, hitElement, hits, index) {
+hitRenderer.itemClick = function (event, hit, hits, index) {
 	previewLightbox.showGallery(hits, index);
 };
 
@@ -105,34 +112,39 @@ function toggleRefresh() {
 	}
 }
 
- document.observe("dom:loaded", refreshResults);
+document.observe("dom:loaded", refreshResults);
 
 	</script>
 </head>
 <body>
 	<header>
 		<img class="logo" src="resources/logo_trans.png" alt="Elvis">
-		<nav class="sitenav">
+		<div class="sitenav">
 			<h1><span class="small">Live feed showing:</span> latest images</h1>
-			<div class="refresh">
+			<div class="settings">
+				Thumbnail size:				
+				<div id="sizeControls" class="elvisRenderSize">
+					<!-- size controls will be rendered here -->
+				</div>
+				<br/>
 				Refresh:
 				<input type="checkbox" id="refreshAuto" onChange="toggleRefresh()" />
 				<select id="refreshInterval">
 					<option value="5000">5 sec</option>
 					<option value="10000" selected="selected">10 sec</option>
 					<option value="30000">30 sec</option>
-				</select>				
+				</select>
 				<div id="throbber" style="display:none;">
 					<img src="../shared_resources/elvis_api/images/ajax-loader.gif" width="16" height="16"/>
 				</div>
 			</div>
 			<!--input type="slider" value="slider_goes_here"/-->
 			<!--img src="resources/fake_slider.png" alt="Fake slider"/-->
-		</nav>
+		</div>
 	</header>
 	<div id="results">
 		<div id="resultContainer"></div>
-		<div class="elvisCopyright">Powered by <a href="http://www.elvisready.com">elvis</a> &copy; <a href="http://www.dutchsoftware.com">dutchsoftware.com</a></div>
+		<div class="elvisCopyright">Powered by <a href="http://www.elvisdam.com">Elvis</a> &copy; <a href="http://www.dutchsoftware.com">dutchsoftware.com</a></div>
 	</div>
 	
 </body>

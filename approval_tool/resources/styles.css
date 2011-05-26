@@ -178,6 +178,12 @@ header form label {
 	text-align: center;
 }
 
+#sizeControls {
+	position: absolute;
+	top: 62px;
+	right: 150px;
+}
+
 .logout {
 	margin-top: 20px;
 }
@@ -202,6 +208,10 @@ header form label {
 .backBtn img {
 	border: 0px none;
 }
+#selectedCollectionContainer {
+	position: absolute;
+	left: 80px;
+}
 
 #resultWrapper {
 	position:absolute;
@@ -220,16 +230,13 @@ header form label {
 Custom styling for items rendered by elvis HitRenderer
 */
 
-.elvisHitBox {
-	height: 175px;
-}
-.elvisMetadata {
-	margin-top: 140px;
-	color: #DDD;
+.elvisHitBox.selected /*, .elvisHitBox:hover*/ {
+	border: 2px solid #568099;
+	background-color: #4B5053;
 }
 
-.elvisThumbnailWrapper {
-	position: absolute;
+.elvisMetadata {
+	color: #DDD;
 }
 
 .hitOverlay {
@@ -246,6 +253,23 @@ Custom styling for items rendered by elvis HitRenderer
 .hitOverlay img {
 	border: 0px none;
 }
+.elvisSmall .hitOverlay {
+	margin: 0px 2px;
+}
+.elvisSmall .hitOverlay a {
+	padding: 4px 2px;
+}
+.elvisSmall .hitOverlay img {
+	max-height: 12px;
+}
+
+.elvisRenderSize a {
+	border: 1px solid #505050;
+}
+.elvisRenderSize a:hover, .elvisRenderSize a.selected {
+	border: 1px solid #BBBBBB;
+}
+
 /*
 Custom styling for collection detail rendered by elvis HitRenderer
 */

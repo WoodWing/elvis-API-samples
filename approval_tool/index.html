@@ -83,7 +83,7 @@ var InfoIconHitRenderer = Class.create(HitRenderer, {
 		if (hit.originalUrl && hit.metadata.assetDomain != "container"
 			&& AssetPermissions.hasUseOriginal(hit.permissions))
 		{
-			html += '<a href="' + hit.originalUrl + '?forceDownload=true" title="Download"><img src="resources/download.png" /></a>';
+			html += '<a href="' + hit.originalUrl.appendQueryParam("forceDownload", "true") + '" title="Download"><img src="resources/download.png" /></a>';
 		}
 		
 		// info btn
@@ -109,16 +109,17 @@ var metadataEditor = new MetadataEditor(elvisApi);
 var hitRenderer = new InfoIconHitRenderer();
 hitRenderer.hitsTarget = "resultContainer";
 hitRenderer.infoTarget = "infoContainer";
+hitRenderer.sizeTarget = "sizeControls";
 hitRenderer.squareThumbs = true;
 hitRenderer.metadataToDisplay = ["name", "rating"];
-hitRenderer.itemClick = function(hit, element, hits, index) {
-	var btnLink = (element.nodeName == "a") ? element : element.up("a");
-	if (btnLink.title == "Info"
-		|| element.up(".elvisMetadata") != null)
+hitRenderer.itemClick = function(event, hit, hits, index) {
+	var btnLink = Event.findElement(event, "a");
+	if ((btnLink && btnLink.title == "Info")
+		|| Event.findElement(event, ".elvisMetadata") != null)
 	{
 		metadataEditor.show(hit, applyNewMetadata);
 	}
-	else if (btnLink.title == "Download")
+	else if (btnLink && btnLink.title == "Download")
 	{
 		window.location = btnLink.href;
 	}
@@ -133,7 +134,7 @@ hitRenderer.itemClick = function(hit, element, hits, index) {
 var collectionRenderer = new InfoIconHitRenderer();
 collectionRenderer.hitsTarget = "selectedCollectionContainer";
 collectionRenderer.metadataToDisplay = ["name", "rating", "assetModifier", "assetModified"];
-collectionRenderer.itemClick = function(hit, element) {
+collectionRenderer.itemClick = function(event, hit) {
 	metadataEditor.show(hit, applyNewMetadata);
 };
 
@@ -251,13 +252,16 @@ document.observe("dom:loaded", function() {
 				<a href="#" onclick="elvisApi.logout(window.location); return false">Logout</a>
 			</div>
 		</div>
+		<div id="sizeControls" class="elvisRenderSize">
+			<!-- size controls will be rendered here -->
+		</div>
 	</header>
 	<div id="resultWrapper">
 		<div id="resultContainer">
 			<!-- result hits will be rendered here -->
 		</div>
 	</div>
-	<div class="elvisCopyright">Powered by <a href="http://www.elvisready.com">elvis</a> &copy; <a href="http://www.dutchsoftware.com">dutchsoftware.com</a></div>
+	<div class="elvisCopyright">Powered by <a href="http://www.elvisdam.com">Elvis</a> &copy; <a href="http://www.dutchsoftware.com">dutchsoftware.com</a></div>
 	<div id="throbber" style="display:none;">
 		<img src="../shared_resources/elvis_api/images/ajax-loader.gif" width="32" height="32"/>
 	</div>

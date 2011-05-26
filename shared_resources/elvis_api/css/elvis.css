@@ -21,33 +21,209 @@
  * THE SOFTWARE.
  */
 
+/*
+HTML produced by HitRenderer:
+
+[for each hit]
+div.elvisHitBox
+	a href=...
+		[for image/video/pdf]
+		div.elvisThumbnailWrapper
+			div.elvisThumbnailImage
+				img
+
+		[for icon]
+		div.elvisThumbnailWrapper
+			div.elvisThumbnailIcon
+				img
+
+		[for text]
+		div.elvisThumbnailWrapper
+			div.elvisThumbnailText
+				span
+
+		[for collection]
+		div.elvisThumbnailWrapper
+			div.elvisContainerBox
+			  [4 x]
+				div.elvisContainerThumb
+					img
+				[or]
+				div.elvisContainerIcon
+					img
+				[or]
+				div.elvisContainerEmpty
+
+	div.elvisMetadata
+		
+		[for each metadataToDisplay]
+		div title=...
+			...value...
+*/
+
 .elvisHitBox {
 	position: relative;
 	display: block;
-	margin: 10px;
-	padding: 0px;
-	width: 140px;
-	height: 160px;
+	margin: 0 -2px -2px 0; /* collapse selection borders */
+	border: 2px solid transparent;
+	padding: 8px;
 	overflow: hidden;
 	float: left;
-	/* fix to make thumbs work inside a table */
-	border-spacing: 0px 0px;
+	border-spacing: 0px 0px; /* fix to make thumbs work inside a table */
 }
-
 
 .elvisHitBox a /*a:link, a:visited, a:hover, a:active*/
 {
 	text-decoration:none;
 }
 
-.elvisHitBox.square .elvisThumbnailWrapper {
-	border: 1px solid #666;
-	display: block;
+/*
+ * Standard, small and large size css for hit thumbnails
+ */
+
+.elvisHitBox {
+	width: 140px;
+}
+.elvisSmall .elvisHitBox {
+	width: 70px;
+}
+.elvisLarge .elvisHitBox {
+	width: 256px;
+}
+
+.elvisThumbnailWrapper,
+.elvisThumbnailImage,
+.elvisThumbnailIcon {
+	width: 140px;
+	height: 140px;
+}
+.elvisSmall .elvisThumbnailWrapper,
+.elvisSmall .elvisThumbnailImage,
+.elvisSmall .elvisThumbnailIcon {
+	width: 70px;
+	height: 70px;
+}
+.elvisLarge .elvisThumbnailWrapper,
+.elvisLarge .elvisThumbnailImage,
+.elvisLarge .elvisThumbnailIcon {
+	width: 256px;
+	height: 256px;
+}
+
+.elvisThumbnailWrapper.square,
+.elvisThumbnailText {
+	/* .elvisHitBox - (2 * 1px border) */
 	width: 138px;
 	height: 138px;
+}
+.elvisSmall .elvisThumbnailWrapper.square,
+.elvisSmall .elvisThumbnailText {
+	width: 68px;
+	height: 68px;
+}
+.elvisLarge .elvisThumbnailWrapper.square,
+.elvisLarge .elvisThumbnailText {
+	width: 254px;
+	height: 254px;
+}
+
+.elvisThumbnailImage img,
+.elvisThumbnailIcon img {
+	/* .elvisThumbnailWrapper - (2 * 1px border) */
+	max-width: 138px;
+	max-height: 138px;
+}
+.elvisSmall .elvisThumbnailImage img,
+.elvisSmall .elvisThumbnailIcon img {
+	max-width: 68px;
+	max-height: 68px;
+}
+.elvisLarge .elvisThumbnailImage img,
+.elvisLarge .elvisThumbnailIcon img {
+	max-width: 254px;
+	max-height: 254px;
+}
+
+.elvisThumbnailText span {
+	width: 126px;
+	height: 126px;
+}
+.elvisSmall .elvisThumbnailText span {
+	width: 62px;
+	height: 62px;
+	margin: 3px;
+	font-size: 8px;
+}
+.elvisLarge .elvisThumbnailText span {
+	width: 230px;
+	height: 230px;
+	margin: 8px;
+	font-size: 16px;
+}
+
+.elvisContainerBox {
+	width: 138px;
+	height: 138px;
+}
+.elvisSmall .elvisContainerBox {
+	width: 68px;
+	height: 68px;
+}
+.elvisLarge .elvisContainerBox {
+	width: 254px;
+	height: 254px;
+}
+
+.elvisContainerThumb,
+.elvisContainerIcon,
+.elvisContainerEmpty {
+	width: 52px;
+	height: 52px;
+}
+.elvisSmall .elvisContainerThumb,
+.elvisSmall .elvisContainerIcon,
+.elvisSmall .elvisContainerEmpty {
+	width: 25px;
+	height: 25px;
+}
+.elvisLarge .elvisContainerThumb,
+.elvisLarge .elvisContainerIcon,
+.elvisLarge .elvisContainerEmpty {
+	width: 110px;
+	height: 110px;
+}
+
+.elvisContainerIcon img {
+	max-width: 52px;
+	max-height: 52px;
+}
+.elvisSmall .elvisContainerIcon img {
+	max-width: 25px;
+	max-height: 25px;
+}
+.elvisLarge .elvisContainerIcon img {
+	max-width: 110px;
+	max-height: 110px;
+}
+
+/*
+ * Non-size styling for hit thumbnails
+ */
+
+.elvisHitBox.selected /*, .elvisHitBox:hover*/ {
+	border: 2px solid #b5d4e7;
+	background-color: #e4f0f7;
+}
+
+.elvisThumbnailWrapper {
+	position: relative;
+}
+.elvisThumbnailWrapper.square {
+	border: 1px solid #666;
+	display: block;
 	overflow: hidden;
 }
-.elvisHitBox.square img {
+.elvisHitBox img.square {
 	border: none;
 	position: relative;
 	max-width: none;
@@ -58,63 +234,67 @@
 	display: table-cell;
 	text-align:center;
 	vertical-align:middle;
-	width: 138px;
-	height: 138px;
 }
 .elvisThumbnailImage img {
 	border: 1px solid #999;
-	max-width: 138px;
-	max-height: 138px;
+}
+.elvisThumbnailImageOverlay {
+	position: absolute;
+	left: 0px;
+	z-index: 10;
+	padding: 1px;
+}
+.square .elvisThumbnailImageOverlay {
+	padding: 0px;
+}
+.elvisThumbnailVideoIndicator {
+	background-image: url("../images/camera.png");
+	background-repeat: no-repeat;
+	background-position: center;
+	background-color: rgba(0, 0, 0, 0.4);
+	width: 22px;
+	height: 15px;
+	/* TODO also show duration:
+	line-height: 15px;
+	font-size: 9px;
+	color: white;
+	background-position: 2px 50%;
+	padding: 0px 2px 0px 22px;
+	no width!*/
 }
 
 .elvisThumbnailText
 {
 	border: 1px solid #999;
-	width: 138px;
-	height: 138px;
 	background-color: #262626;
+	cursor: default;
 }
 .elvisThumbnailText span
 {
 	display: block;
 	margin: 6px;
-	width: 126px;
-	height: 126px;
 	overflow: hidden;
 	font-size: 11px;
 	color: #ffffff;
 	text-align:justify;
 }
-.elvisThumbnailIcon {
+.elvisThumbnailIcon, .elvisContainerBox {
 	display: table-cell;
 	text-align:center;
 	vertical-align:middle;
-	width: 140px;
-	height: 140px;
 }
 .elvisThumbnailIcon img {
 	border: none;
 }
-
 .elvisContainerBox {
-	display: inline-block;
-	width: 137px;
-	height: 137px;
 	border: 1px solid #424242;
 	overflow: hidden;
 	padding: 0px;
-	vertical-align: middle;
-	text-align: left;
-	background: #333333;
-	/*CSS3*/
 	box-shadow: 1px 1px 1px #000000;
 	-moz-box-shadow: 1px 1px 1px #000000;
-	-webkit-box-shadow: 1px 1px 1px #000000;
-	-moz-border-radius: 8px;
-	-webkit-border-radius: 8px;
 	border-radius: 8px;
-	background: -webkit-gradient(radial, 30px 45px, from(#333333), to(#424242));
-	background: -moz-radial-gradient(30px 45px, cover, rgb(51, 51, 51) 20%, rgb(66, 66, 66) 90%);
+	-moz-border-radius: 8px;
+	background: #333333;
 }
 .elvisContainerBox img 
 {
@@ -124,29 +304,25 @@
 .elvisContainerThumbWrapper
 {
 	position: relative;
-	display: block;
-	margin-top: 15px;
-	margin-left: 15px;
 }
-.elvisContainerThumb, .elvisContainerIcon {
+.elvisContainerThumb, .elvisContainerIcon, .elvisContainerEmpty {
 	position: relative;
 	display: inline-block;
-	vertical-align: top; /* Hack to fix align on Webkit servers */
-	width: 50px;
-	height: 50px;
+	vertical-align: top; /* Hack to fix jumpy vertical align in webkit */
 	overflow: hidden;
-	
+	margin: 0px 1px 1px 0px;
 }
-.elvisContainerThumb 
+.elvisContainerThumb
 {
-	margin: 0px 4px 4px 0px;
 	border: 1px solid #000000;
 }
 .elvisContainerIcon
 {
-	border: 0px;
-	/*fix margins because we don't have a border*/
-	margin: 1px 5px 5px 1px;
+	border: 1px solid transparent;
+}
+.elvisContainerEmpty {
+	border: 1px dashed #333333;
+	background-color: #5C5C5C;
 }
 .elvisContainerThumb img, .elvisContainerIcon img
 {
@@ -154,28 +330,22 @@
 	margin: 0px;
 	border: 0px;
 }
-.elvisContainerIcon img {
-	max-width: 50px;
-	max-height: 50px;
-}
 
 
 
 .elvisMetadata {
-	display: block;
-	padding: 2px 0px 2px 0px;
-	/*max-width: 140px;
-	max-height: 20px;*/
+	padding: 4px 0px 2px 0px;
+}
+.elvisSmall .elvisMetadata {
+	font-size: 8px;
 }
 .elvisMetadata div {
 	height: 1.3em;
 	overflow: hidden;
 	text-align: center;
 }
-
 .elvisMetadataValue {
 }
-
 .elvisMetadataRating {
 	font-family: monospace;
 }
@@ -201,6 +371,33 @@
 }
 .elvisPageDisabled {
 	color: #888888;
+}
+
+
+
+.elvisRenderSize a {
+	display: block;
+	float: left;
+	padding: 10px;
+	border-radius: 4px;
+	-moz-border-radius: 4px;
+	margin-left: 4px;
+	background-repeat: no-repeat;
+	background-position: center;
+	border: 1px solid #999;
+}
+.elvisRenderSize a:hover, .elvisRenderSize a.selected {
+	border: 1px solid #555;
+}
+
+.elvisRenderSize a.small {
+	background-image: url("../images/thumb_size_small.png");
+}
+.elvisRenderSize a.medium {
+	background-image: url("../images/thumb_size_medium.png");
+}
+.elvisRenderSize a.large {
+	background-image: url("../images/thumb_size_large.png");
 }
 
 
@@ -258,6 +455,56 @@ ul.elvisFacet {
 	background-color: #FFFFFF;
 	color: #97A8C7;
 }
+
+
+
+.elvisColumnTree {
+	height: 115px;
+	overflow-y: hidden;
+	overflow-x: scroll;
+	width: 100%;
+	background: #fafafa;
+	position: relative;
+	border: thin solid #999;
+	border-left: 0px;
+	border-right: 0px;
+	font-size: 11px;
+	font-family: Arial;
+}
+div.elvisColumnTreeList {
+	height: 100px;
+	display: inline-block;
+	position: relative;
+	margin-right: -1px;
+	width: 200px;
+	border: thin solid #999;
+	border-top: 0px;
+	border-bottom: 0px;
+	overflow-x: hidden;
+	overflow-y: scroll;
+}
+.elvisColumnTreeList ul {
+	margin: 0;
+	padding: 0;
+}
+.elvisColumnTreeList li {
+	background-image: url('../images/folder.png');
+	background-position: 3px center;
+	background-repeat: no-repeat;
+	padding: 3px 3px 3px 22px;
+	height: 1.3em;
+	line-height: 1.4em;
+	overflow-y: hidden;
+	cursor: default;
+}
+.elvisColumnTreeList li.container {
+	background: url('../images/box.png') left no-repeat;
+}
+.elvisColumnTreeList li.selected {
+	background-color: #3875D7;
+	color: #FFF;
+}
+
 
 
 #elvisPreviewOverlay

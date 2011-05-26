@@ -41,6 +41,9 @@ String.prototype.replaceParams = function(o) {
 String.prototype.endsWith = function(str) {
 	return (this.match(str + "$") == str);
 };
+String.prototype.appendQueryParam = function(param, value) {
+	return ((this.indexOf("?") == -1) ? "?" : "&") + param + "=" + encodeURIComponent(value);
+};
 String.prototype.utf8Encode = function() {
 	var input = this.replace(/\r\n/g, "\n");
 	var utftext = "";
@@ -355,14 +358,23 @@ var HitRenderer = Class.create({
 		this.hitsTarget = null;
 		this.infoTarget = null;
 		this.pageTarget = null;
-
-		this.itemClick = null;
-		this.pageClick = null;
+		this.sizeTarget = null;
 
 		this.squareThumbs = false;
+		this.renderSize = "medium"; // small | medium | large
 		this.metadataToDisplay = ["name", "fileSize", "assetCreated", "rating"];
 		this.linkClass = null;
 		this.linkRel = null;
+
+		this.selectable = false;
+		this.multiselect = false;
+		
+		this.selectedHits = [];
+
+		// handler functions
+		this.itemClick = null;
+		this.pageClick = null;
+		this.selectionChange = null;
 
 		// private instance variables
 		this.hits = null;
@@ -445,6 +457,8 @@ var HitRenderer = Class.create({
 			targetElement.update(html);
 
 			this.postProcessTarget(targetElement);
+			
+			this.setRenderSize(this.renderSize);
 		}
 	},
 
@@ -459,6 +473,35 @@ var HitRenderer = Class.create({
 				maxResultHits: data.maxResultHits
 			}));
 		}
+	},
+	
+	setRenderSize: function(size) {
+		var targetElement = $(this.hitsTarget);
+		
+		switch (size) {
+		case "medium":
+			targetElement.removeClassName("elvisLarge");
+			targetElement.removeClassName("elvisSmall");
+			break;
+		case "small":
+			targetElement.removeClassName("elvisLarge");
+			targetElement.addClassName("elvisSmall");
+			break;
+		case "large":
+			targetElement.removeClassName("elvisSmall");
+			targetElement.addClassName("elvisLarge");
+			break;
+		default:
+			throw("Illegal renderSize: "+size);
+		}
+		
+		this.renderSize = size;
+		
+		// scale square thumbnails
+		this.rescaleSquareThumbs(targetElement);
+		
+		// update controls
+		this.renderSizeControls();
 	},
 
 	/*
@@ -476,9 +519,16 @@ var HitRenderer = Class.create({
 	},
 
 	renderHitBox: function(hit, idx) {
-		return "<div class='elvisHitBox'>#{thumbnail}<div class='elvisMetadata'>#{metadata}</div></div>".interpolate({
-			thumbnail: this.renderHitLink(hit, idx),
+		return "<div class='elvisHitBox'>#{thumbnail}#{metadata}</div>".interpolate({
+			thumbnail: this.renderThumbnailWrapper(hit, idx),
 			metadata: this.renderMetadata(hit, this.metadataToDisplay)
+		});
+	},
+
+	renderThumbnailWrapper: function(hit, idx) {
+		return '<div class="{classAttr}">{thumbnail}</div>'.replaceParams({
+			thumbnail: this.renderHitLink(hit, idx),
+			classAttr: "elvisThumbnailWrapper" + (this.squareThumbs && hit.thumbnailUrl ? " square" : "")
 		});
 	},
 
@@ -494,60 +544,62 @@ var HitRenderer = Class.create({
 				linkAttr += ' rel="' + this.linkRel + '"';
 			}
 
-			//return '<a href="#" onclick="return false;"{linkAttr}>{thumbnail}</a>'.replaceParams({
 			return '<a href="{href}" onclick="return (false)"{linkAttr}>{thumbnail}</a>'.replaceParams({
 				href: href,
 				linkAttr: linkAttr,
-				thumbnail: this.renderThumbnailWrapper(hit)
+				thumbnail: this.renderThumbnail(hit)
 			});
 		} else {
 			// do not create link if we don't have an itemClick handler and no linkClass or linkRel
-			return this.renderThumbnailWrapper(hit);
+			return this.renderThumbnail(hit);
 		}
-	},
-
-	renderThumbnailWrapper: function(hit) {
-		return '<div class="elvisThumbnailWrapper">{thumbnail}</div>'.replaceParams({
-			thumbnail: this.renderThumbnail(hit)
-		});
-		return this.renderThumbnail(hit);
 	},
 
 	renderThumbnail: function(hit) {
 		if (hit.thumbnailUrl) {
-			return '<div class="elvisThumbnailImage"><img src="{thumbnailUrl}" alt="" /></div>'.replaceParams(hit);
+			var thumbOverlay = this.renderThumbnailImageOverlay(hit);
+			return '<div class="elvisThumbnailImage">{thumbOverlay}<img src="{hit.thumbnailUrl}" alt="" {imgClassAttr} /></div>'.replaceParams({
+				hit: hit,
+				thumbOverlay: (thumbOverlay == null ? "" : '<div class="elvisThumbnailImageOverlay">' + thumbOverlay + '</div>'),
+				imgClassAttr: (this.squareThumbs ? ' class="square"' : '')
+			});
 		}
 		else if (hit.highlightedText) {
 			return '<div class="elvisThumbnailText"><span>{highlightedText}</span></div>'.replaceParams(hit);
 		}
 		else if (hit.metadata.assetDomain == "container") {
-			// && hit.thumbnailHits && hit.thumbnailHits.length != 0) {
-			if (hit.thumbnailHits && hit.thumbnailHits.length != 0) {
-				return this.renderContainerThumbnail(hit);
-			}
-			else {
-				return '<div class="elvisContainerBox"><img src="' + this.getHitIcon(hit) + '" /></div>';
-			}
+			return this.renderContainerThumbnail(hit);
 		}
 		else {
 			return '<div class="elvisThumbnailIcon"><img src="' + this.getHitIcon(hit) + '" /></div>';
 		}
 	},
 
-	renderContainerThumbnail: function(hit) {
-		var html = '<div class="elvisContainerBox"><div class="elvisContainerThumbWrapper">';
+	renderThumbnailImageOverlay: function(hit) {
+		if (hit.metadata.assetDomain == "video") {
+			return '<div class="elvisThumbnailVideoIndicator"></div>';
+		}
+		return "";
+	},
 
-		for (var i = 0; i < hit.thumbnailHits.length; i++) {
-			var thumbnailHit = hit.thumbnailHits[i];
+	renderContainerThumbnail: function(hit) {
+		var html = '<div class="elvisContainerBox">';
+
+		var i = 0;
+		while (i < hit.thumbnailHits.length) {
+			var thumbnailHit = hit.thumbnailHits[i++];
 			if (thumbnailHit.thumbnailUrl) {
-				html += '<div class="elvisContainerThumb"><img src="{thumbnailUrl}" alt="" /></div>'.replaceParams(thumbnailHit);
+				html += '<div class="elvisContainerThumb square"><img src="{thumbnailUrl}" alt="" class="square" /></div>'.replaceParams(thumbnailHit);
 			}
 			else {
 				html += '<div class="elvisContainerIcon"><img src="' + this.getHitIcon(thumbnailHit) + '" /></div>';
 			}
 		}
+		while (i++ < 4) {
+			html += '<div class="elvisContainerEmpty"></div>';
+		}
 
-		html += "</div></div>";
+		html += "</div>";
 
 		return html;
 	},
@@ -555,6 +607,7 @@ var HitRenderer = Class.create({
 	renderMetadata: function(hit, fieldList) {
 		var html = "";
 		if (this.metadataToDisplay != null && this.metadataToDisplay.length != 0) {
+			html += "<div class='elvisMetadata'>";
 			for (var i = 0; i < fieldList.length; i++) {
 				var field = fieldList[i];
 
@@ -565,6 +618,7 @@ var HitRenderer = Class.create({
 
 				html += this.layoutValue(hit, field, value);
 			}
+			html += "</div>";
 		}
 		return html;
 	},
@@ -607,14 +661,6 @@ var HitRenderer = Class.create({
 			}
 		}
 		return html;
-	},
-
-	renderPreview: function(hit) {
-		if (previewUrl) {
-			return "";
-		}
-
-		return "<div id='preview'><object id='previewObject' data='{previewUrl}'></object></div>".replaceParams(hit);
 	},
 
 	/*
@@ -665,71 +711,113 @@ var HitRenderer = Class.create({
 
 	postProcessHit: function(hitElement, hit, index) {
 		// register click handler
-		if (this.itemClick) {
+		if (this.itemClick || this.selectable) {
 			Event.observe(hitElement, 'click', function(event) {
-				this.itemClick(hit, event.element(), this.hits, index);
+				var result = (this.itemClick ? this.itemClick(event, hit, this.hits, index) : true);
+				if (result && this.selectable) {
+					this.toggleSelected(hitElement, hit, index);
+				}
 			}.bind(this));
 		}
+	},
 
-		// process square thumbnails
-		if (hit.metadata.assetDomain == "container") {
-			// process container thumbnails to be square
-			var imgs = hitElement.select(".elvisContainerThumb img");
-			for (var i = 0; i < imgs.length; i++) {
-				this.makeImageSquareFilled(imgs[i], 50);
+	toggleSelected: function(hitElement, hit, index) {
+		if (this.multiselect) {
+			// remove or add selected hit
+			if (hitElement.hasClassName("selected")) {
+				this.selectedHits = this.selectedHits.without(hit);
+			} else {
+				this.selectedHits.push(hit);
+			}
+		} else {
+			// select this hit
+			if (hitElement.hasClassName("selected")) {
+				this.selectedHits = [];
+			} else {
+				this.selectedHits = [hit];
+			}
+			
+			// unselect other hits
+			hitElement.siblings().each(function (e) {
+				e.removeClassName("selected");
+			});
+		}
+		
+		hitElement.toggleClassName("selected");
+		
+		if (this.selectionChange) {
+			this.selectionChange(this.selectedHits);
+		}
+	},
+
+	rescaleSquareThumbs: function(targetElement) {
+		targetElement.select("img.square").each(this.squareFillImage, this);
+	},
+
+	squareFillImage: function(img) {
+		// wait until image has loaded so we know its dimensions
+		if (img.naturalWidth == 0 || img.up("div.square").clientWidth == 0) {
+			img.observe("load", function(event) {
+				this.squareFillImage(img);
+			}.bind(this));
+			return;
+		}
+		
+		// get 'square' container size
+		// (a little larger to make sure it really fills its container and avoid anti-alias grey areas)
+		var maxSize = img.up("div.square").clientWidth + 2;
+		
+		// default sizing (for square images)
+		var style = {
+			width: maxSize + "px",
+			height: maxSize + "px",
+			left: "-1px",
+			top: "-1px"
+		};
+		
+		// adjust scaling for landscape and portrait images
+		if (img.naturalWidth > img.naturalHeight) {
+			// landscape (height is smallest)
+			var width = (maxSize / img.naturalHeight) * img.naturalWidth;
+			var offset = (maxSize - width) / 2;
+
+			style.width = width + "px";
+			style.left = offset + "px";
+		} else if (img.naturalWidth < img.naturalHeight) {
+			// portrait (width is smallest)
+			var height = (maxSize / img.naturalWidth) * img.naturalHeight;
+			var offset = (maxSize - height) / 2;
+
+			style.height = height + "px";
+			style.top = offset + "px";
+		}
+		
+		img.setStyle(style);
+	},
+
+	/*
+	 * Size controls
+	 */
+	
+	renderSizeControls: function() {
+		if (this.sizeTarget) {
+			$(this.sizeTarget).update("");
+			
+			var sizes = ["small", "medium", "large"];
+			for (var i = 0; i < sizes.length; i++) {
+				var size = sizes[i];
+				var linkElement = new Element("a", {"class": size + (size == this.renderSize ? " selected" : "")});
+				this.observeSizeControl(linkElement, size);
+				
+				$(this.sizeTarget).insert(linkElement);
 			}
 		}
-		else if (this.squareThumbs && hit.thumbnailUrl) {
-			// process image thumbnails to be square
-			hitElement.addClassName("square");
-
-			var img = hitElement.select("img")[0];
-			this.makeImageSquareFilled(img, 140);
-		}
 	},
-
-	makeImageSquareFilled: function(img, maxSize) {
-		if (img.naturalWidth == 0) {
-			img.observe("load", function(event) {
-				this.squareFillImage(img, maxSize);
-			}.bind(this));
-		}
-		else {
-			this.squareFillImage(img, maxSize);
-		}
-	},
-
-	squareFillImage: function(img, maxSize) {
-		if (img.naturalWidth > img.naturalHeight) {
-			// landscape
-			var scale = img.naturalHeight / maxSize;
-			var offset = -(img.naturalWidth / scale - maxSize) / 2;
-
-			img.setStyle({
-				height: maxSize + "px",
-				left: offset + "px"
-			});
-		} else if (img.naturalWidth < img.naturalHeight) {
-			// portrait
-			var scale = img.naturalWidth / maxSize;
-			var offset = -(img.naturalHeight / scale - maxSize) / 2;
-
-			img.setStyle({
-				width: maxSize + "px",
-				top: offset + "px"
-			});
-		} else {
-			// square
-			var scale = img.naturalWidth / maxSize;
-			var offset = -(img.naturalHeight / scale - maxSize) / 2;
-
-			img.setStyle({
-				width: maxSize + "px",
-				height: maxSize + "px",
-				top: offset + "px",
-				left: offset + "px"
-			});
-		}
+	
+	observeSizeControl: function(linkElement, size) {
+		linkElement.observe("click", function() {
+			this.setRenderSize(size);
+		}.bind(this));
 	},
 
 	/*
@@ -787,7 +875,7 @@ var HitRenderer = Class.create({
 			var elements = targetElement.select("a");
 			for (var i = 0; i < elements.length; i++) {
 				Event.observe(elements[i], 'click', function(event) {
-					var pageIdx = parseInt(Event.findElement(event, 'a').rel);
+					var pageIdx = parseInt(Event.findElement(event, "a").rel);
 					var start = pageIdx * data.maxResultHits;
 
 					this.pageClick(start, data.maxResultHits);
@@ -811,7 +899,6 @@ var HitRenderer = Class.create({
 			label: label
 		});
 	}
-
 });
 
 
@@ -855,7 +942,7 @@ var FacetRenderer = Class.create({
 
 				var selected = (this._selectedFacets[field] && this._selectedFacets[field][value]);
 
-				html += '<li#{classAttr}><a href="#" onclick="onFacetClick(event, \'#{field}\', \'#{label}\'); return false"><span class="label">#{label}</span><span class="count">#{hitCount}</span></a></li>'.interpolate({
+				html += '<li#{classAttr}><a href="#" onclick="return false"><span class="label">#{label}</span><span class="count">#{hitCount}</span></a></li>'.interpolate({
 					field: field,
 					label: value,
 					hitCount: hitCount,
@@ -881,7 +968,7 @@ var FacetRenderer = Class.create({
 	_locateOrCreateTargetUL: function(target, field) {
 		var targetULs = target.select("ul");
 		if (targetULs.length == 0) {
-			target.insert(new Element("ul", {'class': 'elvisFacet'}));
+			target.insert(new Element("ul", {"class": "elvisFacet"}));
 			return target.select("ul")[0];
 		}
 
@@ -941,12 +1028,108 @@ var FacetRenderer = Class.create({
 
 
 
+var ColumnTree = Class.create({
+
+	initialize: function (targetId, elvisApi, selectionChangeHandler) {
+		this.elvisApi = elvisApi;
+		this.selectionChangeHandler = selectionChangeHandler;
+		
+		this.folderPath = "";
+		this.containerId = null;
+		
+		this._targetId = targetId;
+		this._innerWrapper = null;
+		
+		document.observe("dom:loaded", function() {
+			this._initHtml();
+		}.bind(this));
+	},
+	
+	_initHtml: function () {
+		this._target = $(this._targetId);
+		this._target.addClassName("elvisColumnTree");
+		
+		this._innerWrapper = new Element("div");
+		this._target.insert(this._innerWrapper);
+		
+		// Browse root
+		this._browse(this.folderPath);
+		
+		this.selectionChangeHandler(this);
+	},
+
+	_browse: function (folderPath) {
+		//Browse default includes collection and dossier extensions, these are handled as assets and not folders.
+		this.elvisApi.browse({path: folderPath}, this._render.bind(this));
+		
+		this.folderPath = folderPath;
+	},
+
+	_render: function (browseResult) {
+		// empty result, do nothing
+		if (browseResult.length == 0) {
+			return;
+		}
+
+		// Create new list
+		var list = new Element("div", {"class": "elvisColumnTreeList"});
+		
+		var ul = new Element("ul");
+		for (var i = 0; i < browseResult.length; i++) {
+			ul.insert( this._createItem(browseResult[i], list) );
+		}
+		
+		list.insert(ul);
+		this._innerWrapper.insert(list);
+		
+		// Adjust width of inner wrapper and scroll right
+		this._innerWrapper.style.width = (201 * this._innerWrapper.childElements().length) + "px";
+		this._target.scrollLeft = this._innerWrapper.clientWidth;
+	},
+	
+	_createItem: function (data, listElement) {
+		var li = new Element("li", {"class": (data.directory ? "folder" : "container")});
+		li.update(data.name);
+		li.observe("click", function() {
+			this._itemClick(data, li, listElement);
+		}.bind(this));
+		return li;
+	},
+	
+	_itemClick: function(data, liElement, listElement) {
+		liElement.siblings().each(function (e) {
+			e.removeClassName("selected");
+		})
+		liElement.addClassName("selected");
+	
+		if (data.directory) {
+			this.containerId = null;
+			
+			// remove any displayed subfolders
+			listElement.nextSiblings().each(Element.remove);
+			
+			// browse to subfolder
+			this._browse(data.assetPath);
+		}
+		else if (data.containerId) {
+			// select container
+			this.containerId = data.containerId;
+		}
+		
+		this.selectionChangeHandler(this);
+	}
+
+});
+
+
+
 var PreviewLightbox = Class.create({
 
 	initialize: function() {
 		this.previewUrl = null;
 		this.htmlCreated = false;
 		this.naturalPreviewSize = null;
+		this._previewType = null; // .jpg | .mp4 | .html
 	},
 
 	insertHtml: function() {
@@ -1037,8 +1220,26 @@ var PreviewLightbox = Class.create({
 		});
 		$("elvisPreviewBox").update("");
 
+		// determine previewType
+		var typeRegEx = /.*\.(jpg|mp4|html)/.exec(this.previewUrl);
+		this._previewType = (typeRegEx == null || typeRegEx.length == 1) ? null : typeRegEx[1];
+
 		// insert preview contents
-		if (this.previewUrl == "") {
+		if (this._previewType == "jpg") {
+			$("elvisPreviewBox").update('<img id="elvisPreviewObject" class="elvisPreviewImage" src="#{src}"/>'.interpolate({
+				src: this.previewUrl
+			}));
+		}
+		else if (this._previewType == "mp4") {
+			$("elvisPreviewBox").update('<video id="elvisPreviewObject" class="elvisPreviewVideo" src="#{src}" controls="true" autoplay="true"></video>'.interpolate({
+				src: this.previewUrl
+			}));
+		}
+		else if (this._previewType == "html") {
+			$("elvisPreviewBox").update('<div id="elvisPreviewObject" class="elvisPreviewText"></div>');
+			new Ajax.Updater('elvisPreviewObject', this.previewUrl, {});
+		}
+		else {
 			var msg = "No preview available";
 			if (previewUrlOrHit.metadata) {
 				msg += " for " + previewUrlOrHit.metadata.name;
@@ -1046,20 +1247,6 @@ var PreviewLightbox = Class.create({
 			$("elvisPreviewBox").update('<div id="elvisPreviewObject" class="elvisPreviewNotAvailable"><div>#{msg}</div></div>'.interpolate({
 				msg: msg
 			}));
-		}
-		else if (this.previewUrl.endsWith(".jpg")) {
-			$("elvisPreviewBox").update('<img id="elvisPreviewObject" class="elvisPreviewImage" src="#{src}"/>'.interpolate({
-				src: this.previewUrl
-			}));
-		}
-		else if (this.previewUrl.endsWith(".mp4")) {
-			$("elvisPreviewBox").update('<video id="elvisPreviewObject" class="elvisPreviewVideo" src="#{src}" controls="true" autoplay="true"></video>'.interpolate({
-				src: this.previewUrl
-			}));
-		}
-		else if (this.previewUrl.endsWith(".html")) {
-			$("elvisPreviewBox").update('<div id="elvisPreviewObject" class="elvisPreviewText"></div>');
-			new Ajax.Updater('elvisPreviewObject', this.previewUrl, {});
 		}
 
 		// show loading icon
@@ -1091,9 +1278,8 @@ var PreviewLightbox = Class.create({
 			return;
 		}
 
-		var isFirstAdjust = (this.naturalPreviewSize == null);
-
 		// store natural size first time
+		var isFirstAdjust = (this.naturalPreviewSize == null);
 		if (isFirstAdjust) {
 			this.naturalPreviewSize = {
 				width: $("elvisPreviewObject").getWidth(),
@@ -1107,7 +1293,7 @@ var PreviewLightbox = Class.create({
 			height: document.viewport.getHeight()
 		};
 
-		if (this.previewUrl.endsWith(".jpg")) {
+		if (this._previewType == "jpg") {
 			style.marginTop = 0;
 
 			// determine correct scale factor (smallest = best fit)
@@ -1122,17 +1308,17 @@ var PreviewLightbox = Class.create({
 			style.width = Math.round(this.naturalPreviewSize.width * f);
 			style.height = Math.round(this.naturalPreviewSize.height * f);
 		}
-		else if (this.previewUrl.endsWith(".mp4")) {
+		else if (this._previewType == "mp4") {
 			// make sure video does not overlap close button
 			style.marginTop = 60;
 			style.height = style.height - 60;
 		}
-		else if (this.previewUrl.endsWith(".html")) {
+		else if (this._previewType == "html") {
 			// correction for padding
+			style.width = style.width - 60;
 			style.height = style.height - 60;
 		}
 
-		//$('debugDiv').update(document.viewport.getWidth() + "x" + document.viewport.getHeight()+" style: "+style.top+","+style.bottom+" "+style.width+"x"+style.height);
 		//Adding check to determine the object exists to prevent unwarrented errors.
 		if ($("elvisPreviewObject") != null) {
 			$("elvisPreviewObject").setStyle({

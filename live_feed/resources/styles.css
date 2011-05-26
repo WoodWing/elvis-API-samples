@@ -29,13 +29,6 @@ html, body {
 	margin: 0px;
 }
 
-#throbber
-{
-	position:fixed;
-	top: 59px;
-	right: 13px;
-}
-
 header {
 	margin: 0px auto;
 	width: 100%;
@@ -96,50 +89,26 @@ h2 {
 }
 
 .sitenav {
-	margin: 10px;
-	padding-top: 20px;
-	position: relative;
-	display: table-cell;
-	float: right;
+	position: absolute;
+	right: 20px;
+	top: 12px;
 	text-align: center;
+}
+
+.settings {
+	line-height: 28px;
+}
+
+#sizeControls {
+	display: inline-block;
 	vertical-align: middle;
 }
 
-.asset {
-	position: relative;
-	display: inline-block;
-	width: 120px;
-	height: 120px;
-	padding: 0px;
-	margin: 15px 0px 15px 30px;
-	text-align: center;
-	overflow:auto;
-	background: rgba(66, 66, 66, 1);
-	text-align: center;
-}
-
-.assetOlder {
-	display: inline-block;
-	width: 120px;
-	height: 120px;
-	padding: 0px;
-	margin: 15px 0px 15px 30px;
-	text-align: center;
-	overflow:auto;
-	background: rgba(66, 66, 66, 0.75);
-	text-align: center;
-}
-
-.assetOldest {
-	display: inline-block;
-	width: 120px;
-	height: 120px;
-	padding: 0px;
-	margin: 15px 0px 15px 30px;
-	text-align: center;
-	overflow:auto;
-	background: rgba(66, 66, 66, 0.4);
-	text-align: center;
+#throbber
+{
+	position:fixed;
+	top: 72px;
+	right: 20px;
 }
 
 #resultContainer {
@@ -149,11 +118,6 @@ h2 {
 /*
 Custom styling for items rendered by elvis HitRenderer
 */
-
-.elvisHitBox {
-	width: 140px;
-	height: 140px;	 
-}
 
 .elvisCopyright {
 	position: fixed;

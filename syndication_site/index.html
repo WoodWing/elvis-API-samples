@@ -59,8 +59,8 @@ hitRenderer.infoTarget = "resultInfo";
 hitRenderer.pageTarget = "resultPager";
 hitRenderer.metadataToDisplay = [];
 hitRenderer.linkRel = "prettyPhoto[resultsGallery]";
-hitRenderer.itemClick = function (hit, element) {
-	switch (element.title) {
+hitRenderer.itemClick = function (event, hit) {
+	switch (event.element.title) {
 	case "Info":
 		// TODO show detail page
 		break;
@@ -176,7 +176,7 @@ document.observe("dom:loaded", refreshResults);
 		<div id="throbber" style="display:none;">
 			<img src="../shared_resources/elvis_api/images/ajax-loader.gif" width="16" height="16"/>
 		</div>
-		<div class="elvisCopyright">Powered by <a href="http://www.elvisready.com">elvis</a> &copy; <a href="http://www.dutchsoftware.com">dutchsoftware.com</a></div>
+		<div class="elvisCopyright">Powered by <a href="http://www.elvisdam.com">Elvis</a> &copy; <a href="http://www.dutchsoftware.com">dutchsoftware.com</a></div>
 	</div>
 </div>
 </body>
