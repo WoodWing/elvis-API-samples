@@ -42,7 +42,7 @@ String.prototype.endsWith = function(str) {
 	return (this.match(str + "$") == str);
 };
 String.prototype.appendQueryParam = function(param, value) {
-	return ((this.indexOf("?") == -1) ? "?" : "&") + param + "=" + encodeURIComponent(value);
+	return this + ((this.indexOf("?") == -1) ? "?" : "&") + param + "=" + encodeURIComponent(value);
 };
 String.prototype.utf8Encode = function() {
 	var input = this.replace(/\r\n/g, "\n");
