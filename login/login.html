@@ -26,50 +26,45 @@ THE SOFTWARE.
 -->
 <head>
 	<title>Login to elvis</title>
-	<!--
-	<script type='text/javascript' src='http://ajax.googleapis.com/ajax/libs/prototype/1.6.1/prototype.js'></script>
-	<script type='text/javascript' src='http://ajax.googleapis.com/ajax/libs/scriptaculous/1.8.2/scriptaculous.js'></script>
-	-->
-	<script src="../shared_resources/prototype.js" type="text/javascript"></script>
+	<script src="../shared_resources/jquery-1.6.2.min.js" type="text/javascript"></script>
+	<script src="../shared_resources/jquery.query-2.1.7.js" type="text/javascript"></script>
+	<script src="../shared_resources/jquery.class.min.js" type="text/javascript"></script>
 	<link href="../shared_resources/elvis_api/css/elvis.css" rel="stylesheet" type="text/css"/>
 	<link rel="stylesheet" type="text/css" href="login_resources/login.css" />
 	<script type="text/javascript">
-
-// initialize
-document.observe("dom:loaded", function() {
+$(document).ready(function() {
 	// parse query string parameters
 	// and update hidden form fields
-	var params = (""+location).toQueryParams();
+	var params = $.query.get();
 
 	if (params.nextUrl) {
-		$("nextUrl").setValue( params.nextUrl );
+		$("#nextUrl").val( params.nextUrl );
 	}
 
 	var failUrl = location + "#failed";
 	if (params.failUrl) {
 		failUrl = params.failUrl;
 	}
-	$("failUrl").setValue(failUrl);
+	$("#failUrl").val(failUrl);
 
 	// show failure message when authentication failed
 	if (location.hash == "#failed") {
-		$("failed").show();
+		$("#failed").show();
 	}
 
 	// set focus on usernmme
-	$("username").activate();
+	$("#username").focus();
 });
 
 // randomize background
-document.observe("dom:loaded", function() {
+$(document).ready(function() {
 	if (Math.random() < 0.3) {
-		$("body").addClassName("blue");
+		$("body").addClass("blue");
 	}
 	else {
-		$("body").addClassName("flow");
+		$("body").addClass("flow");
 	}
 });
-
 	</script>
 </head>
 <body id="body">

@@ -28,9 +28,9 @@
  *
  * TODO explain how to setup and customize...
  */
-var MetadataEditor = Class.create({
+var MetadataEditor = $.Class({
 
-	initialize: function() {
+	init: function() {
 		this.hit = null;
 		this.saveCallbackHandler = null;
 		this.htmlCreated = false;
@@ -64,19 +64,21 @@ var MetadataEditor = Class.create({
 			+ '<div id="buttons"><input id="elvisMetadataEditorClose" type="button" value="Cancel"/><input id="elvisMetadataEditorSave" type="button" value="Save"/></div>'
 			+ '</div></div></form>';
 
-		$$("body")[0].insert(template);
+		$("body").append(template);
 
-		$("elvisMetadataEditorSave").observe("click", function(event) {
-			this.save();
-		}.bind(this));
+        var self = this;
+        
+		$("#elvisMetadataEditorSave").bind("click", function(event) {
+			self.save();
+		});
 
-		$("elvisMetadataEditorClose").observe("click", function(event) {
-			this.close();
-		}.bind(this));
+		$("#elvisMetadataEditorClose").bind("click", function(event) {
+			self.close();
+		});
 
-		Event.observe(document.onresize ? document : window, "resize", function() {
-			this.adjustSize();
-		}.bind(this));
+        $(window).resize(function(){
+            self.adjustSize();
+        })
 
 		this.htmlCreated = true;
 	},
@@ -92,10 +94,10 @@ var MetadataEditor = Class.create({
 
 		this.renderThumb();
 		this.renderMetadata();
-		this.postProcess($("elvisMetadataEditor"));
+		this.postProcess($("#elvisMetadataEditor"));
 
-		$("elvisMetadataEditorOverlay").show();
-		$("elvisMetadataEditor").show();
+		$("#elvisMetadataEditorOverlay").show();
+		$("#elvisMetadataEditor").show();
 
 		this.adjustSize();
 	},
@@ -104,7 +106,7 @@ var MetadataEditor = Class.create({
 		// TODO allow setting this renderer instead of pre-configuring it
 		var hitRenderer = new HitRenderer();
 		hitRenderer.sharedResources = "../shared_resources/elvis_api";
-		hitRenderer.hitsTarget = "elvisMetadataEditorThumb";
+		hitRenderer.hitsTarget = "#elvisMetadataEditorThumb";
 		hitRenderer.squareThumbs = true;
 		hitRenderer.metadataToDisplay = [];
 		hitRenderer.render(this.hit);
@@ -155,13 +157,13 @@ var MetadataEditor = Class.create({
 			title: "Rating: " + rating,
 			value: starHtml
 		});
-		$("ratingField").setValue(rating);
+		$("#ratingField").val(rating);
 
 		//description
 		var description = this.renderValue("description", this.hit);
-		$("descriptionField").setValue(description);
+		$("#descriptionField").val(description);
 
-		$("elvisMetadataEditorBlock").update(html);
+		$("#elvisMetadataEditorBlock").html(html);
 	},
 
 	renderValue: function(field, hit) {
@@ -188,7 +190,7 @@ var MetadataEditor = Class.create({
 	},
 
 	postProcess: function(targetElement) {
-		var ratingElements = targetElement.select(".elvisMetadataEditorRating a");
+		var ratingElements = $(".elvisMetadataEditorRating a", targetElement);
 
 		for (var i = 0; i < ratingElements.length; i++) {
 			this.postProcessRating(ratingElements[i], i + 1);
@@ -196,52 +198,53 @@ var MetadataEditor = Class.create({
 	},
 
 	postProcessRating: function(ratingElement, rating) {
-		Event.observe(ratingElement, 'click', function(event) {
-			this.changeRating(rating);
+        var self = this;
+		$(ratingElement).bind('click', function(event) {
+			self.changeRating(rating);
 			return false;
-		}.bind(this));
+		});
 	},
 
 	changeRating: function(rating) {
-		var ratingElements = $("elvisMetadataEditor").select(".elvisMetadataEditorRating a");
+		var ratingElements = $("#elvisMetadataEditor .elvisMetadataEditorRating a");
 
 		for (var i = 0; i < ratingElements.length; i++) {
-			ratingElements[i].update(this.getRatingSymbol(rating, i));
+			$(ratingElements[i]).html(this.getRatingSymbol(rating, i));
 		}
 
-		$("ratingField").setValue(rating);
+		$("#ratingField").val(rating);
 	},
 
 	save: function() {
 		//TODO: optimize
-		var metadata = new Object();
-		metadata["status"] = $F("statusField");
-		metadata["rating"] = $F("ratingField");
-		metadata["description"] = $F("descriptionField");
-		this.hit.metadata.status = $F("statusField");
-		this.hit.metadata.rating = $F("ratingField");
-		this.hit.metadata.description = $F("descriptionField");
+		var metadata = {};
+		metadata.status = $("#statusField").val();
+		metadata.rating = $("#ratingField").val();
+		metadata.description = $("#descriptionField").val();
+		this.hit.metadata.status = $("#statusField").val();
+		this.hit.metadata.rating = $("#ratingField").val();
+		this.hit.metadata.description = $("#descriptionField").val();
 
 		this.saveCallbackHandler(this.hit, metadata);
 		this.close();
 	},
 
 	close: function() {
-		$("elvisMetadataEditor").hide();
-		$("elvisMetadataEditorOverlay").hide();
+		$("#elvisMetadataEditor").hide();
+		$("#elvisMetadataEditorOverlay").hide();
 	},
 
 	adjustSize: function() {
 
-		var box = $("elvisMetadataEditorBox");
+		var box = $("#elvisMetadataEditorBox");
 
 		// set size on preview object
-		var marginTop = Math.round((document.viewport.getHeight() - box.getHeight()) / 2);
-		var marginLeft = Math.round((document.viewport.getWidth() - box.getWidth()) / 2);
+		var marginTop = Math.round(($(window).height() - box.height()) / 2);
+		var marginLeft = Math.round(($(window).width() - box.width()) / 2);
 
-		//box.setStyle("marginTop", marginTop + 'px');
-		//box.setStyle("marginLeft", marginLeft + 'px');
-		box.setStyle({
+		//box.css("marginTop", marginTop + 'px');
+		//box.css("marginLeft", marginLeft + 'px');
+		box.css({
 			marginTop: marginTop + 'px',
 			marginLeft: marginLeft + 'px'
 		});
