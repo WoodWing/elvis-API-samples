@@ -109,9 +109,11 @@ var metadataEditor = new MetadataEditor(elvisApi);
 var hitRenderer = new InfoIconHitRenderer();
 hitRenderer.hitsTarget = "resultContainer";
 hitRenderer.infoTarget = "infoContainer";
+hitRenderer.pageTarget = "pageControls";
 hitRenderer.sizeTarget = "sizeControls";
 hitRenderer.squareThumbs = true;
 hitRenderer.metadataToDisplay = ["name", "rating"];
+hitRenderer.maxPageLinks = 5
 hitRenderer.itemClick = function(event, hit, hits, index) {
 	var btnLink = Event.findElement(event, "a");
 	if ((btnLink && btnLink.title == "Info")
@@ -130,6 +132,9 @@ hitRenderer.itemClick = function(event, hit, hits, index) {
 		previewLightbox.showGallery(hits, index);
 	}
 };
+hitRenderer.pageClick = function (start, num) {
+	refreshResults(start, num);
+};
 
 var collectionRenderer = new InfoIconHitRenderer();
 collectionRenderer.hitsTarget = "selectedCollectionContainer";
@@ -139,26 +144,28 @@ collectionRenderer.itemClick = function(event, hit) {
 };
 
 
+var searchParams = null;
+
 function searchCollections() {
-	var query = "";
+	var query;
 	if ($F('querystring') == "") {
 		query = "assetDomain:container";
 	}
 	else {
 		query = $F('querystring');
 	}
-	//var query = "assetDomain:container " + $F('querystring');
+
 	$("resultContainer").update("");
 	document.getElementById('resultWrapper').style.top = '100px';
-	
-	elvisApi.search({
+
+	searchParams = {
 		q: query,
-		sort: "assetCreated",
-		descending: true
-	}, hitRenderer.render);
+		sort: "assetCreated"
+	};
+
+	refreshResults();
 
 	$("crumbPart2").hide();
-	//$("resultWrapper").removeClassName("collection");
 	$("selectedCollection").hide();
 	$("search").show();
 }
@@ -168,23 +175,34 @@ function showCollection(collectionHit) {
 		return;
 	}
 
-	var query = "relatedTo:" + collectionHit.id + " relationTarget:child relationType:contains";
+	searchParams = {
+		q: "relatedTo:" + collectionHit.id + " relationTarget:child relationType:contains",
+		sort: "name"
+	};
 
 	$("resultContainer").update("");
 	document.getElementById('resultWrapper').style.top = '200px';
-	elvisApi.search({
-		q: query,
-		sort: "name"
-	},
-	hitRenderer.render);
 
+	refreshResults();
 	collectionRenderer.render(collectionHit);
 
 	$("search").hide();
 	$("selectedCollection").show();
-	//$("resultWrapper").addClassName("collection");
 	$("crumbName2").update(collectionHit.metadata.name);
 	$("crumbPart2").show();
+}
+
+function refreshResults(start, num) {
+	// apply start and num if needed
+	if (start != undefined) {
+		searchParams.start = start;
+	}
+	if (num != undefined) {
+		searchParams.num = num;
+	}
+
+	// execute search and update results
+	elvisApi.search(searchParams, hitRenderer.render);
 }
 
 function applyNewMetadata(hit, newMetadata) {
@@ -251,6 +269,9 @@ document.observe("dom:loaded", function() {
 			<div class="logout">
 				<a href="#" onclick="elvisApi.logout(window.location); return false">Logout</a>
 			</div>
+		</div>
+		<div id="pageControls">
+			<!-- page controls will be rendered here -->
 		</div>
 		<div id="sizeControls" class="elvisRenderSize">
 			<!-- size controls will be rendered here -->

@@ -56,7 +56,7 @@ var PreviewIconHitRenderer = Class.create(HitRenderer, {
 		$super(hitElement, hit, index);
 
 		// add zoom button
-		hitElement.select(".elvisMetadata")[0].insert('<img src="img/zoom.png" class="zoom">');
+		hitElement.select(".elvisMetadata")[0].insert('<img src="resources/zoom.png" class="zoom">');
 	}
 
 });
@@ -190,7 +190,7 @@ function insertContent() {
 		<form class="search" action="#" onsubmit="refreshResults(); return false">
 			<label>
 				<input id="querystring" type="search" placeholder="Search"/>
-				<input type="image" class="searchicon" src="img/search_button.png" value="Search"/>
+				<input type="image" class="searchicon" src="resources/search_button.png" value="Search"/>
 			</label>
             <div id="sizeControls" class="elvisRenderSize">
                 <!-- size controls will be rendered here -->
@@ -199,7 +199,7 @@ function insertContent() {
                 <!-- size controls will be rendered here -->
             </div>
 		</form>
-		<img class="logo" style="padding-top:6px;" src="img/logo.png" alt="logo" />
+		<img class="logo" style="padding-top:6px;" src="resources/logo.png" alt="logo" />
 	</div>
 	<div id="folderBrowser">
 		<!-- folder tree will be rendered here -->		

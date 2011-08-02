@@ -358,10 +358,19 @@ div.elvisHitBox
 .elvisPager a, .elvisPageCurrent, .elvisPageDisabled {
 	display: block;
 	float: left;
-	padding: 2px 9px;
+	width: 28px;
+	padding: 2px 0px;
+	overflow: hidden;
+	text-align: center;
 	margin-left: 1px;
 	text-decoration: none;
 	color: #333366;
+}
+.elvisPager .elvisPagePrev, .elvisPager .elvisPageNext {
+	width: auto;
+	padding-left: 9px;
+	padding-right: 9px;
+	overflow: visible;
 }
 .elvisPager a:hover, .elvisPageCurrent {
 	background-color: #BBBBBB;
@@ -540,7 +549,7 @@ div.elvisColumnTreeList {
 }
 #elvisPreviewClose {
 	overflow: hidden;
-	background-image: url("../images/close_button.png");
+	background-image: url("../images/nav_close.png");
 	background-repeat: no-repeat;
 	background-position: center;
 	height: 60px;
@@ -550,6 +559,30 @@ div.elvisColumnTreeList {
 	right: 0px;
 	z-index: 5020;
 	text-decoration: none;
+}
+#elvisPreviewPrev, #elvisPreviewNext {
+	background-repeat: no-repeat;
+	background-position: center;
+	position: fixed;
+	width: 60px;
+	top: 50%;
+	height: 200px;
+	margin-top: -100px;
+	overflow: hidden;
+	z-index: 5018;
+	text-decoration: none;
+}
+#elvisPreviewPrev {
+	left: 0px;
+}
+#elvisPreviewPrev:hover {
+	background-image: url("../images/nav_left.png");
+}
+#elvisPreviewNext {
+	right: 0px;
+}
+#elvisPreviewNext:hover {
+	background-image: url("../images/nav_right.png");
 }
 #elvisPreviewWrapper
 {

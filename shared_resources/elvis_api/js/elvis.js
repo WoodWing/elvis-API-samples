@@ -42,7 +42,7 @@ String.prototype.endsWith = function(str) {
 	return (this.match(str + "$") == str);
 };
 String.prototype.appendQueryParam = function(param, value) {
-	return this + ((this.indexOf("?") == -1) ? "?" : "&") + param + "=" + encodeURIComponent(value);
+   return this + ((this.indexOf("?") == -1) ? "?" : "&") + param + "=" + encodeURIComponent(value);
 };
 String.prototype.utf8Encode = function() {
 	var input = this.replace(/\r\n/g, "\n");
@@ -370,6 +370,8 @@ var HitRenderer = Class.create({
 		this.multiselect = false;
 		
 		this.selectedHits = [];
+		
+		this.maxPageLinks = 9;
 
 		// handler functions
 		this.itemClick = null;
@@ -606,7 +608,7 @@ var HitRenderer = Class.create({
 
 	renderMetadata: function(hit, fieldList) {
 		var html = "";
-		if (this.metadataToDisplay != null && this.metadataToDisplay.length != 0) {
+		if (fieldList != null && fieldList.length != 0) {
 			html += "<div class='elvisMetadata'>";
 			for (var i = 0; i < fieldList.length; i++) {
 				var field = fieldList[i];
@@ -642,6 +644,9 @@ var HitRenderer = Class.create({
 		}
 		else if (value.formatted) {
 			return value.formatted;
+		}
+		else if (value instanceof Array) {
+			return value.join(', ');
 		}
 		else {
 			return value;
@@ -831,8 +836,6 @@ var HitRenderer = Class.create({
 				return;
 			}
 
-			var maxLinks = 9;
-
 			var numPages = Math.ceil(data.totalHits / data.maxResultHits);
 			var curPageIdx = Math.floor(data.firstResult / data.maxResultHits);
 			var lastPageIdx = numPages - 1;
@@ -840,16 +843,16 @@ var HitRenderer = Class.create({
 
 			// render prev link
 			if (curPageIdx > 0) {
-				linkHtml += this.renderPageLink(curPageIdx - 1, "Prev");
+				linkHtml += this.renderPageLink(curPageIdx - 1, "Prev", "elvisPagePrev");
 			} else {
-				linkHtml += '<span class="elvisPageDisabled">Prev</span>';
+				linkHtml += '<span class="elvisPagePrev elvisPageDisabled">Prev</span>';
 			}
 
 			// render page links around current page
 			if (numPages > 1) {
-				var firstPageIdx = Math.max(0, curPageIdx - Math.floor(maxLinks / 2));
-				var lastLink = Math.min(lastPageIdx + 1, firstPageIdx + 9);
-				for (var pageIdx = firstPageIdx; pageIdx < lastLink; pageIdx++) {
+				var pageRangeStart = Math.max(0, Math.min(curPageIdx - Math.floor(this.maxPageLinks / 2), numPages - this.maxPageLinks));
+				var pageRangeEnd = Math.min(lastPageIdx + 1, pageRangeStart + this.maxPageLinks);
+				for (var pageIdx = pageRangeStart; pageIdx < pageRangeEnd; pageIdx++) {
 					if (pageIdx == curPageIdx) {
 						linkHtml += '<span class="elvisPageCurrent">' + (pageIdx + 1) + '</span>';
 					}
@@ -861,15 +864,18 @@ var HitRenderer = Class.create({
 
 			// render next link
 			if (curPageIdx < lastPageIdx) {
-				linkHtml += this.renderPageLink(curPageIdx + 1, "Next");
+				linkHtml += this.renderPageLink(curPageIdx + 1, "Next", "elvisPageNext");
 			} else {
-				linkHtml += '<span class="elvisPageDisabled">Next</span>';
+				linkHtml += '<span class="elvisPageNext elvisPageDisabled">Next</span>';
 			}
 
 			// update html
 			var targetElement = $(this.pageTarget);
 			targetElement.update('');
-			targetElement.update('<div class="elvisPager">' + linkHtml + '</div>');
+			
+			if (numPages > 1) {
+				targetElement.update('<div class="elvisPager">' + linkHtml + '</div>');
+			}
 
 			// add event handlers
 			var elements = targetElement.select("a");
@@ -893,10 +899,11 @@ var HitRenderer = Class.create({
 			*/
 		}
 	},
-	renderPageLink: function(pageIdx, label) {
-		return '<a href="#" onclick="return (false)" rel="#{rel}">#{label}</a>'.interpolate({
+	renderPageLink: function(pageIdx, label, className) {
+		return '<a href="#" onclick="return (false)" rel="#{rel}"#{classAttr}>#{label}</a>'.interpolate({
 			rel: pageIdx,
-			label: label
+			label: label,
+			classAttr: (className != undefined ? ' class="'+className+'"' : '')
 		});
 	}
 });
@@ -1143,23 +1150,25 @@ var PreviewLightbox = Class.create({
 		*/
 
 		var template = '<div id="elvisPreviewOverlay"></div>'
-		+ '<div id="elvisPreview" style="display: none;"><div id="elvisPreviewWrapper"><div id="elvisPreviewCell">'
-		+ '<div id="elvisPreviewBox" style="visibility: hidden;"></div>'
-		+ '</div><a id="elvisPreviewClose" href="#" onclick="return (false)"/>&nbsp;</a></div>';
+		+ '<div id="elvisPreview" style="display: none;"><div id="elvisPreviewWrapper">'
+			+ '<div id="elvisPreviewCell"><div id="elvisPreviewBox" style="visibility: hidden;"></div></div>'
+			+ '<a id="elvisPreviewClose" href="#" onclick="return (false)">&nbsp;</a>'
+			+ '<a id="elvisPreviewPrev" href="#" onclick="return (false)">&nbsp;</a>'
+			+ '<a id="elvisPreviewNext" href="#" onclick="return (false)">&nbsp;</a>'
+		+ '</div></div>';
 
 		$$("body")[0].insert(template);
 
-		$("elvisPreviewCell").observe("click", function(event) {
-			if (event.pointerX() > document.viewport.getWidth() / 2) {
-				this.next();
-			}
-			else {
-				this.prev();
-			}
-		}.bind(this));
-
 		$("elvisPreviewClose").observe("click", function(event) {
 			this.close();
+		}.bind(this));
+		
+		$("elvisPreviewPrev").observe("click", function(event) {
+			this.prev();
+		}.bind(this));
+		
+		$("elvisPreviewNext").observe("click", function(event) {
+			this.next();
 		}.bind(this));
 
 		Event.observe(document.onresize ? document: window, "resize", function() {

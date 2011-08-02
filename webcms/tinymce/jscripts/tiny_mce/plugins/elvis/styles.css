@@ -31,7 +31,7 @@ html, body {
 
 body {
 	font-family: Verdana, Geneva, sans-serif;
-	background: url("img/header_bg.png") repeat-x;
+	background: url("resources/header_bg.png") repeat-x;
 	font-size: 12px;
 }
 
@@ -107,7 +107,7 @@ body {
 	right: 0px;
 	bottom: 48px;
 	overflow: auto;
-	background: url("img/result_bg.png") repeat-x #fafafa;
+	background: url(resources/result_bg.png) repeat-x #fafafa;
 	border-bottom: thin solid #999;
 }
 .hasSelection #resultContainer {
@@ -161,7 +161,7 @@ body {
 	height: 22px;
 	width: 74px;
 	display: inline-block;
-	background: url('img/button.png') center no-repeat;
+	background: url('resources/button_off.png') center no-repeat;
 	text-align: center;
 	font-size: 12px;
 	line-height: 22px;
@@ -171,7 +171,7 @@ body {
 	cursor: default;
 }
 .button:hover {
-	background: url('img/button_hilite.png') center no-repeat;
+	background: url('resources/button_on.png') center no-repeat;
 }
 .insertSettings {
 	display: none;

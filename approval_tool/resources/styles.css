@@ -178,6 +178,12 @@ header form label {
 	text-align: center;
 }
 
+#pageControls {
+	position: absolute;
+	top: 62px;
+	right: 256px;
+}
+
 #sizeControls {
 	position: absolute;
 	top: 62px;
@@ -261,6 +267,13 @@ Custom styling for items rendered by elvis HitRenderer
 }
 .elvisSmall .hitOverlay img {
 	max-height: 12px;
+}
+
+.elvisPager a {
+	color: #BBB;
+}
+.elvisPager a:hover, .elvisPageCurrent {
+	color: #000;
 }
 
 .elvisRenderSize a {
