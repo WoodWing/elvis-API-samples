@@ -20,6 +20,11 @@ To use the samples on your own Elvis server, place them in the "<config>/html_pu
 Some of the samples auto-login using the 'guest' user. You will have to either change that, or enable the guest user in "<config>/internal-users.properties.txt" and setup appropriate permissions for that user in Elvis.
 
 
+jQuery
+--------
+All API samples are now based on the jQuery javascript library. The old 'prototype-js' based samples are still available in the [prototype-js branch](https://github.com/dutchsoftware/elvis-API-samples/tree/prototype-js).
+
+
 API Documentation
 --------
 Documentation for the Elvis API is available at: [https://elvis.tenderapp.com/kb](https://elvis.tenderapp.com/kb/api)
