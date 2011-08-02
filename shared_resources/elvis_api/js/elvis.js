@@ -149,19 +149,23 @@ var ElvisAPI = Class.create({
 				//password: password
 				cred: (username + ":" + password).base64Encode()
 			},
-			onSuccess: function(response) {
-				var loginResponse = response.responseJSON;
-				if (loginResponse.loginSuccess) {
-					this.userProfile = loginResponse.userProfile;
-
-					successHandler(loginResponse);
-				} else {
-					alert(loginResponse.loginFaultMessage);
-				}
-			}.bind(this),
-			onFailure: function(response) {
-				alert('Unable to authenticate, cause: ' + response.status + ' ' + response.statusText);
-			}
+			onComplete: function(response) {
+				this._handlePossibleFailure(response,
+					function(loginResponse) {
+						if (loginResponse.loginSuccess) {
+							this.userProfile = loginResponse.userProfile;
+		
+							if (successHandler) {
+								successHandler(loginResponse);
+							}
+						} else {
+							alert(loginResponse.loginFaultMessage);
+						}
+					}.bind(this),
+					function(response, info) {
+						alert('Unable to authenticate, cause: ' + info.errorcode + ' ' + info.message);
+					}).bind(this);
+			}.bind(this)
 		});
 	},
 
@@ -193,10 +197,9 @@ var ElvisAPI = Class.create({
 		{
 			method: "post",
 			parameters: _param,
-			onSuccess: function(response) {
-				callbackHandler(response.responseJSON);
-			},
-			onFailure: this._onFailure.bind(this)
+			onComplete: function(response) {
+				this._handlePossibleFailure(response, callbackHandler);
+			}.bind(this)
 		});
 	},
 
@@ -216,10 +219,9 @@ var ElvisAPI = Class.create({
 		{
 			method: "post",
 			parameters: _param,
-			onSuccess: function(transport) {
-				callbackHandler(transport.responseJSON);
-			},
-			onFailure: this._onFailure.bind(this)
+			onComplete: function(response) {
+				this._handlePossibleFailure(response, callbackHandler);
+			}.bind(this)
 		});
 	},
 
@@ -231,13 +233,34 @@ var ElvisAPI = Class.create({
 		{
 			method: "post",
 			parameters: metadata,
-			onFailure: this._onFailure.bind(this)
+			onComplete: function(response) {
+				this._handlePossibleFailure(response);
+			}.bind(this)
 		});
 	},
 
-	_onFailure: function(response) {
+	_handlePossibleFailure: function(response, successCallbackHandler, failureCallbackHandler) {
+		if (!failureCallbackHandler) {
+			failureCallbackHandler = this._onFailure.bind(this);
+		}
+	
+		// Support both elvis 2.5 and 2.6 cross-domain error response formats
+		var info = (response.responseJSON && response.responseJSON.errorcode)
+			? response.responseJSON
+			: {errorcode: response.status, message: response.statusText};
+		
+		if (!info.errorcode || (info.errorcode >= 200 && info.errorcode < 300)) {
+			if (successCallbackHandler) {
+				successCallbackHandler(response.responseJSON);
+			}
+		} else {
+			failureCallbackHandler(response, info);
+		}
+	},
+
+	_onFailure: function(response, info) {
 		// Check for 401 Unauthorized
-		if (response.status == 401) {
+		if (info.errorcode == 401) {
 
 			if (this._loginPage) {
 				// Show login page
@@ -268,7 +291,7 @@ var ElvisAPI = Class.create({
 		}
 
 		// Fallback: show error message
-		alert('Server call failed, cause: ' + response.status + ' ' + response.statusText);
+		alert('Server call failed, cause: ' + info.errorcode + ' ' + info.message);
 	}
 
 });
