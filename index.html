@@ -25,7 +25,7 @@ THE SOFTWARE.
 
 -->
 <head>
-	<title>elvis API samples</title>
+	<title>Elvis API samples</title>
 	<style type="text/css">
 	
 	body {
@@ -87,24 +87,75 @@ THE SOFTWARE.
 	</style>
 </head>
 <body>
-<div class="backdrop">elvis<br/>Open Source<br/>API Samples</div>
+<div class="backdrop">Elvis<br/>Open Source<br/>API Samples</div>
 <div id="wrapper">
-	<a href="http://www.elvisready.com"><img class="logo" src="shared_resources/elvis_api/images/elvis_on_white_trans_reflection_160x90.png"/></a>
+	<a href="http://www.elvisdam.com"><img class="logo" src="${pluginsBaseRootUrl}/web.shared/elvis_api/images/elvis_on_white_trans_reflection_160x90.png"/></a>
 	<dl>
 		<dt><a href="approval_tool">Approval tool - Collection viewer</a></dt>
 		<dd>A lightweight interface to allow the people in an editorial meeting to view collections of material on for example their iPad and decide what to use in the next edition.<br>
 			<br>
-			<strong>Tech:<br>
-			</strong>
+			<strong>Tech:</strong><br>
 			<ul>
-			<li>Demonstrates how to update metadata, for example to update a status, change a rating or enter comments.</li>
-			<li>Incorporates dynamic thumbnail rendering.</li>
-			<li>Full-screen preview lightbox that supports swipe gestures on mobile devices.</li>
-			<li>Demonstrates and how to search and display the contents of a collection.</li>
-			<li>Shows how to use a  login page for your custom interface.</li>
+				<li>Demonstrates how to update metadata, for example to update a status, change a rating or enter comments.</li>
+				<li>Incorporates dynamic thumbnail rendering.</li>
+				<li>Full-screen preview lightbox that supports swipe gestures on mobile devices.</li>
+				<li>Demonstrates and how to search and display the contents of a collection.</li>
+				<li>Shows how to use a  login page for your custom interface.</li>
 		</ul>
 		</dd>
-	
+		
+		<dt><a href="webcms">Web CMS Integration</a></dt>
+		<dd>Insert media into your web cms directly from Elvis. Based on TinyMCE, a WYSIWYG html editor used by most web cms systems. Plugins for Wordpress and Drupal are available ready-to-use.<br>
+			<br>
+			<strong>Tech:</strong><br>
+			<ul>
+				<li>Based on TinyMCE so it is easy to integrate into your web cms.</li>
+				<li>Allows inserting images, videos and text.</li>
+				<li>Shows how to use the selection provided by the HitRenderer.</li>
+				<li>Shows how to use the 'column tree' folder browser to navigate files in Elvis.</li>
+				<li>Show previews by clicking a (+) icon or by double-click, since single-click is used to select items.</li>
+			</ul>
+		</dd>
+		
+		<!--
+		<dt><a href="usage_report">Photo usage report</a></dt>
+		<dd>A common question for publishers: "Which photos were used in the last issue?". In most cases, license costs for used photos have to be calculated by hand. No longer with Elvis, since it automatically creates relations between archived InDesign files and used photos.<br><br>This sample report displays all the photos from the latest issues.<br>
+			<br>
+			<strong>Tech:</strong><br>
+			<ul>
+				<li>Nested searches</li>
+				<li>Custom rendering of results</li>
+				<li>Total price calculation</li>
+				<li>Easy to customize to integrate license rules that you have with your photo suppliers</li>
+			</ul>
+		</dd>
+		-->
+		
+		<dt><a href="upload_portal">Upload portal - DAM tube</a></dt>
+		<dd>Allows people to upload videos and photos. The welcome page shows the latest uploaded and highest rated material.<br>
+			<br>
+			<strong>Tech:</strong><br>
+			<ul>
+				<li>Shows how to render a tag cloud from Elvis facet data.</li>
+				<li>Demostrates how to upload content directly from your web page into Elvis.</li>
+				<li>Supports HTML5 multi-file upload and drag-n-drop.</li>
+				<li>Uses auto-login  so all visitors are  authenticated using a guest account.</li>
+			</ul>
+		</dd>
+		
+		<dt><a href="syndication_site">Syndication site - DAM photo</a></dt>
+		<dd>Image and video oriented distribution or 'stock photo' site. Allows searching, filtering, previewing and buying material.<br>
+			<br>
+			<strong>Tech:</strong><br>
+			<ul>
+				<li>Demonstrates how to filter a search with various facets.</li>
+				<li>Uses an off-the-shelf jQuery based lightbox to display previews, supporting both images and videos.</li>
+				<li>Shows how to use result paging.</li>
+				<li>Extends the HitRenderer to display custom buttons below the thumbnails.</li>
+				<li>Uses auto-login  so all visitors are  authenticated using a guest account.</li>
+			</ul>
+		</dd>
+		
 		<dt><a href="live_feed">Live feed</a></dt>
 		<dd>For use on wall-mounted plasma's in publishing environments to show new material that is being received or to display what is being worked on at the moment.<br>
 			<br>
@@ -114,47 +165,23 @@ THE SOFTWARE.
 				<li>Grey out thumbnails by date, giving a visual indication of the age of items in the feed.</li>
 			</ul>
 		</dd>
-		<dt><a href="syndication_site">Syndication site - DAM photo</a></dt>
-		<dd>Image and video oriented distribution or 'stock photo' site. Allows searching, filtering, previewing and buying material.<br>
-			<br>
-			<strong>Tech:</strong><strong><br>
-			</strong>
-			<ul>
-			<li>Demonstrates how to filter a search with various facets.</li>
-			<li>Uses an off-the-shelf jquery based lightbox to display previews, supporting both images and videos.</li>
-			<li>Shows how to use result paging.</li>
-			<li>Extends the HitRenderer to display custom buttons below the thumbnails.</li>
-			<li>Uses auto-login  so all visitors are  authenticated using a guest account.</li>
-			</ul>
-		</dd>
-		<dt><a href="upload_portal">Upload portal - DAM tube</a></dt>
-		<dd>Allows people to upload videos and photos. The welcome page shows the latest uploaded and highest rated material.<br>
-			<br>
-			<strong>Tech:<br>
-			</strong>
-			<ul>
-			<li>Shows how to render a tag cloud from elvis facet data.</li>
-			<li>Demostrates how to upload content directly from your web page into elvis.</li>
-			<li>Uses auto-login  so all visitors are  authenticated using a guest account.</li>
-			</ul>
-		</dd>
 	</dl>
 	<div class="howto">
 		<p>These samples are open-source and can be downloaded from <a href="https://github.com/dutchsoftware/elvis-API-samples">github</a></p>
 		
 		<p>To install and customize the samples on your own server, view the instructions in the <a href="README.md">readme</a>.</p>
 		
-		<p>elvis is a digital asset management system. It's main features:</p>
+		<p>Elvis is a digital asset management system. It's main features:</p>
 		
 		<ul>
-		<li>Intuitive user interface</li>
-		<li>Easy collaboration and sharing</li>
-		<li>High performance search engine</li>
-		<li>Scalable processing engine to support images, video, office documents, Adobe CS files, PDF, XML and more.</li>
-		<li>Powerful metadata based permission rules</li>
+			<li>Intuitive user interface</li>
+			<li>Easy collaboration and sharing</li>
+			<li>High performance search engine</li>
+			<li>Scalable processing engine to support images, video, office documents, Adobe CS files, PDF, XML and more.</li>
+			<li>Powerful metadata based permission rules</li>
 		</ul>
 		
-		<p>For more information, go to: <a href="http://www.elvisready.com">www.elvisready.com</a></p>
+		<p>For more information, go to: <a href="http://www.elvisdam.com">www.elvisdam.com</a></p>
 	</div>
 </div>
 </body>

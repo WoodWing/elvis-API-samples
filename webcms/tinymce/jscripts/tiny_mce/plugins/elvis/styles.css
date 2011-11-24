@@ -40,7 +40,6 @@ body {
 	margin: 0px;
 	padding: 0px;
 	width: 100%;
-	background: transparent url(header_bg.png) repeat-x;
 }
 
 .search {
@@ -120,6 +119,8 @@ body {
 	left: 50%;
 	margin-left: -16px;
 	margin-top: -16px;
+	width: 30px;
+	height: 30px;
 }
 
 .footer {

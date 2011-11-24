@@ -26,19 +26,120 @@ THE SOFTWARE.
 -->
 <head>
 	<title>DAMtube: upload</title>
-	<link href="../shared_resources/prettyPhoto/css/prettyPhoto.css" rel="stylesheet" type="text/css" media="screen" title="prettyPhoto main stylesheet" charset="utf-8" />
-	<link href="../shared_resources/elvis_api/css/elvis.css" rel="stylesheet" type="text/css"/>
-	<link href="resources/styles.css" rel="stylesheet" type="text/css"/>
-	
-	<script src="../shared_resources/jquery-1.6.2.min.js" type="text/javascript"></script>
-	<script src="../shared_resources/jquery.class.min.js" type="text/javascript"></script>
-	<script src="../shared_resources/jquery.prettyPhoto.js" type="text/javascript" charset="utf-8"></script>
-
-	<script src="../shared_resources/elvis_api/js/jquery.elvis.js" type="text/javascript"></script>
+	<script src="${pluginsBaseRootUrl}/web.shared/jquery.js" type="text/javascript"></script>
+	<script src="${pluginsBaseRootUrl}/web.shared/jquery.class.js" type="text/javascript"></script>
+	<script src="${pluginsBaseRootUrl}/web.shared/jquery.cookie.js" type="text/javascript"></script>
+	<link  href="${pluginsBaseRootUrl}/web.shared/elvis_api/css/elvis.css" rel="stylesheet" type="text/css"/>
+	<script src="${pluginsBaseRootUrl}/web.shared/elvis_api/js/jquery.elvis.js" type="text/javascript"></script>
+	<link  href="resources/jquery-ui-1.8.16.custom.css" rel="stylesheet" type="text/css"/>
+	<script src="resources/jquery-ui-1.8.16.custom.min.js" type="text/javascript"></script>
+	<script src="resources/jquery.iframe-transport.js" type="text/javascript"></script>
+	<script src="resources/jquery.fileupload.js" type="text/javascript"></script>
+	<link  href="resources/styles.css" rel="stylesheet" type="text/css"/>
 	<script type="text/javascript">
 
-$(document).ready( function() {
-	$("#nextUrl").val( ("" + window.location).replace("upload.html", $("#nextUrl").val()) );
+$(function () {
+    
+    //fileupload
+    var count = {
+        success: 0,
+        failed: 0,
+        fnames: []
+    }
+    var infoTimer, dropTimer;
+    $("#fileupload-form").bind("submit", function(){ return false; });
+    $("input.submit").bind("click", function(){
+        $("div.file-list-box div.item").each(function(){
+            var data = $(this).data("data");
+            if (data && data.submit && !data.jqXHR) {
+                data.jqXHR = data.submit();
+                $(this).removeData("data");
+            } else {
+                $(this).fadeOut(function(){
+                    $(this).remove();
+                });
+            }
+        });
+    });
+    $("#fileupload").fileupload({
+        dataType: "json",
+        add: function (e, data) {
+            $("div.upload-info-box").hide();
+            count.success = 0;
+            count.failed = 0;
+            count.fnames = [];
+            window.clearTimeout(infoTimer);
+            
+            var filename = [];
+            $.each(data.files, function(index, file){
+                filename[filename.length] = file.name;
+            });
+            var box = $("<div/>").addClass("progress-text-box").addClass("item").append($("<span/>").addClass("text").text(filename.join(", ")));
+            $("div.file-list-box").append(box);
+            data.context = box;
+            data.context.progressbar({value: 0});
+            box.data("data", data);
+        },
+        send: function (e, data) {
+            if (data.context.is("div.progress-text-box"))
+                data.context.progressbar({value: 0});
+        },
+        progress: function (e, data) {
+            var progress = parseInt(data.loaded / data.total * 100, 10);
+            if (data.context.is("div.progress-text-box"))
+                data.context.progressbar({value: progress});
+        },
+        progressall: function (e, data) {
+            //
+        },
+        done: function (e, data) {
+            if (data.result && ! data.result.errorcode) {
+                count.success++;
+                if (data.context.is("div.progress-text-box")) {
+                    data.context.fadeOut(function(){
+                        $(this).remove();
+                    });
+                }
+            } else {
+                count.failed++;
+                $.each(data.files, function(index, file){
+                    count.fnames[count.fnames.length] = file.name;
+                });
+                if (data.context.is("div.progress-text-box")) {
+                    data.context.addClass("progress-text-message-box").find("span.text").text(data.result.message ? data.result.message : "Error");
+                }
+            }
+        },
+        fail: function (e, data) {
+            count.failed++;
+            $.each(data.files, function(index, file){
+                count.fnames[count.fnames.length] = file.name;
+            });
+            if (data.context.is("div.progress-text-box")) {
+                data.context.addClass("progress-text-message-box").find("span.text").text("Error");
+            }
+        },
+        stop: function (e, data) {
+            var m = "Uploaded: " + count.success + " file(s).";
+            if (count.failed > 0)
+                m += " Error files upload: " + count.failed + " (" + count.fnames.join(", ") + ")";
+            else
+                infoTimer = setTimeout(function(){$("div.upload-info-box").fadeOut();}, 30000);
+            setTimeout(function(){
+                $("div.upload-info-box").html(m).fadeIn();
+            }, 800);
+        },
+        dragover: function(e) {
+            window.clearTimeout(dropTimer);
+            $("#dropIndicator").addClass("dropMarker");
+            dropTimer = window.setTimeout(function(){$("#dropIndicator").removeClass("dropMarker");}, 2000);
+        },
+        drop: function() {
+            window.clearTimeout(dropTimer);
+            $("#dropIndicator").removeClass("dropMarker");
+        }
+    });
+    
 });
 
 	</script>
@@ -53,13 +154,16 @@ $(document).ready( function() {
 		<div id="pages">
 
 			<div id="upload">
-				<form action="/services/create" method="post" enctype="multipart/form-data">
-					<input type="hidden" name="nextUrl" id="nextUrl" value="index.html" />
+				<form action="/services/create" method="post" enctype="multipart/form-data" id="fileupload-form">
 					<input type="hidden" name="folderPath" value="/DAMtube" />
 					
-					<div class="uploadbox">
-						<h2>Select a file to upload</h2>
-						<input id="fileupload" type="file" name="Filedata" />
+					<div class="uploadbox uploadbox-multi">
+						<div id="dropIndicator">
+							<h2>Drop or select files to upload</h2>
+							<input id="fileupload" type="file" name="Filedata" multiple="multiple"/>
+							<div class="file-list-box"></div>
+							<div class="upload-info-box"></div>
+						</div>
 					</div>
 
 					<div class="meta">
@@ -89,7 +193,7 @@ $(document).ready( function() {
 							-->
 						</table>
 						<div class="submit">
-							<input id="upload" type="submit" value="Upload" />
+							<input id="upload" type="submit" value="Upload" class="submit"/>
 						</div>
 					</div>
 				</form>

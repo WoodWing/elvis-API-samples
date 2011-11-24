@@ -181,11 +181,9 @@ h2 {
 
 .uploadbox {
 	color: #D9D9D9;
-	background: #b1b1b1 url(upload-light-bg.png) repeat-x scroll center top;
+	background: #3C3C3C url(upload-light-bg.png) repeat-x scroll center top;
 	float: left;
 	width: 400px;
-	height: 175px;
-	padding-top: 115px;
     text-align: center;
 	border: #929292 thin inset;
 	border-bottom-left-radius: 15px 15px;
@@ -201,6 +199,9 @@ h2 {
 	margin-bottom: 20px;
 	text-align: center;
 }
+
+.uploadbox-multi div.progress-box { margin: 10px; }
+.uploadbox-multi div.upload-info-box { margin: 10px; }
 
 .meta {
    	display: inline-block;
@@ -227,6 +228,24 @@ h2 {
 	text-align: center;
 }
 
+#dropIndicator {
+	width: 380px;
+	min-height: 165px;
+	padding-top: 105px;
+	margin: 6px;
+	border: transparent 4px solid;
+	border-bottom-left-radius: 15px 15px;
+	border-bottom-right-radius: 15px 15px;
+	border-top-left-radius: 15px 15px;
+	-moz-border-radius-bottomleft:15px;
+	-moz-border-radius-bottomright:15px;
+	-moz-border-radius-topleft:15px;
+	padding-bottom: 15px;
+}
+#dropIndicator.dropMarker {
+	border: #DDD 4px dashed;
+}
+
 .elvisCopyright {
 	position: fixed;
 	background-color: #f3f3f5;
@@ -234,4 +253,22 @@ h2 {
 	padding: 2px;
 	bottom: 0px;
 	right: 0px;
+}
+
+.vhidden { visibility: hidden; }
+#header div.progress-text-box { width: 232px; }
+#header div.progress-text-box span.text { width: 222px; }
+#header div.upload-info-box { text-align: center; }
+
+div.file-list-box { clear: both; padding-top: 5px; }
+div.file-list-box p { padding: 0; margin: 5px 0; }
+
+div.progress-text-box { width: 350px; margin: 8px 0 0 14px; position: relative; min-height: 2em; }
+div.progress-text-box span.text { display: block; position: absolute; top: 0; left: 5px; width: 390px; overflow: hidden; line-height: 2em; height: 2em; overflow: hidden; }
+body div.progress-text-message-box { height: auto; }
+body div.progress-text-message-box div { display: none !important; }
+body div.progress-text-message-box span.text { position: static; height: auto; line-height: 14px; padding: 5px; }
+
+.ui-widget-header {
+	border: 1px solid #63B7EC; background: #A5D0EC;
 }

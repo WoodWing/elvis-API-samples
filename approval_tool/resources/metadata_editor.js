@@ -105,7 +105,6 @@ var MetadataEditor = $.Class({
 	renderThumb: function() {
 		// TODO allow setting this renderer instead of pre-configuring it
 		var hitRenderer = new HitRenderer();
-		hitRenderer.sharedResources = "../shared_resources/elvis_api";
 		hitRenderer.hitsTarget = "#elvisMetadataEditorThumb";
 		hitRenderer.squareThumbs = true;
 		hitRenderer.metadataToDisplay = [];

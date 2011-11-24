@@ -55,7 +55,7 @@ div.elvisHitBox
 				div.elvisContainerEmpty
 
 	div.elvisMetadata
-		
+
 		[for each metadataToDisplay]
 		div title=...
 			...value...
@@ -310,7 +310,7 @@ div.elvisHitBox
 	display: inline-block;
 	vertical-align: top; /* Hack to fix jumpy vertical align in webkit */
 	overflow: hidden;
-	margin: 0px 1px 1px 0px;
+	margin: 1px 0px 0px 1px;
 }
 .elvisContainerThumb
 {
@@ -401,6 +401,7 @@ div.elvisHitBox
 
 .elvisRenderSize a.small {
 	background-image: url("../images/thumb_size_small.png");
+	margin-left: 0;
 }
 .elvisRenderSize a.medium {
 	background-image: url("../images/thumb_size_medium.png");
@@ -422,17 +423,17 @@ ul.elvisFacet {
 {
 	background-color: #FFFFFF;
 	color: #424242;
- 	text-decoration: none;
+	text-decoration: none;
 	display: block;
 	border-style: solid;
- 	padding: 3px;
- 	padding-left: 8px;
+	padding: 3px;
+	padding-left: 8px;
 	margin-bottom: 4px;
 	-moz-border-radius: 9px;
 	border-radius: 9px;
- 	border: none;
+	border: none;
 	text-align: left;
-	font: 12px;
+	font-size: 12px;
 }
 
 .elvisFacet .count
@@ -455,7 +456,8 @@ ul.elvisFacet {
 	margin-right: -1px;
 }
 
-.elvisFacet a:hover, .elvisFacet .selected a {
+.elvisFacet a:hover,
+.elvisFacet .selected a {
 	background-color: #97A8C7;
 	color: #FFFFFF;
 }
@@ -527,7 +529,7 @@ div.elvisColumnTreeList {
 	height: 100%;
 	background: #000000;
 	background: rgba(0, 0, 0, 0.85);
-	border: 0 none #000000;
+	border: 0 none;
 	z-index: 4999;
 }
 #elvisPreview
@@ -540,12 +542,6 @@ div.elvisColumnTreeList {
 	width: 100%;
 	height: 100%;
 	z-index: 5000;
-}
-#elvisPreview.loading
-{
-	background-image: url("../images/ajax-loader.gif");
-	background-repeat: no-repeat;
-	background-position: center;
 }
 #elvisPreviewClose {
 	overflow: hidden;
@@ -621,13 +617,16 @@ div.elvisColumnTreeList {
 }
 .elvisPreviewText
 {
-	max-width: 800px;
-	text-align: left;
+	max-width: 810px;
+	border: none;
 	background: #FAFAFA;
 	color: #000000;
+	text-align: left;
+	/*
 	-moz-word-wrap: break-word;
 	word-wrap: break-word;
 	padding: 30px;
+	*/
 }
 #elvisPreviewObject.elvisPreviewNotAvailable {
 	display: table-cell;
@@ -643,11 +642,20 @@ div.elvisColumnTreeList {
 
 
 
+.elvisThrobber
+{
+	background-image: url("../images/ajax-loader.gif");
+	background-repeat: no-repeat;
+	background-position: center;
+}
+
+
+
 .elvisCopyright {
 	position: absolute;
 	bottom: 2px;
 	right: 2px;
-	font-size: 10px;	
+	font-size: 10px;
 }
 .elvisCopyright a, .elvisCopyright a:visited, .elvisCopyright a:active {
 	color: #3399CC;

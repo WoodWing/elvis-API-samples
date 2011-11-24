@@ -21,14 +21,25 @@
  * THE SOFTWARE.
  */
 
-///////////////////////////////////////////////////////////////////////////////
-//
-// This file defines useful 'classes' that can be used with
-// the Elvis API. For more info see http://www.elvisdam.com
-//
-// Depends on jQuery. Make sure jQuery is loaded BEFORE this file.
-//
-///////////////////////////////////////////////////////////////////////////////
+/*------------------------------------------------------------------------------
+
+Depends on:
+
+	jquery.js (1.6 or higher)
+	jquery.class.js
+	jquery.cookie.js
+
+make sure these are loaded BEFORE this file.
+
+--------------------------------------------------------------------------------
+
+This file defines useful 'classes' that can be used with
+the Elvis API. For more info see http://www.elvisdam.com
+
+Documentation can be found at:
+https://elvis.tenderapp.com/kb/api/javascript-library-introduction
+
+------------------------------------------------------------------------------*/
 
 /**
  * ElvisAPI
@@ -43,16 +54,18 @@ var ElvisAPI = $.Class({
 
 		this._loginPage = null;
 
+		this._loginHandler = null;
+
 		this._username = null;
 		this._password = null;
 		this._autoLoginInProgress = false;
 		this._requestsToRepeatAfterLogin = [];
-
-		this.userProfile = null;
+		this._sessionId = $.cookie('elvisSessionId');
 	},
 
 	useAutoLogin: function(username, password) {
 		this._loginPage = null;
+		this._loginHandler = null;
 
 		this._username = username;
 		this._password = password;
@@ -61,14 +74,23 @@ var ElvisAPI = $.Class({
 	useLoginPage: function(url) {
 		this._username = null;
 		this._password = null;
+		this._loginHandler = null;
 
 		this._loginPage = url;
 	},
 
+	useLoginHandler: function(loginHandler) {
+		this._loginPage = null;
+		this._username = null;
+		this._password = null;
+
+		this._loginHandler = loginHandler;
+	},
+
 	login: function(username, password, successHandler) {
 		var self = this;
-		
-        this._doAjax({
+
+		this._doAjax({
 			url: this._serverUrl + "/services/login",
 			data: {
 				//username: username,
@@ -77,24 +99,49 @@ var ElvisAPI = $.Class({
 			},
 			success: function(data) {
 				if (data.loginSuccess) {
-					this.userProfile = data.userProfile;
-		
-							if (successHandler) {
+					self._sessionId = data.sessionId;
+					$.cookie('elvisSessionId', self._sessionId);
+
+					if (successHandler) {
 						successHandler(data);
-							}
-						} else {
+					}
+				} else {
 					alert(data.loginFaultMessage);
-						}
+				}
 			},
 			// Overwrite default error handling to prevent attempt to auto-login
-			onFailure: function(request, errorInfo) {
-				alert('Unable to authenticate, cause: ' + errorInfo.errorcode + ' ' + errorInfo.message);
+			error: function(jqXHR, textStatus, errorThrown) {
+				alert('Unable to authenticate, cause: ' + jqXHR.status + ' ' + jqXHR.statusText);
 			}
 		});
 	},
 
-	logout: function(nextUrl) {
-		window.location = this._serverUrl + "/logout?logoutSuccessUrl=" + encodeURIComponent(nextUrl);
+	getProfile: function(successHandler) {
+		this._doAjax({
+			url: this._serverUrl + "/services/profile",
+			success: function(data) {
+				successHandler(data);
+			}
+		});
+	},
+
+	logout: function(arg) {
+		if (typeof arg == 'function') {
+			var callbackHandler = arg;
+			this._doAjax({
+				url: this._serverUrl + "/services/logout",
+				success: function(data) {
+					callbackHandler();
+				}
+			});
+		}
+		else if (arg != undefined && typeof arg == 'string') {
+			var nextUrl = arg;
+			window.location = this._serverUrl + "/logout?logoutSuccessUrl=" + encodeURIComponent(nextUrl);
+		}
+		else {
+			window.location = this._serverUrl + "/logout";
+		}
 	},
 
 	search: function(params, callbackHandler) {
@@ -113,10 +160,27 @@ var ElvisAPI = $.Class({
 		// Overwrite and extend defaults with actual params
 		_param = $.extend(_param, params);
 
-        this._doAjax({
-        	url: this._serverUrl + "/services/search",
-            data: _param,
-            success: function(data) {
+		var self = this;
+
+		this._doAjax({
+			url: this._serverUrl + "/services/search",
+			data: _param,
+			success: function(data) {
+				if (self._sessionId) {
+					for (var i = 0; i < data.hits.length; i++) {
+						var hit = data.hits[i];
+						if (hit.thumbnailUrl) {
+							hit.thumbnailUrl = self._appendSessionId(hit.thumbnailUrl);
+						}
+						if (hit.previewUrl) {
+							hit.previewUrl = self._appendSessionId(hit.previewUrl);
+						}
+						if (hit.originalUrl) {
+							hit.originalUrl = self._appendSessionId(hit.originalUrl);
+						}
+					}
+				}
+
 				callbackHandler(data);
 			}
 		});
@@ -134,48 +198,56 @@ var ElvisAPI = $.Class({
 		// Overwrite and extend defaults with actual paramsalert("test");
 		_param = $.extend(_param, params);
 
-        this._doAjax({
-        	url: this._serverUrl + "/services/browse",
-            data: _param,
-            success: function(data) {
-            	callbackHandler(data);
-            }
+		this._doAjax({
+			url: this._serverUrl + "/services/browse",
+			data: _param,
+			success: function(data) {
+				callbackHandler(data);
+			}
 		});
 	},
 
-	update: function(id, metadata) {
+	update: function(id, metadata, successHandler) {
 		// add id to metadata
 		metadata["id"] = id;
 
-        this._doAjax({
-        	url: this._serverUrl + "/services/update",
-            data: metadata,
-            dataType: "text" // server sends empty response, do not try to parse
-		});
+		var request = {
+			url: this._serverUrl + "/services/update",
+			data: metadata,
+			dataType: "text" // server sends empty response, do not try to parse
+		};
+
+		if (successHandler) {
+			request.success = successHandler;
+		}
+
+		this._doAjax(request);
 	},
 
 	_doAjax: function(request) {
-		var self = this;
-	
+		request.elvisApi = this;
+
 		// Extend ajax request with default error handling
 		if (!request.error) {
-			request.error = function(jqXHR, textStatus, errorThrown) {
-				self._onFailure(request, {errorcode: jqXHR.status, message: jqXHR.statusText + ' (' + textStatus + ')'});
-			};
+			request.error = this._onError;
 		}
-	
+
 		// Wrap success handler to provide JSONP error handling by looking for 'errorcode' in response data from elvis
 		var originalSuccessHandler = request.success;
 		request.success = function(data, textStatus, jqXHR) {
 			if (!data.errorcode) { // || (data.errorcode >= 200 && data.errorcode < 300)) {
 				if (originalSuccessHandler) {
 					originalSuccessHandler(data, textStatus, jqXHR);
+				}
+			} else {
+				// Error was received in response data, adjust jqXHR status and call error handler
+				jqXHR.status = data.errorcode;
+				jqXHR.statusText = data.message;
+
+				request.error(jqXHR, "error", data.message);
 			}
-		} else {
-				self._onFailure(request, data);
-		}
 		};
-						
+
 		// Configure default ajax settings
 		if (!request.type) {
 			request.type = "POST";
@@ -185,62 +257,139 @@ var ElvisAPI = $.Class({
 		}
 		if (!request.xhrFields) {
 			request.xhrFields = {
-	           withCredentials: true
-	        };
-	    }
-	    
+			   withCredentials: true
+			};
+		}
+
 		// Add unique part to url when using 'get' to prevent caching
 		// not needed with post (which should never be cached)
 		//_param._ = (new Date()).getTime();
-	    
-	    // Execute ajax request
+
+		request.url = this._appendSessionId(request.url);
+
+		// Execute ajax request
 		$.ajax(request);
 	},
 
-	_onFailure: function(request, errorInfo) {
-		if (request.onFailure) {
-			request.onFailure(request, errorInfo);
-			return;
+	_appendSessionId: function(url) {
+		// Add sessionId to url in case cookies don't work
+		if (url && this._sessionId) {
+			// TODO should we remove ;jsessionid=[a-zA-Z0-9-_]+ if is already in the url? could that happen?
+			var idx = url.indexOf("?");
+			if (idx == -1) {
+				url += ";jsessionid=" + this._sessionId;
+			} else {
+				// Put ;jsessionid before querystring, otherwise it doesn't work
+				url = url.substring(0, idx) + ";jsessionid=" + this._sessionId + url.substring(idx);
+			}
 		}
-	        
-		// Check for 401 Unauthorized
-		if (errorInfo.errorcode == 401) {
+		return url;
+	},
 
-			if (this._loginPage) {
+	_onError: function(jqXHR, textStatus, errorThrown) {
+		// 'this' context for this function will be the jquery request object
+		var request = this;
+		var self = request.elvisApi;
+
+		// Check for 401 Unauthorized
+		if (jqXHR.status == 401) {
+			// Use remembered credentials if available
+			// TODO find a secure non-xss hackable method to remember the users credentials
+
+			if (self._loginPage) {
 				// Show login page
-				window.location = this._loginPage;
-				
+				window.location = self._loginPage;
+
 				return;
 			}
 
-			if (this._username && this._password) {
-				var l = this._requestsToRepeatAfterLogin.push(request);
-				if (l == 1) {
-			        var self = this;
-			        
-					// Attempt auto login on first authentication failure
-					this.login(this._username, this._password, function(loginResponse) {
+			// Ajax login attempt, keep original request to repeat after login
+			var l = self._requestsToRepeatAfterLogin.push(request);
+			if (l != 1) {
+				return; // Only attempt login on first failed request
+			}
 
-						// Re-execute original requests after successful authentication
-						var requests = self._requestsToRepeatAfterLogin;
-						self._requestsToRepeatAfterLogin = [];
+			// Handler to re-execute original requests after successful authentication
+			var loginSuccesHandler = function(loginResponse) {
+				var requests = self._requestsToRepeatAfterLogin;
+				self._requestsToRepeatAfterLogin = [];
 
-						for (var i = 0; i < requests.length; i++) {
-							new $.ajax(requests[i]);
-						}
-
-					});
+				for (var i = 0; i < requests.length; i++) {
+					self._retryRequestAfterLogin(requests[i]);
 				}
+			};
 
-				return;
+			if (self._username && self._password) {
+				self.login(self._username, self._password, loginSuccesHandler);
+
+				return; // Don't show alert
+			}
+
+			if (self._loginHandler) {
+				self._loginHandler(loginSuccesHandler);
+
+				return; // Don't show alert
 			}
 		}
 
 		// Fallback: show error message
-		alert('Server call failed, cause: ' + errorInfo.errorcode + ' ' + errorInfo.message);
-	}
+		alert('Server call failed, cause: ' + jqXHR.status + ' ' + jqXHR.statusText);
+	},
 
+	_retryRequestAfterLogin: function(request) {
+		var originalErrorHandler = request.error;
+
+		// Overwrite default error handling to prevent attempt to auto-login
+		request.error = function(jqXHR, textStatus, errorThrown) {
+			if (jqXHR.status == 401) {
+				// Not logged in? But we just did a successful login!
+				// Prevent infinite retry loop in case cross-domain is preventing cookie from being accepted
+				alert('Cross-domain login might have been blocked. Error: ' + jqXHR.status + ' ' + jqXHR.statusText);
+			}
+			else {
+				originalErrorHandler.call(request, jqXHR, textStatus, errorThrown);
+			}
+		};
+
+		request.url = this._appendSessionId(request.url);
+
+		$.ajax(request);
+	}
 });
+
+/**
+ * Utility methods for Elvis plugins.
+ * 
+ * ElvisPlugin.resolveElvisContext()
+ *	resolves elvisContext either from window or parent if running in iframe (for action opened in external browser)
+ * 
+ * ElvisPlugin.queryForSelection(pluginHits)
+ *	returns a "(id:... OR id:... OR id:...)" query to search all hits in an elvisContext selection
+ */ 
+var ElvisPlugin = {
+	resolveElvisContext: function(required) {
+		if (!window.elvisContext && parent && parent.elvisContext) {
+			window.elvisContext = parent.elvisContext;
+		}
+
+		if (window.elvisContext == undefined && (required || required == undefined)) {
+			alert("Unable to resolve elvisContext, this action plugin has to be triggered from Elvis.");
+		}
+
+		return window.elvisContext;
+	},
+	queryForSelection: function(selectedHits) {
+		if (selectedHits.length == 0) {
+			return "";
+		}
+
+		var assetIds = new Array();
+		for (var i = 0; i < selectedHits.length; i++) {
+			assetIds.push(selectedHits[i].id);
+		}
+		return "(id:" + assetIds.join(" OR id:") + ")";
+	}
+}
 
 /**
  * AssetPermissions
@@ -257,7 +406,6 @@ var ElvisAPI = $.Class({
  * C = CREATE
  * D = DELETE
  */
-
 var AssetPermissions = {
 	hasViewPreview: function(hitPermissions) {
 		return hitPermissions && hitPermissions.indexOf('P') != -1;
@@ -274,7 +422,7 @@ var AssetPermissions = {
  *
  * TODO explain how to setup and customize...
 
-// setup path to locate document_*.png images
+// setup path to locate /images/document_*.png
 HitRenderer.resources = "shared_resources/elvis_api";
 
 // Create a hitRenderer instance and configure it
@@ -312,12 +460,6 @@ elvisApi.search(..., myRenderer.render)
 var HitRenderer = $.Class({
 
 	/*
-	 * Static config options
-	 */
-
-	resources: "shared_resources/elvis_api",
-
-	/*
 	 * Constructor
 	 */
 
@@ -337,9 +479,9 @@ var HitRenderer = $.Class({
 
 		this.selectable = false;
 		this.multiselect = false;
-		
+
 		this.selectedHits = [];
-		
+
 		this.maxPageLinks = 9;
 
 		// handler functions
@@ -347,11 +489,29 @@ var HitRenderer = $.Class({
 		this.pageClick = null;
 		this.selectionChange = null;
 
+		// resolve HitRenderer.resources if not explicitly configured
+		if (!HitRenderer.resources) {
+			var elvisApiUrl = "${pluginsBaseRootUrl}/web.shared/elvis_api";
+			if (elvisApiUrl.indexOf("$") == 0) {
+				// variable was not replaced, we are probably not running on an
+				// elvis server, try to lookup url in elvisContext
+				var elvisCtx = ElvisPlugin.resolveElvisContext(false);
+				if (elvisCtx != undefined) {
+					elvisApiUrl = elvisCtx.app.pluginsBaseRootUrl + "/web.shared/elvis_api";
+				}
+				else {
+					// unable to resolve elvisContext, use backward compatible default
+					elvisApiUrl = "shared_resources/elvis_api";
+				}
+			}
+			HitRenderer.resources = elvisApiUrl;
+		}
+
 		// private instance variables
 		this.hits = null;
 
 		// Hack to bind 'public' method so it can be passed as reference
-        var self = this;
+		var self = this;
 		this.render = (function(data) {
 			self.renderInternal(data);
 		});
@@ -429,7 +589,7 @@ var HitRenderer = $.Class({
 			targetElement.html(html);
 
 			this.postProcessTarget(targetElement);
-			
+
 			this.setRenderSize(this.renderSize);
 
 		}
@@ -446,10 +606,10 @@ var HitRenderer = $.Class({
 			}));
 		}
 	},
-	
+
 	setRenderSize: function(size) {
 		var targetElement = $(this.hitsTarget);
-		
+
 		switch (size) {
 		case "medium":
 			targetElement.removeClass("elvisLarge");
@@ -466,12 +626,12 @@ var HitRenderer = $.Class({
 		default:
 			throw("Illegal renderSize: "+size);
 		}
-		
+
 		this.renderSize = size;
-		
+
 		// scale square thumbnails
 		this.rescaleSquareThumbs(targetElement);
-		
+
 		// update controls
 		this.renderSizeControls();
 	},
@@ -599,7 +759,7 @@ var HitRenderer = $.Class({
 		var renderedValue = this.renderValue(hit, field, value);
 
 		return '<div title="{title}" class="{cssClass}">{value}</div>'.replaceParams({
-			title: field + ": " + renderedValue,
+			title: escape(field + ": " + renderedValue),
 			cssClass: this.getValueCssClass(hit, field, value, renderedValue),
 			value: renderedValue
 		});
@@ -685,75 +845,84 @@ var HitRenderer = $.Class({
 	},
 
 	postProcessHit: function(hitElement, hit, index) {
+		var self = this;
+
 		// register click handler
 		if (this.itemClick || this.selectable) {
-            var self = this;
-            $(hitElement).bind("click", function(event){
-                var result = (self.itemClick ? self.itemClick(event, hit, self.hits, index) : true);
+			$(hitElement).bind("click", function(event) {
+				var result = (self.itemClick ? self.itemClick(event, hit, self.hits, index) : true);
 				if (result && self.selectable) {
 					self.toggleSelected(hitElement, hit, index);
 				}
-                
-                event.preventDefault();
-            });
+
+				event.preventDefault();
+			});
+		}
+
+		// register click handler
+		if (this.itemDoubleClick) {
+			$(hitElement).bind("dblclick", function(event) {
+				self.itemDoubleClick(event, hit, self.hits, index);
+
+				event.preventDefault();
+			});
 		}
 	},
 
 	toggleSelected: function(hitElement, hit, index) {
+		var hitElementJQ = $(hitElement);
 		if (this.multiselect) {
 			// remove or add selected hit
-			if (hitElement.hasClassName("selected")) {
-				this.selectedHits = this.selectedHits.without(hit);
+			if (hitElementJQ.hasClass("selected")) {
+				this.selectedHits.splice(jQuery.inArray(hit, this.selectedHits), 1);
 			} else {
 				this.selectedHits.push(hit);
 			}
 		} else {
 			// select this hit
-			if (hitElement.hasClassName("selected")) {
+			if (hitElementJQ.hasClass("selected")) {
 				this.selectedHits = [];
 			} else {
 				this.selectedHits = [hit];
 			}
-			
+
 			// unselect other hits
-			hitElement.siblings().each(function (e) {
-				e.removeClass("selected");
-			});
+			hitElementJQ.siblings().removeClass("selected");
 		}
-		
-		hitElement.toggleClass("selected");
-		
+
+		hitElementJQ.toggleClass("selected");
+
 		if (this.selectionChange) {
 			this.selectionChange(this.selectedHits);
 		}
 	},
 
 	rescaleSquareThumbs: function(targetElement) {
-        var self = this;
+		var self = this;
 		$("img.square", targetElement).each(function(){
-            self.squareFillImage($(this));
-        });
+			self.squareFillImage($(this));
+		});
 	},
 
-    findParent: function(el, str) {
-        return typeof str == 'undefined' ? el.parent() : $(el.parents(str).get(0));
-    },
+	findParent: function(el, str) {
+		return typeof str == 'undefined' ? el.parent() : $(el.parents(str).get(0));
+	},
 
 	squareFillImage: function(img) {
 		var imgElmt = img.context;
 		// wait until image has loaded so we know its dimensions
 		if (imgElmt.naturalWidth == 0 || this.findParent(img, "div.square").context.clientWidth == 0) {
-            var self = this;
-            img.bind("load", function(){
-                self.squareFillImage(img);
-            });
+			var self = this;
+			img.bind("load", function(){
+				self.squareFillImage(img);
+			});
 			return;
 		}
-		
+
 		// get 'square' container size
 		// (a little larger to make sure it really fills its container and avoid anti-alias grey areas)
 		var maxSize = this.findParent(img, "div.square").context.clientWidth + 2;
-		
+
 		// default sizing (for square images)
 		var style = {
 			width: maxSize + "px",
@@ -761,7 +930,7 @@ var HitRenderer = $.Class({
 			left: "-1px",
 			top: "-1px"
 		};
-		
+
 		// adjust scaling for landscape and portrait images
 		if (imgElmt.naturalWidth > imgElmt.naturalHeight) {
 			// landscape (height is smallest)
@@ -778,34 +947,34 @@ var HitRenderer = $.Class({
 			style.height = height + "px";
 			style.top = offset + "px";
 		}
-		
+
 		img.css(style);
 	},
 
 	/*
 	 * Size controls
 	 */
-	
+
 	renderSizeControls: function() {
 		if (this.sizeTarget) {
 			$(this.sizeTarget).html("");
-			
+
 			var sizes = ["small", "medium", "large"];
 			for (var i = 0; i < sizes.length; i++) {
 				var size = sizes[i];
 				var linkElement = $("<a/>").addClass(size + (size == this.renderSize ? " selected" : ""));
 				this.observeSizeControl(linkElement, size);
-				
+
 				$(this.sizeTarget).append(linkElement);
 			}
 		}
 	},
-	
+
 	observeSizeControl: function(linkElement, size) {
-        var self = this;
+		var self = this;
 		linkElement.bind("click", function() {
-            self.setRenderSize(size);
-        });
+			self.setRenderSize(size);
+		});
 	},
 
 	/*
@@ -898,50 +1067,55 @@ var FacetRenderer = $.Class({
 			this._renderInternal(data);
 		};
 	},
-	
+
 	_renderInternal: function(data) {
 		for (var j = 0; j < this.facets.length; j++) {
 			var field = this.facets[j];
-			
-			var target = $("#" + field + this.facetTargetPostfix);
-			if (target == null) {
-				alert('Element with id="' + (field + this.facetTargetPostfix) + '" is missing, it should be declared in the html somewhere');
-			}
-			
-			var targetUL = this._locateOrCreateTargetUL(target, field);
 			var facetValues = data.facets[field];
 
-			var c = facetValues.length;//Math.min(facetValues.length, this.maxValuesToShow);
-			var html = "";
-			for (var i = 0; i < c; i++) {
-				var value = facetValues[i].value;
-				var hitCount = facetValues[i].hitCount;
-
-				var selected = (this._selectedFacets[field] && this._selectedFacets[field][value]);
-
-				html += '<li{classAttr}><a href="#" onclick="return false"><span class="label">{label}</span><span class="count">{hitCount}</span></a></li>'. replaceParams({
-					field: field,
-					label: value,
-					hitCount: hitCount,
-					classAttr: (selected ? ' class="selected"' : '')
-				});
+			var target = $("#" + field + this.facetTargetPostfix);
+			if (target.length == 0) {
+				alert('Element with id="' + (field + this.facetTargetPostfix) + '" is missing, it should be declared in the html');
 			}
-			
-			// Update contents
-			targetUL.html(html);
+
+			var targetUL = this._locateOrCreateTargetUL(target, field);
+
+			// Render facet items
+			this._renderFacet(targetUL, field, facetValues);
 
 			// Register click listeners
-			this._postProcessFacet(targetUL, field, facetValues);
+			this._postProcessFacet(target, field, facetValues);
 
 			// Show or hide if empty
-			if (html != "") {
+			if (facetValues.length != 0) {
 				target.show();
 			} else {
 				target.hide();
 			}
 		}
 	},
-	
+
+	_renderFacet: function(targetUL, field, facetValues) {
+		var c = facetValues.length;//Math.min(facetValues.length, this.maxValuesToShow);
+		var html = "";
+		for (var i = 0; i < c; i++) {
+			var value = facetValues[i].value;
+			var hitCount = facetValues[i].hitCount;
+
+			var selected = (this._selectedFacets[field] && this._selectedFacets[field][value]);
+
+			html += '<li{classAttr}><a href="#" onclick="return false"><span class="label">{label}</span><span class="count">{hitCount}</span></a></li>'. replaceParams({
+				field: field,
+				label: value,
+				hitCount: hitCount,
+				classAttr: (selected ? ' class="selected"' : '')
+			});
+		}
+
+		// Update contents
+		targetUL.html(html);
+	},
+
 	_locateOrCreateTargetUL: function(target, field) {
 		var targetULs = $("ul:first", target);
 		if (targetULs.size() == 0) {
@@ -951,20 +1125,20 @@ var FacetRenderer = $.Class({
 
 		return targetULs;
 	},
-	
-	_postProcessFacet: function(targetUL, field, facetValues) {
-		var links = targetUL.find("a");
+
+	_postProcessFacet: function(target, field, facetValues) {
+		var links = target.find("a");
 		for (var i = 0; i < links.length; i++) {
 			var value = facetValues[i].value;
 			var linkElement = links[i];
-			
+
 			this._postProcessLink(linkElement, field, value);
 		}
 	},
-	
+
 	_postProcessLink: function(linkElement, field, value) {
-        var self = this;
-        $(linkElement).bind("click", function(event){
+		var self = this;
+		$(linkElement).bind("click", function(event){
 			// prep selected facets for field
 			if (self._selectedFacets[field] == null) {
 				self._selectedFacets[field] = {};
@@ -973,13 +1147,13 @@ var FacetRenderer = $.Class({
 			// toggle selected
 			var selected = !(self._selectedFacets[field][value]);
 			self._selectedFacets[field][value] = selected;
-			
+
 			if (self.facetClick) {
 				self.facetClick(field, value, selected, $(this));
 			}
-        });
+		});
 	},
-	
+
 	/**
 	 * Adds facet.<field>.selection arguments to params for elvisApi.search()
 	 */
@@ -1006,34 +1180,41 @@ var FacetRenderer = $.Class({
 
 var ColumnTree = $.Class({
 
-	init: function (targetId, elvisApi, selectionChangeHandler) {
+	init: function (targetId, elvisApi) {
 		this.elvisApi = elvisApi;
-		this.selectionChangeHandler = selectionChangeHandler;
-		
+		this.pathChange = null;
+
 		this.folderPath = "";
 		this.containerId = null;
-		
+
 		this._targetId = targetId;
 		this._innerWrapper = null;
-		
-        
-        var self = this;
-        $(document).ready(function(){
-            self._initHtml();
-        });
+
+
+		var self = this;
+		$(document).ready(function(){
+			self._initHtml();
+		});
 	},
-	
+
 	_initHtml: function () {
 		this._target = $(this._targetId);
 		this._target.addClass("elvisColumnTree");
-		
+
 		this._innerWrapper = $("<div/>");
 		this._target.append(this._innerWrapper);
-		
+
 		// Browse root
 		this._browse(this.folderPath);
-		
-		this.selectionChangeHandler(this);
+	},
+
+	refresh: function () {
+		this._innerWrapper.html("");
+
+		var self = this;
+		this.elvisApi.browse({path: this.folderPath, fromRoot: ""}, function(result) {
+			self._render(result);
+		});
 	},
 
 	_browse: function (folderPath) {
@@ -1041,7 +1222,7 @@ var ColumnTree = $.Class({
 
 		//Browse default includes collection and dossier extensions, these are handled as assets and not folders.
 		//this.elvisApi.browse({path: folderPath}, this._render.bind(this));
-        var self = this;
+		var self = this;
 		this.elvisApi.browse({path: folderPath}, function(result) {
 			self._render(result);
 		});
@@ -1054,45 +1235,56 @@ var ColumnTree = $.Class({
 		}
 
 		// Create new list
-		var list = $("<div/>").addClass("elvisColumnTreeList");
-		
-		var ul = $("<ul/>");
-		for (var i = 0; i < browseResult.length; i++) {
-			ul.append( this._createItem(browseResult[i], list) );
-		}
-		
-		list.append(ul);
-		this._innerWrapper.append(list);
-		
+		this._renderFolder(browseResult);
+
 		// Adjust width of inner wrapper and scroll right
-		this._innerWrapper.style.width = (201 * this._innerWrapper.childElements().length) + "px";
+		this._innerWrapper.width(201 * this._innerWrapper.children().length);
 		this._target.scrollLeft = this._innerWrapper.clientWidth;
 	},
-	
+
+	_renderFolder: function (browseResult) {
+		var listElement = $("<div/>").addClass("elvisColumnTreeList");
+		this._innerWrapper.append(listElement);
+
+		var ul = $("<ul/>");
+		for (var i = 0; i < browseResult.length; i++) {
+			var data = browseResult[i];
+
+			var li = this._createItem(data, listElement);
+			ul.append(li);
+
+			// Render child folders if received
+			if (data.children) {
+				li.addClass("selected");
+
+				this._renderFolder(data.children);
+			}
+		}
+		listElement.append(ul);
+	},
+
 	_createItem: function (data, listElement) {
 		var li = $("<li/>").addClass(data.directory ? "folder" : "container");
 		li.html(data.name);
-        
-        var self = this;
-        li.bind("click", function(){
-            self._itemClick(data, li, listElement);
-        });
+
+		var self = this;
+		li.bind("click", function(){
+			self._itemClick(data, li, listElement);
+		});
 
 		return li;
 	},
-	
-	_itemClick: function(data, liElement, listElement) {
-		liElement.siblings().each(function (e) {
-			e.removeClass("selected");
-		})
-		liElement.addClass("selected");
-	
+
+	_itemClick: function(data, li, listElement) {
+		li.siblings().removeClass("selected");
+		li.addClass("selected");
+
 		if (data.directory) {
 			this.containerId = null;
-			
+
 			// remove any displayed subfolders
-			listElement.nextSiblings().each(Element.remove);
-			
+			listElement.nextAll().remove();
+
 			// browse to subfolder
 			this._browse(data.assetPath);
 		}
@@ -1100,8 +1292,8 @@ var ColumnTree = $.Class({
 			// select container
 			this.containerId = data.containerId;
 		}
-		
-		this.selectionChangeHandler(this);
+
+		this.pathChange();
 	}
 
 });
@@ -1150,9 +1342,9 @@ var PreviewLightbox = $.Class({
 			self.next();
 		});
 
-        $(window).resize(function(){
-            self.adjustSize();
-        });
+		$(window).resize(function(){
+			self.adjustSize();
+		});
 	},
 
 	showGallery: function(hits, currentIndex) {
@@ -1163,7 +1355,7 @@ var PreviewLightbox = $.Class({
 	},
 
 	next: function() {
-		if (this.currentIndex < this.hits.length - 1) {
+		if (this.hits && this.currentIndex < this.hits.length - 1) {
 			this.show(this.hits[++this.currentIndex]);
 		} else {
 			this.close();
@@ -1171,7 +1363,7 @@ var PreviewLightbox = $.Class({
 	},
 
 	prev: function() {
-		if (this.currentIndex > 0) {
+		if (this.hits && this.currentIndex > 0) {
 			this.show(this.hits[--this.currentIndex]);
 		} else {
 			this.close();
@@ -1225,8 +1417,9 @@ var PreviewLightbox = $.Class({
 			}));
 		}
 		else if (this._previewType == "html") {
-			previewBox.html('<div id="elvisPreviewObject" class="elvisPreviewText"></div>');
-			$('#elvisPreviewObject').load(this.previewUrl);
+			previewBox.html('<iframe id="elvisPreviewObject" class="elvisPreviewText" src="{src}"></div>'.replaceParams({
+				src: this.previewUrl
+			}));
 		}
 		else {
 			var msg = "No preview available";
@@ -1239,7 +1432,7 @@ var PreviewLightbox = $.Class({
 		}
 
 		// show loading icon
-		$('#elvisPreview').addClass("loading");
+		$('#elvisPreview').addClass("elvisThrobber");
 
 		this.adjustSize();
 
@@ -1253,6 +1446,9 @@ var PreviewLightbox = $.Class({
 
 		// remove preview element to stop video
 		$('#elvisPreviewBox').html("");
+		
+		// clear hits so next call will not show old gallery
+		this.hits = null;
 	},
 
 	adjustSize: function() {
@@ -1277,19 +1473,19 @@ var PreviewLightbox = $.Class({
 			};
 		}
 
-		var doc = $(document);
 		// set size on preview object
+		var jqViewport = $(window);
 		var style = {
-			width: doc.width(),
-			height: doc.height()
+			width: jqViewport.width(),
+			height: jqViewport.height()
 		};
 
 		if (this._previewType == "jpg") {
 			style.marginTop = 0;
 
 			// determine correct scale factor (smallest = best fit)
-			var fH = doc.width() / this.naturalPreviewSize.width;
-			var fV = doc.height() / this.naturalPreviewSize.height;
+			var fH = style.width / this.naturalPreviewSize.width;
+			var fV = style.height / this.naturalPreviewSize.height;
 			var f = Math.min(fH, fV);
 
 			// prevent upscaling
@@ -1302,11 +1498,6 @@ var PreviewLightbox = $.Class({
 		else if (this._previewType == "mp4") {
 			// make sure video does not overlap close button
 			style.marginTop = 60;
-			style.height = style.height - 60;
-		}
-		else if (this._previewType == "html") {
-			// correction for padding
-			style.width = style.width - 60;
 			style.height = style.height - 60;
 		}
 
@@ -1323,9 +1514,9 @@ var PreviewLightbox = $.Class({
 			$('#elvisPreviewBox').css({
 				visibility: "visible"
 			});
-			
+
 			// hide loading icon
-			$('#elvisPreview').removeClass("loading");
+			$('#elvisPreview').removeClass("elvisThrobber");
 		}
 	}
 });
@@ -1398,14 +1589,14 @@ var PreviewLightbox = $.Class({
 		}
 		return output;
 	};
-	
+
 	/**
 	 * Ajax throbber
 	 * Shows throbber when ajax requests are executed
 	 *
 	 * http://ajaxload.info/
 	 */
-	
+
 	jQuery(function($){
 		$('#throbber').ajaxStart(function(){
 			$(this).show();

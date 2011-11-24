@@ -1,16 +1,42 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" dir="ltr">
-<head>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" dir="ltr" lang="en-US"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<title>Edit Page — WordPress</title>
 <script type="text/javascript" src="tinymce/jscripts/tiny_mce/tiny_mce.js" ></script>
 <script type="text/javascript">
+
+</script>
+<link rel="stylesheet" href="./wp_files/load-styles.css" type="text/css" media="all">
+<link rel="stylesheet" id="thickbox-css" href="./wp_files/thickbox.css" type="text/css" media="all">
+<link rel="stylesheet" id="colors-css" href="./wp_files/colors-fresh.css" type="text/css" media="all">
+<script src="${pluginsBaseRootUrl}/web.shared/jquery.min.js" type="text/javascript"></script>
+<script type="text/javascript">
+/* <![CDATA[ */
+var quicktagsL10n = {
+	quickLinks: "(Quick Links)",
+	wordLookup: "Enter a word to look up:",
+	dictionaryLookup: "Dictionary lookup",
+	lookup: "lookup",
+	closeAllOpenTags: "Close all open tags",
+	closeTags: "close tags",
+	enterURL: "Enter the URL",
+	enterImageURL: "Enter the URL of the image",
+	enterImageDescription: "Enter a description of the image"
+};
+try{convertEntities(quicktagsL10n);}catch(e){};
+
+
+jQuery(function(){
 	tinyMCE.init({
 		// General options
 		// with additional elvis plugin
+		width : ($('#editorcontainer').width())+"",
+		height : ($(window).height()-340)+"",
 		mode : "textareas",
 		theme : "advanced",
 		dialog_type: "modal",
 		plugins : "elvis,inlinepopups,preview",
-		elvis_server_url : "",
+		elvis_server_url : "${serverUrl}",
 		elvis_content_width : 650,
 		inlinepopups_skin : "smskin2",
 	
@@ -22,21 +48,366 @@
 		theme_advanced_toolbar_location : "top",
 		theme_advanced_toolbar_align : "left",
 		theme_advanced_statusbar_location : "bottom",
-		theme_advanced_resizing : true
+		theme_advanced_resizing : false,
+		theme_advanced_resizing_use_cookie : false
 	});
+});
+/* ]]> */
 </script>
-</head>
-<body>
-	<h3>Elvis Web CMS integration / Media selection plugin</h3>
-	<p>This sample demonstrates how media managed by elvis can be integrated into a web cms.</p>
-	<p>The text editor below has an additional button (<img src="tinymce/jscripts/tiny_mce/plugins/elvis/img/browse.png" width="20" height="20" align="top" />)
-	that allows you to insert and embed media from elvis straight into most web cms's.</p>
-	<p>This sample can insert both images and video, but with a little customization, any elvis file could be inserted easily.</p>
+<script type="text/javascript" src="./wp_files/jquery.tools.min.js"></script>
+ 
+<body class="wp-admin js  post-php">
+
+<div id="wpwrap">
+<div id="wpcontent">
+<div id="wphead">
+
+<img id="header-logo" src="./wp_files/wp-logo.png" alt="" width="32" height="32">
+<h1 id="site-heading">
+	<a href="#" title="Visit Site">
+		<span id="site-title">Wordpress</span>
+	</a>
+</h1>
+
+
+<div id="wphead-info">
+<div id="user_info">
+<p>Howdy, <a href="#" title="Edit your profile">john doe</a> | <a href="#" title="Log Out">Log Out</a></p>
+</div>
+
+<div id="favorite-actions"><div id="favorite-first"><a href="#">New Page</a></div><div id="favorite-toggle"><br></div><div id="favorite-inside" style="width: 126px; "><div class="favorite-action"><a href="#">New Post</a></div>
+<div class="favorite-action"><a href="#">Drafts</a></div>
+<div class="favorite-action"><a href="#">Upload</a></div>
+<div class="favorite-action"><a href="#">Comments</a></div>
+</div></div>
+</div>
+</div>
+
+<div id="wpbody">
+
+<img id="adminmenu" src="./wp_files/menu-left.png">
+
+<div id="wpbody-content" style="overflow-x: hidden; overflow-y: hidden; ">
+<div id="screen-meta">
+<div id="screen-options-wrap" class="hidden">
+	<form id="adv-settings" action="" method="post">
+			<h5>Show on screen</h5>
+		<div class="metabox-prefs">
+			<label for="pageparentdiv-hide"><input class="hide-postbox-tog" name="pageparentdiv-hide" type="checkbox" id="pageparentdiv-hide" value="pageparentdiv">Page Attributes</label>
+<label for="postcustom-hide"><input class="hide-postbox-tog" name="postcustom-hide" type="checkbox" id="postcustom-hide" value="postcustom">Custom Fields</label>
+<label for="commentstatusdiv-hide"><input class="hide-postbox-tog" name="commentstatusdiv-hide" type="checkbox" id="commentstatusdiv-hide" value="commentstatusdiv">Discussion</label>
+<label for="commentsdiv-hide"><input class="hide-postbox-tog" name="commentsdiv-hide" type="checkbox" id="commentsdiv-hide" value="commentsdiv">Comments</label>
+<label for="slugdiv-hide"><input class="hide-postbox-tog" name="slugdiv-hide" type="checkbox" id="slugdiv-hide" value="slugdiv">Slug</label>
+<label for="authordiv-hide"><input class="hide-postbox-tog" name="authordiv-hide" type="checkbox" id="authordiv-hide" value="authordiv">Author</label>
+<label for="revisionsdiv-hide"><input class="hide-postbox-tog" name="revisionsdiv-hide" type="checkbox" id="revisionsdiv-hide" value="revisionsdiv" checked="checked">Revisions</label>
+			<br class="clear">
+		</div>
+		<h5>Screen Layout</h5>
+<div class="columns-prefs">Number of Columns:
+<label><input type="radio" name="screen_columns" value="1"> 1</label>
+<label><input type="radio" name="screen_columns" value="2" checked="checked"> 2</label>
+</div>
+<div><input type="hidden" id="screenoptionnonce" name="screenoptionnonce" value="2bcb697e90"></div>
+</form>
+</div>
+<div id="screen-meta-links">
+<div id="contextual-help-link-wrap" class="hide-if-no-js screen-meta-toggle">
+<a href="#" id="contextual-help-link" class="show-settings">Help</a>
+</div>
+<div id="screen-options-link-wrap" class="hide-if-no-js screen-meta-toggle">
+<a href="#" id="show-settings-link" class="show-settings">Screen Options</a>
+</div>
+</div>
+</div>
+<div class="wrap">
+	<div id="icon-edit-pages" class="icon32"><br></div>
+<h2>Edit Page</h2>
+<form name="post" action="" method="post" id="post">
+<div id="poststuff" class="metabox-holder has-right-sidebar">
+<div id="side-info-column" class="inner-sidebar">
+
+<div id="side-sortables" class="meta-box-sortables ui-sortable"><div id="submitdiv" class="postbox ">
+<div class="handlediv" title="Click to toggle"><br></div><h3 class="hndle"><span>Publish</span></h3>
+<div class="inside">
+<div class="submitbox" id="submitpost">
+
+<div id="minor-publishing">
+
+<div style="display:none;">
+<input type="submit" name="save" value="Save">
+</div>
+
+<div id="minor-publishing-actions">
+<div id="save-action">
+</div>
+
+<div id="preview-action">
+<a class="preview button" href="#" target="wp-preview" id="post-preview" tabindex="4">Preview Changes</a>
+<input type="hidden" name="wp-preview" id="wp-preview" value="">
+</div>
+
+<div class="clear"></div>
+</div>
+<div id="misc-publishing-actions">
+
+<div class="misc-pub-section"><label for="post_status">Status:</label>
+<span id="post-status-display">
+Published</span>
+<a href="#" class="edit-post-status hide-if-no-js" tabindex="4">Edit</a>
+
+<div id="post-status-select" class="hide-if-js">
+<input type="hidden" name="hidden_post_status" id="hidden_post_status" value="publish">
+<select name="post_status" id="post_status" tabindex="4">
+<option selected="selected" value="publish">Published</option>
+<option value="pending">Pending Review</option>
+<option value="draft">Draft</option>
+</select>
+ <a href="#" class="save-post-status hide-if-no-js button">OK</a>
+ <a href="#" class="cancel-post-status hide-if-no-js">Cancel</a>
+</div>
+
+</div>
+<div class="misc-pub-section " id="visibility">
+Visibility: <span id="post-visibility-display">Public</span>
+<a href="#" class="edit-visibility hide-if-no-js">Edit</a>
+
+<div id="post-visibility-select" class="hide-if-js">
+<input type="hidden" name="hidden_post_password" id="hidden-post-password" value="">
+<input type="hidden" name="hidden_post_visibility" id="hidden-post-visibility" value="public">
+
+
+<input type="radio" name="visibility" id="visibility-radio-public" value="public" checked="checked"> <label for="visibility-radio-public" class="selectit">Public</label><br>
+<input type="radio" name="visibility" id="visibility-radio-password" value="password"> <label for="visibility-radio-password" class="selectit">Password protected</label><br>
+<span id="password-span"><label for="post_password">Password:</label> <input type="text" name="post_password" id="post_password" value=""><br></span>
+<input type="radio" name="visibility" id="visibility-radio-private" value="private"> <label for="visibility-radio-private" class="selectit">Private</label><br>
+
+<p>
+ <a href="#" class="save-post-visibility hide-if-no-js button">OK</a>
+ <a href="#" class="cancel-post-visibility hide-if-no-js">Cancel</a>
+</p>
+</div>
+
+</div>
+
+<div class="misc-pub-section curtime misc-pub-section-last">
+	<span id="timestamp">
+	Published on: <b>Dec 27, 2010 @ 14:33</b></span>
+	<a href="#" class="edit-timestamp hide-if-no-js" tabindex="4">Edit</a>
+	<div id="timestampdiv" class="hide-if-js"><div class="timestamp-wrap"><select id="mm" name="mm" tabindex="4">
+			<option value="01">Jan</option>
+			<option value="02">Feb</option>
+			<option value="03">Mar</option>
+			<option value="04">Apr</option>
+			<option value="05">May</option>
+			<option value="06">Jun</option>
+			<option value="07">Jul</option>
+			<option value="08">Aug</option>
+			<option value="09">Sep</option>
+			<option value="10">Oct</option>
+			<option value="11">Nov</option>
+			<option value="12" selected="selected">Dec</option>
+</select><input type="text" id="jj" name="jj" value="27" size="2" maxlength="2" tabindex="4" autocomplete="off">, <input type="text" id="aa" name="aa" value="2010" size="4" maxlength="4" tabindex="4" autocomplete="off"> @ <input type="text" id="hh" name="hh" value="14" size="2" maxlength="2" tabindex="4" autocomplete="off"> : <input type="text" id="mn" name="mn" value="33" size="2" maxlength="2" tabindex="4" autocomplete="off"></div><input type="hidden" id="ss" name="ss" value="21">
+
+<input type="hidden" id="hidden_mm" name="hidden_mm" value="12">
+<input type="hidden" id="cur_mm" name="cur_mm" value="10">
+<input type="hidden" id="hidden_jj" name="hidden_jj" value="27">
+<input type="hidden" id="cur_jj" name="cur_jj" value="07">
+<input type="hidden" id="hidden_aa" name="hidden_aa" value="2010">
+<input type="hidden" id="cur_aa" name="cur_aa" value="2011">
+<input type="hidden" id="hidden_hh" name="hidden_hh" value="14">
+<input type="hidden" id="cur_hh" name="cur_hh" value="08">
+<input type="hidden" id="hidden_mn" name="hidden_mn" value="33">
+<input type="hidden" id="cur_mn" name="cur_mn" value="49">
+
+<p>
+<a href="#" class="save-timestamp hide-if-no-js button">OK</a>
+<a href="#" class="cancel-timestamp hide-if-no-js">Cancel</a>
+</p>
+</div>
+</div>
+</div>
+<div class="clear"></div>
+</div>
+
+<div id="major-publishing-actions">
+<div id="delete-action">
+<a class="submitdelete deletion" href="#">Move to Trash</a></div>
+
+<div id="publishing-action">
+<img src="./wp_files/wpspin_light.gif" id="ajax-loading" style="visibility:hidden;" alt="">
+		<input name="original_publish" type="hidden" id="original_publish" value="Update">
+		<input name="save" type="submit" class="button-primary" id="publish" tabindex="5" accesskey="p" value="Update">
+</div>
+<div class="clear"></div>
+</div>
+</div>
+
+</div>
+</div>
+<div id="revisionsdiv" class="postbox closed">
+<div class="handlediv" title="Click to toggle"><br></div><h3 class="hndle"><span>Revisions</span></h3>
+<div class="inside"></div>
+</div>
+</div></div>
+
+<div id="post-body">
+<div id="post-body-content">
+<div id="titlediv">
+<div id="titlewrap">
+	<label class="hide-if-no-js" style="visibility:hidden" id="title-prompt-text" for="title">Enter title here</label>
+	<input type="text" name="post_title" size="30" tabindex="1" value="Untitled 1" id="title" autocomplete="off">
+</div>
+<div class="inside">
+	<div id="edit-slug-box">
+	<strong>Permalink:</strong>
+<span id="sample-permalink">http://www.elvisdam.com/untitled-1</span>
+<span id="view-post-btn"><a href="#" class="button" target="_blank">View Page</a></span>
+	</div>
+</div>
+<input type="hidden" id="samplepermalinknonce" name="samplepermalinknonce" value="bc8e3eb07f"></div>
+
+<div id="postdivrich" class="postarea">
+
+	<div id="editor-toolbar">
+		<div class="zerosize"><input accesskey="e" type="button" onclick="switchEditors.go(&#39;content&#39;)"></div>
+			<a id="edButtonHTML" class="hide-if-no-js" onclick="switchEditors.go(&#39;content&#39;, &#39;html&#39;);">HTML</a>
+			<a id="edButtonPreview" class="active hide-if-no-js" onclick="switchEditors.go(&#39;content&#39;, &#39;tinymce&#39;);">Visual</a>
+		<div id="media-buttons" class="hide-if-no-js">
+Upload/Insert <a href="#" id="add_image" class="thickbox" title="Add an Image"><img src="./wp_files/media-button-image.gif" alt="Add an Image"></a><a href="#" id="add_video" class="thickbox" title="Add Video"><img src="./wp_files/media-button-video.gif" alt="Add Video"></a><a href="#" id="add_audio" class="thickbox" title="Add Audio"><img src="./wp_files/media-button-music.gif" alt="Add Audio"></a><a href="#" id="add_media" class="thickbox" title="Add Media"><img src="./wp_files/media-button-other.gif" alt="Add Media"></a><a href="#" class="thickbox" title="Add Formidable Form"><img src="./wp_files/icon_16_bw.png" alt="Add Formidable Form"></a>		</div>
+	</div>
+	<div id="quicktags" style="display: none; "><div id="ed_toolbar"><input type="button" id="ed_strong" accesskey="b" class="ed_button" onclick="edInsertTag(edCanvas, 0);" value="b"><input type="button" id="ed_em" accesskey="i" class="ed_button" onclick="edInsertTag(edCanvas, 1);" value="i"><input type="button" id="ed_link" accesskey="a" class="ed_button" onclick="edInsertLink(edCanvas, 2);" value="link"><input type="button" id="ed_block" accesskey="q" class="ed_button" onclick="edInsertTag(edCanvas, 3);" value="b-quote"><input type="button" id="ed_del" accesskey="d" class="ed_button" onclick="edInsertTag(edCanvas, 4);" value="del"><input type="button" id="ed_ins" accesskey="s" class="ed_button" onclick="edInsertTag(edCanvas, 5);" value="ins"><input type="button" id="ed_img" accesskey="m" class="ed_button" onclick="edInsertImage(edCanvas);" value="img"><input type="button" id="ed_ul" accesskey="u" class="ed_button" onclick="edInsertTag(edCanvas, 7);" value="ul"><input type="button" id="ed_ol" accesskey="o" class="ed_button" onclick="edInsertTag(edCanvas, 8);" value="ol"><input type="button" id="ed_li" accesskey="l" class="ed_button" onclick="edInsertTag(edCanvas, 9);" value="li"><input type="button" id="ed_code" accesskey="c" class="ed_button" onclick="edInsertTag(edCanvas, 10);" value="code"><input type="button" id="ed_more" accesskey="t" class="ed_button" onclick="edInsertTag(edCanvas, 11);" value="more"><input type="button" id="ed_spell" class="ed_button" onclick="edSpell(edCanvas);" title="Dictionary lookup" value="lookup"><input type="button" id="ed_close" class="ed_button" onclick="edCloseAllTags();" title="Close all open tags" value="close tags"></div>
+	</div>
+
+<div id="editorcontainer">
 	<form>
-		<textarea name="content" style="width: 670px; height: 340px"> 
-			This is some content that will be editable with TinyMCE.
+		<textarea name="content" style="width: 600px; height: 40px"> 
+<p>The Greek crisis is an opportunity for Ireland to get a better deal in European rescue package <br /><br />Greece is a developed country, with a high standard of living and &ldquo;very high&rdquo; Human Development Index, ranking 22nd in the world in 2010, and 22nd on The Economist&rsquo;s 2005 worldwide quality-of-life index. According to Eurostat data, GDP per inhabitant in purchasing power standards (PPS) stood at 95 per cent of the EU average in 2008. Greece&rsquo;s main industries are tourism, shipping, industrial products, food and tobacco processing, textiles, chemicals, metal products, mining and petroleum. Greece&rsquo;s GDP growth has also, as an average, since the early 1990s been higher than the EU average. However, the Greek economy also faces significant problems, including rising unemployment levels, inefficient bureaucracy, tax evasion and corruption. <br /><br />In 2009, Greece had the EU&rsquo;s second lowest Index of Economic Freedom (after Poland), ranking 81st in the world. The country suffers from high levels of political and economic corruption and low global competitiveness compared to its EU partners. <br /><br />After 15 consecutive years of sustained economic growth, Greece went into recession in 2009. An indication of the trend of over-lending in recent years is the fact that the ratio of loans to savings exceeded 100% during the first half of the year. <br /><br />By the end of 2009, the Greek economy (based on data revised on November 15, 2010 in part due to reclassification of expenses) faced the highest budget deficit and government debt to GDP ratios in the EU. The 2009 budget deficit stood at 15.4% of GDP. This, and rising debt levels (127% of GDP in 2009) led to rising borrowing costs, resulting in a severe economic crisis. Greece has been accused of trying to cover up the extent of its massive budget deficit in the wake of the global financial crisis. This resulted from the massive revision of the 2009 budget deficit forecast by the new Socialist government elected in October 2009, from &ldquo;6-8%&rdquo; (estimated by the previous government) to 12.7% (later revised to 15.4%). This revision (which, as claimed by members of the previous government, at least in part reflected the Socialists&rsquo; failure to control tax collection during their first months in office) has seriously undermined Greece&rsquo;s credibility leading to higher borrowing costs for Greece. <br />The Greek labor force totals 5.05 million, and on average work the second most hours per year amongst OECD countries, after South Korea. The Groningen Growth &amp; Development Centre has published a poll revealing that between 1995 and 2005, Greece was the country whose workers worked the most hours/year among European nations; Greeks worked an average of 1,900 hours per year, followed by the Spanish (average of 1,800 hours/year).</p>
 		</textarea>
 	</form>
-	<div class="copyright">Powered by <a href="http://www.elvisready.com">elvis</a> &copy; <a href="http://www.dutchsoftware.com">dutchsoftware.com</a></div>
-</body>
-</html>
+</div>
+
+<table id="post-status-info" cellspacing="0"><tbody><tr>
+	<td id="wp-word-count"></td>
+	<td class="autosave-info">
+	<span id="autosave">&nbsp;</span>
+<span id="last-edit">Last edited by john doe on September 4, 2011 at 12:32 pm</span>	</td>
+</tr></tbody></table>
+
+</div>
+
+<div id="commentstatusdiv" class="postbox closed hide-if-js" style="">
+<div class="handlediv" title="Click to toggle"><br></div><h3 class="hndle"><span>Discussion</span></h3>
+<div class="inside">
+<input name="advanced_view" type="hidden" value="1">
+<p class="meta-options">
+	<label for="comment_status" class="selectit"><input name="comment_status" type="checkbox" id="comment_status" value="open" checked="checked"> Allow comments.</label><br>
+	<label for="ping_status" class="selectit"><input name="ping_status" type="checkbox" id="ping_status" value="open"> Allow <a href="#" target="_blank">trackbacks and pingbacks</a> on this page.</label>
+</p>
+</div>
+</div>
+<div id="commentsdiv" class="postbox closed hide-if-js" style="">
+<div class="handlediv" title="Click to toggle"><br></div><h3 class="hndle"><span>Comments</span></h3>
+<div class="inside">
+<p>No comments yet.</p></div>
+</div>
+<div id="slugdiv" class="postbox  hide-if-js" style="">
+<div class="handlediv" title="Click to toggle"><br></div><h3 class="hndle"><span>Slug</span></h3>
+<div class="inside">
+<label class="screen-reader-text" for="post_name">Slug</label><input name="post_name" type="text" size="13" id="post_name" value="home">
+</div>
+</div>
+<div id="authordiv" class="postbox closed hide-if-js" style="">
+<div class="handlediv" title="Click to toggle"><br></div><h3 class="hndle"><span>Author</span></h3>
+<div class="inside">
+<label class="screen-reader-text" for="post_author_override">Author</label><select name="post_author_override" id="post_author_override" class="">
+	<option value="1" selected="selected">admin</option>
+</select></div>
+</div>
+<div id="pageparentdiv" class="postbox  hide-if-js" style="">
+<div class="handlediv" title="Click to toggle"><br></div><h3 class="hndle"><span>Page Attributes</span></h3>
+<div class="inside">
+<p><strong>Parent</strong></p>
+<label class="screen-reader-text" for="parent_id">Parent</label>
+<select name="parent_id" id="parent_id">
+	<option value="">(no parent)</option>
+	<option class="level-0" value="98">Kwaliteit</option>
+	<option class="level-0" value="38">Projecten</option>
+	<option class="level-0" value="144">Workshops</option>
+	<option class="level-0" value="27">Docenten</option>
+	<option class="level-0" value="179">Kosten</option>
+	<option class="level-0" value="21">Contact</option>
+</select>
+<p><strong>Template</strong></p>
+<label class="screen-reader-text" for="page_template">Page Template</label><select name="page_template" id="page_template">
+<option value="default">Default Template</option>
+</select>
+<p><strong>Order</strong></p>
+<p><label class="screen-reader-text" for="menu_order">Order</label><input name="menu_order" type="text" size="4" id="menu_order" value="0"></p>
+<p>Need help? Use the Help tab in the upper right of your screen.</p>
+</div>
+</div>
+</div><div id="advanced-sortables" class="meta-box-sortables ui-sortable"></div>
+</div>
+</div>
+<br class="clear">
+</div><!-- /poststuff -->
+</form>
+</div>
+
+<form method="get" action="">
+<table style="display:none;"><tbody id="com-reply"><tr id="replyrow" style="display:none;"><td colspan="4">
+	<div id="replyhead" style="display:none;">Reply to Comment</div>
+
+	<div id="edithead" style="display:none;">
+		<div class="inside">
+		<label for="author">Name</label>
+		<input type="text" name="newcomment_author" size="50" value="" tabindex="101" id="author">
+		</div>
+
+		<div class="inside">
+		<label for="author-email">E-mail</label>
+		<input type="text" name="newcomment_author_email" size="50" value="" tabindex="102" id="author-email">
+		</div>
+
+		<div class="inside">
+		<label for="author-url">URL</label>
+		<input type="text" id="author-url" name="newcomment_author_url" size="103" value="" tabindex="103">
+		</div>
+		<div style="clear:both;"></div>
+	</div>
+
+	<div id="ed_reply_qtags"><div id="ed_reply_toolbar"><input type="button" id="ed_reply_strong" accesskey="b" class="ed_button" onclick="ed_reply.edInsertTag(0);" value="b"><input type="button" id="ed_reply_em" accesskey="i" class="ed_button" onclick="ed_reply.edInsertTag(1);" value="i"><input type="button" id="ed_reply_link" accesskey="a" class="ed_button" onclick="ed_reply.edInsertLink(2);" value="link"><input type="button" id="ed_reply_block" accesskey="q" class="ed_button" onclick="ed_reply.edInsertTag(3);" value="b-quote"><input type="button" id="ed_reply_del" accesskey="d" class="ed_button" onclick="ed_reply.edInsertTag(4);" value="del"><input type="button" id="ed_reply_ins" accesskey="s" class="ed_button" onclick="ed_reply.edInsertTag(5);" value="ins"><input type="button" id="ed_reply_img" accesskey="m" class="ed_button" onclick="edInsertImage(ed_reply.Canvas);" value="img"><input type="button" id="ed_reply_ul" accesskey="u" class="ed_button" onclick="ed_reply.edInsertTag(7);" value="ul"><input type="button" id="ed_reply_ol" accesskey="o" class="ed_button" onclick="ed_reply.edInsertTag(8);" value="ol"><input type="button" id="ed_reply_li" accesskey="l" class="ed_button" onclick="ed_reply.edInsertTag(9);" value="li"><input type="button" id="ed_reply_code" accesskey="c" class="ed_button" onclick="ed_reply.edInsertTag(10);" value="code"><input type="button" id="ed_reply_ed_spell" class="ed_button" onclick="edSpell(ed_reply.Canvas);" title="Dictionary lookup" value="lookup"><input type="button" id="ed_reply_ed_close" class="ed_button" onclick="ed_reply.edCloseAllTags();" title="Close all open tags" value="close tags"></div></div><div id="replycontainer"><textarea rows="8" cols="40" name="replycontent" tabindex="104" id="replycontent"></textarea></div>
+
+	<p id="replysubmit" class="submit">
+	<a href="#" class="cancel button-secondary alignleft" tabindex="106">Cancel</a>
+	<a href="#" class="save button-primary alignright" tabindex="104">
+	<span id="savebtn" style="display:none;">Update Comment</span>
+	<span id="replybtn" style="display:none;">Submit Reply</span></a>
+	<img class="waiting" style="display:none;" src="./wp_files/wpspin_light.gif" alt="">
+	<span class="error" style="display:none;"></span>
+	<br class="clear">
+	</p>
+
+	<input type="hidden" name="user_ID" id="user_ID" value="2">
+	<input type="hidden" name="action" id="action" value="">
+	<input type="hidden" name="comment_ID" id="comment_ID" value="">
+	<input type="hidden" name="comment_post_ID" id="comment_post_ID" value="">
+	<input type="hidden" name="status" id="status" value="">
+	<input type="hidden" name="position" id="position" value="1">
+	<input type="hidden" name="checkbox" id="checkbox" value="0">
+	<input type="hidden" name="mode" id="mode" value="single">
+	<input type="hidden" id="_ajax_nonce-replyto-comment" name="_ajax_nonce-replyto-comment" value="b1ab6c957f">	<input type="hidden" id="_wp_unfiltered_html_comment" name="_wp_unfiltered_html_comment" value="be43188393"></td></tr></tbody></table>
+</form>
+
+
+<div class="clear"></div></div><!-- wpbody-content -->
+<div class="clear"></div></div><!-- wpbody -->
+<div class="clear"></div></div><!-- wpcontent -->
+</div><!-- wpwrap -->
+
+<div id="footer">
+<p id="footer-left" class="alignleft"><span id="footer-thankyou">Thank you for creating with <a href="#">WordPress</a>.</span> | <a href="#">Documentation</a> | <a href="#">Feedback</a></p>
+<p id="footer-upgrade" class="alignright"></p>
+<div class="clear"></div>
+</div>
+</body></html>
