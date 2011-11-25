@@ -1,0 +1,156 @@
+<html>
+<head>
+<title>Hello Elvis API!</title>
+
+<!-- Libraries used to easily integrate with the Elvis REST API, required for sample 2 and onwards -->
+
+<!-- Note that all Elvis variables ${...} in this page are automatically replaced by the server, for more info: 
+https://elvis.tenderapp.com/kb/plugins/plugins-introduction-url-variables--->
+
+<script src="${pluginsBaseRootUrl}/web.shared/jquery.js" type="text/javascript"></script>
+<script src="${pluginsBaseRootUrl}/web.shared/jquery.class.js" type="text/javascript"></script>
+<script src="${pluginsBaseRootUrl}/web.shared/jquery.cookie.js" type="text/javascript"></script>
+<link  href="${pluginsBaseRootUrl}/web.shared/elvis_api/css/elvis.css" rel="stylesheet" type="text/css"/>
+<script src="${pluginsBaseRootUrl}/web.shared/elvis_api/js/jquery.elvis.js" type="text/javascript"></script>
+
+<style type="text/css">
+html, body, h1, h2, h3, h4, h5, h6, input, select, textarea {
+	font-family: Arial;
+}
+
+html, body, input, select, textarea {
+	font-size: 12px;
+}
+
+body {
+	background-color: #dddddd;
+	padding: 5px;
+}
+</style>
+	
+<script language="JavaScript">
+var elvisContext;
+if (window.elvisContext) {
+	// Use elvisContext from within Desktop client when available
+	elvisContext = window.elvisContext;
+}
+else {
+	// Use fake elvisContext copied from debug plugin to test plugin in external browsers (when window.elvisContext is not available)
+	elvisContext = {"plugin":{"messages":{"button.tooltip":"Show action debug information","button.label":"Debug Info Tab","title":"Action Debug info"},"configProperties":{"someCustomProperty1":{"description":"Description of someCustomProperty1, can be used for...","name":"someCustomProperty1","value":"foo"},"someCustomProperty2":{"description":"Description of someCustomProperty2, can be used for...","name":"someCustomProperty2","value":"bar"}},"pluginUrl":"http://localhost:8080/plugins/samples/action_plugins/debug/debug_tab","pluginBaseUrl":"http://localhost:8080/plugins/plugin_base/action.base/debug.base"},"app":{"pluginsRootUrl":"http://localhost:8080/plugins","pluginsBaseRootUrl":"http://localhost:8080/plugins/plugin_base","queryString":null,"userProfile":{"fullName":"admin","groups":[],"userZone":"/Users/admin","email":null,"username":"admin","authorities":["ROLE_AIR_CLIENT","ROLE_CHECKOUT","ROLE_DOWNLOAD","ROLE_EMAIL","ROLE_EXPORT_SCE","ROLE_EXPORT_WEB","ROLE_EXPORT_YOUTUBE","ROLE_IMAGE_MANIPULATION","ROLE_IMPORT","ROLE_INDESIGN_CLIENT","ROLE_PHOTOSHOP_CLIENT","ROLE_REGENERATE_THUMBNAIL","ROLE_SUPERUSER","ROLE_USER","ROLE_USER_ZONE"]},"serverUrl":"http://localhost:8080"},"activeTab":{"originalAssetSelection":[{"folderPath":"/Demo Zone/Archive/Elvis Daily News/101/News","assetDomain":"image","id":"6PA_juN2aUzAXmAa7UqEcg","filename":"Venezia Carnevale.psd","assetPath":"/Demo Zone/Archive/Elvis Daily News/101/News/Venezia Carnevale.psd","extension":"psd","name":"Venezia Carnevale.psd","assetType":"psd"},{"folderPath":"/Demo Zone/Archive/Elvis Daily News/101/News","assetDomain":"image","id":"8OzhrJSJ4-s9VJei-XFK7I","filename":"Gaudi carnival.jpg","assetPath":"/Demo Zone/Archive/Elvis Daily News/101/News/Gaudi carnival.jpg","extension":"jpg","name":"Gaudi carnival.jpg","assetType":"jpg"},{"folderPath":"/Demo Zone/Archive/Elvis Daily News/101/News","assetDomain":"image","id":"FF6y8sChKAR906ct3UYDHC","filename":"Festival Dancer.jpg","assetPath":"/Demo Zone/Archive/Elvis Daily News/101/News/Festival Dancer.jpg","extension":"jpg","name":"Festival Dancer.jpg","assetType":"jpg"}],"queryString":"","originalFolderSelection":[{"name":"/Archive","assetPath":"/Demo Zone/Archive"}],"assetSelection":[{"folderPath":"/Demo Zone/Archive/Elvis Daily News/101/News","assetDomain":"image","id":"6PA_juN2aUzAXmAa7UqEcg","filename":"Venezia Carnevale.psd","assetPath":"/Demo Zone/Archive/Elvis Daily News/101/News/Venezia Carnevale.psd","extension":"psd","name":"Venezia Carnevale.psd","assetType":"psd"},{"folderPath":"/Demo Zone/Archive/Elvis Daily News/101/News","assetDomain":"image","id":"8OzhrJSJ4-s9VJei-XFK7I","filename":"Gaudi carnival.jpg","assetPath":"/Demo Zone/Archive/Elvis Daily News/101/News/Gaudi carnival.jpg","extension":"jpg","name":"Gaudi carnival.jpg","assetType":"jpg"},{"folderPath":"/Demo Zone/Archive/Elvis Daily News/101/News","assetDomain":"image","id":"FF6y8sChKAR906ct3UYDHC","filename":"Festival Dancer.jpg","assetPath":"/Demo Zone/Archive/Elvis Daily News/101/News/Festival Dancer.jpg","extension":"jpg","name":"Festival Dancer.jpg","assetType":"jpg"}],"folderSelection":[{"name":"/Archive","assetPath":"/Demo Zone/Archive"}]}};
+}
+</script>
+	
+</head>
+<body>
+
+<div style="color:#333333; font-size:9; text-align:right;">${pluginUrl}</div>
+
+<h1>Hi there!</h1>
+
+This hello world sample shows some of the absolute basics in Elvis desktop client plugin development. Check the source of this HTML page to see how it works. Please check out the other samples as well for more advanced usage.
+<br/>
+
+<!-- ************ STEP 1: elvisContext properties ************ -->
+<br>
+<h2>1. elvisContext properties</h2>
+
+<h3>Now did we select something?</h3>
+<script language="JavaScript">
+// Get the asset selection from the activeTab
+var assetSelection = elvisContext.activeTab.assetSelection;
+
+// Get the userName from the profile
+var name = elvisContext.app.userProfile.fullName;
+
+// Output some info on the current selection
+if (assetSelection != null && assetSelection.length > 0) {
+	document.write("Hi <strong>" + name + "</strong>! You have <strong>" + assetSelection.length + "</strong> assets selected, woohoo!<br/>");
+}
+else {
+	document.write("Hi <strong>" + name + "</strong>! You don't have any assets selected, please select some!<br/>");
+}
+</script>
+
+<h3>Okay, so we did select some files, give me some names!</h3>
+<script language="JavaScript">
+// Loop through the assets in the selection and retrieve filenames
+var filesHtml = "<ol>";
+for (var i=0; i<assetSelection.length; i++) {
+	filesHtml += "<li>" + assetSelection[i].assetPath + "</li>";
+}
+filesHtml += "</ol>";
+
+document.write(filesHtml);
+</script>
+
+<!-- ************ STEP 2: Elvis API integration  ************ -->
+<br>
+<h2>2. Elvis API integration</h2>
+
+<h3>Well, that was boring, I want to see thumbnails!</h3>
+
+Okay, but there are no thumbnail url's are not available in the elvisContext... So we need to retrieve them using Elvis REST API.<br>
+<br>
+<!-- Create a div to put the thumbs in -->
+<div id="thumbs"></div>
+
+<script language="JavaScript">
+// Initiate the ElvisAPI
+elvisApi = new ElvisAPI("${serverUrl}");
+
+// Create an Array of asset id's to search on
+var assetIds = new Array();
+for (var i=0; i<assetSelection.length; i++) {
+	assetIds.push(assetSelection[i].id);
+}
+
+// Create a query to search for our id's
+var query = "id:" + assetIds.join(" OR id:");
+
+// Search the assets, a handler function is called with result data when the search is complete.
+elvisApi.search({
+	q: query,
+}, function(data) {
+	// The search result data has arrived, let's create some thumbs!
+	var thumbHtml = "";
+	for (var i=0; i<data.hits.length; i++) {
+		thumbHtml += '<img src="' + data.hits[i].thumbnailUrl + '">';
+	}
+	document.getElementById("thumbs").innerHTML = thumbHtml;
+});
+</script>
+<br>
+
+<h3>Hmmm okay, yes... I don't like them... they are not equally sized, there's not metadata...</h3>
+
+Since I don't like to spend much time on layouting thumbnails myself, let's use one of the JavaScript libraries to do it for me.<br>
+<br>
+<div id="resultContainer"></div>
+
+<script language="JavaScript">
+// Create a HitRender, which is a utility to render hit images, metadata, etc.
+var hitRenderer = new HitRenderer();
+hitRenderer.hitsTarget = "#resultContainer";
+hitRenderer.squareThumbs = true;
+hitRenderer.metadataToDisplay = ["name", "rating"];
+
+// Search again, but make the hitRenderer responsible for creating the hits
+elvisApi.search({
+	q: query
+}, hitRenderer.render);
+</script>
+
+<!-- ************ STEP 3: elvisContext functions  ************ -->
+
+<div style="clear:both;">
+<br>
+<h2>3. elvisContext functions</h2>
+
+<h3>Okay, I have to admit, that was cool, but now I'm done.</h3>
+
+<input type="button" value="Let's close this" onClick="elvisContext.close()"/>
+</div>
+
+</body>
+
+</html>

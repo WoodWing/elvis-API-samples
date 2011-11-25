@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+	<info>
+		<version>
+			<pluginVersion>1.0</pluginVersion>
+			<requiresAtLeast>2.6.1.550</requiresAtLeast>
+		</version>
+		<description>Hello Elvis API sample plugin</description>
+	</info>
+	<action>
+		<url>${pluginUrl}/index.html</url>
+		<icon16Url>${pluginUrl}/icon16.png</icon16Url>
+		<icon24Url>${pluginUrl}/icon24.png</icon24Url>
+
+		<userInterface>
+			<tab/>
+		</userInterface>
+
+		<menuAssignments>
+			<menuAssignment id="applicationMenu" order="100"/>
+			<menuAssignment id="toolBar" order="100"/>
+		</menuAssignments>
+
+		<enabledExpression>elvisContext.hasSelection()</enabledExpression>
+		
+		<messages>
+			<entries locale="en_US">
+				<entry key="button.label">Hello Elvis API</entry>
+				<entry key="button.tooltip">Hi Elvis API</entry>
+				<entry key="title">Hello Elvis API</entry>
+			</entries>
+		</messages>
+
+	</action>
+</plugin>

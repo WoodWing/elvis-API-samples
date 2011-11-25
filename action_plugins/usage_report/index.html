@@ -1,0 +1,223 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<!--
+
+Licensed under the MIT License
+Copyright (c) 2010 dutchsoftware.com
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this а and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+
+-->
+<head>
+	<title>Photo usage report</title>
+	<script src="${pluginsBaseRootUrl}/web.shared/jquery.js" type="text/javascript"></script>
+	<script src="${pluginsBaseRootUrl}/web.shared/jquery.class.js" type="text/javascript"></script>
+	<script src="${pluginsBaseRootUrl}/web.shared/jquery.cookie.js" type="text/javascript"></script>
+	<link  href="${pluginsBaseRootUrl}/web.shared/elvis_api/css/elvis.css" rel="stylesheet" type="text/css"/>
+	<script src="${pluginsBaseRootUrl}/web.shared/elvis_api/js/jquery.elvis.js" type="text/javascript"></script>
+	<link  href="resources/styles.css" rel="stylesheet" type="text/css"/>
+	<script type="text/javascript">
+
+String.prototype.capitalizeFieldName = function () {
+    return this.charAt(0).toUpperCase() + this.substring(1);
+};
+
+var elvisApi = new ElvisAPI("${serverUrl}");
+
+var previewLightbox = new PreviewLightbox();
+
+// Load issue list
+$(document).ready(function() {
+	elvisApi.search({
+			q: "extension:indd AND publicationDate:*"/* sceIssue:* AND assetDomain:container */,
+			sort: "publicationDate-desc,filename",
+			metadataToReturn: "issueName,publicationDate,publicationName"
+		},
+		function(data) {
+			// Collect issues from layouts
+			var issues = [];
+			var issueNames = [];
+			for (var i = 0; i < data.hits.length; i++) {
+				var hit = data.hits[i];
+				var issueName = hit.metadata.issueName;
+				
+				var issue = issues[issueName];
+				if (!issue) {
+					issue = issues[issueName] = {
+						layoutHits: []
+					};
+					issueNames.push(issueName);
+				}
+				
+				issue.element = renderListItem(hit, issue);
+				issue.layoutHits.push(hit);
+			}
+			
+			// Render issues
+			for (var j = 0; j < issueNames.length; j++) {
+				$("#issueContainer").append(issues[issueNames[j]].element);
+			}
+		}
+	);
+});
+
+function renderListItem(hit, issue) {
+	var element = $("<li/>");
+	
+	element.html(('<div class="name">{publicationName}</div>'
+		+ '<div>{issueName} ({publicationDate.formatted})</div>').replaceParams(hit.metadata));
+
+	element.bind("click", function (event) {
+		showReport(issue);
+	});
+	
+	return element;
+}
+
+var LayoutReportRenderer = HitRenderer.extend({
+
+	// Custom metadata value rendering
+	layoutValue: function(hit, field, value) {
+		var renderedValue = this.renderValue(hit, field, value);
+
+		return '<div class="field">{field}:</div><div class="{cssClass}">{value}</div>'.replaceParams({
+			field: field.capitalizeFieldName(),
+			cssClass: this.getValueCssClass(hit, field, value, renderedValue),
+			value: renderedValue
+		});
+	},
+
+	postProcessHit: function(hitElement, hit, index) {
+		// Gather totals
+		this.issue.imageCount++;
+		
+		var usageFee = parseFloat(hit.metadata.usageFee);
+		if (!isNaN(usageFee)) {
+			this.issue.usageFeeTotal += usageFee;
+		}
+		
+		// Register image click handler
+        $(".elvisThumbnailWrapper:first", hitElement).bind("click", function(event) {
+		//hitElement.select(".elvisThumbnailWrapper")[0].observe('click', function(event) {
+			previewLightbox.show(hit);
+		});
+		
+		this._parent(hitElement, hit, index);
+		
+		// Search and display linked PDF
+		elvisApi.search({
+				q: "relatedTo:"+hit.id+" +assetDomain:pdf",
+				sort: "assetCreated-desc",
+				metadataToReturn: 'name',
+				num: 1
+			},
+			function (data) {
+				if (data.hits.length == 0) {
+					return;
+				}
+				
+				var pdfHit = data.hits[0];
+			
+				var linkedPdf = $("<div/>").addClass("linkedPdf");
+				linkedPdf.append("<h3>Used on page:</h3>");
+				linkedPdf.append('<img src="'+pdfHit.thumbnailUrl+'"/>');
+				linkedPdf.bind('click', function(event) {
+					previewLightbox.show(pdfHit);
+				});
+				
+				$(hitElement).append(linkedPdf);
+			}
+		);
+	}
+});
+
+function showReport(issue) {
+	issue.imageCount = 0;
+	issue.usageFeeTotal = 0.0;
+	
+	insertLayoutReport(issue, 0);
+}
+
+function insertLayoutReport(issue, layoutIdx) {
+	if (layoutIdx >= issue.layoutHits.length) {
+		// all layouts displayed, render totals
+		$("#reportInfoContainer").html(
+			("<ul>"
+			+"<li>{publicationName} - {issueName}</li>"
+			+"<li>Number of images: {imageCount}</li>"
+			+"<li>Total costs: <b>{usageFeeTotal}</b></li>"
+			+"</ul>").replaceParams({
+				publicationName: issue.layoutHits[0].metadata.publicationName,
+				issueName: issue.layoutHits[0].metadata.issueName,
+				usageFeeTotal: "€"+issue.usageFeeTotal,
+				imageCount: issue.imageCount
+			})
+		);
+		
+		return;
+	}
+	
+	var hit = issue.layoutHits[layoutIdx];
+	
+	$("#reportContainer").append($("<div/>").attr("id", "layout_"+layoutIdx));
+	
+	var layoutReportRenderer = new LayoutReportRenderer();
+	layoutReportRenderer.hitsTarget = "#layout_"+layoutIdx;
+	layoutReportRenderer.metadataToDisplay = ["name","copyright","usageRights","usageFee"];
+	
+	layoutReportRenderer.issue = issue;
+	
+	elvisApi.search({
+			q: "relatedTo:"+hit.id+" +assetDomain:image",
+			sort: "assetCreated-desc"
+		},
+		function (data) {
+			layoutReportRenderer.render(data);
+		
+			insertLayoutReport(issue, layoutIdx+1);
+		}
+	);
+}
+
+</script>
+</head>
+<body>
+	<div class="issueList">
+		<h1>Photo usage report:</h1>
+		<h2>Latest issues:</h2>
+		<div>
+			<ul id="issueContainer">
+				<!-- issues will be rendered here -->
+			</ul>
+		</div>
+	</div>
+	<div id="resultWrapper">
+		<div id="reportInfoContainer">
+		</div>
+		<div id="reportContainer">
+			<!-- result hits will be rendered here -->
+		</div>
+	</div>
+	<div id="throbber" class="elvisThrobber" style="display:none;"></div>
+	<div class="copyright" style="position:fixed;">
+		Powered by <a href="http://www.elvisready.com">elvis</a> &copy; 
+		<a href="http://www.dutchsoftware.com">dutchsoftware.com</a>
+	</div>
+</body>
+</html>

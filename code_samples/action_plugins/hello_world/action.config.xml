@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+	<info>
+		<version>
+			<pluginVersion>1.0</pluginVersion>
+			<requiresAtLeast>2.6.1.550</requiresAtLeast>
+		</version>
+		<description>Basic Hello World sample plugin</description>
+	</info>
+	<action>
+		<url>${pluginUrl}/index.html</url>
+		<icon16Url>${pluginUrl}/icon16.png</icon16Url>
+		<icon24Url>${pluginUrl}/icon24.png</icon24Url>
+
+		<userInterface>
+			<tab/>
+		</userInterface>
+
+		<menuAssignments>
+			<menuAssignment id="applicationMenu" order="99"/>
+			<menuAssignment id="toolBar" order="99"/>
+		</menuAssignments>
+
+		<messages>
+			<entries locale="en_US">
+				<entry key="button.label">Hello World</entry>
+				<entry key="button.tooltip">Hi there!</entry>
+				<entry key="title">Hello, hello?</entry>
+			</entries>
+		</messages>
+
+	</action>
+</plugin>

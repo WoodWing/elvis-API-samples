@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+	<info>
+		<version>
+			<pluginVersion>1.0</pluginVersion>
+			<requiresAtLeast>2.6.1.550</requiresAtLeast>
+		</version>
+		<description>Print contact sheets</description>
+		<documentationUrl>http://elvis.tenderapp.com/kb/bundled-plugins/action-print-contact-sheet</documentationUrl>
+	</info>
+	<action>
+		<url>${pluginUrl}/index.html</url>
+		<icon16Url>${pluginUrl}/icon16.png</icon16Url>
+		<icon24Url>${pluginUrl}/icon24.png</icon24Url>
+
+		<userInterface>
+			<externalBrowser loadInIframe="true"/>
+		</userInterface>
+
+		<menuAssignments>
+			<menuAssignment id="applicationMenu" order="5"/>
+			<menuAssignment id="toolBar" order="5"/>
+			<menuAssignment id="assetContextMenu" order="5"/>
+			<menuAssignment id="folderContextMenu" order="5"/>
+		</menuAssignments>
+
+		<enabledExpression>elvisContext.hasFilteredSelection()</enabledExpression>
+
+		<filterExpression>item.hasAssetDomain("image") || item.hasAssetDomain("pdf")</filterExpression>
+
+		<requiredPermissionMask>VP-------</requiredPermissionMask>
+
+		<requiredRoles>
+			<role>ROLE_CUSTOM_PRINT_CONTACT_SHEET</role>
+		</requiredRoles>
+
+		<messages>
+			<entries locale="en_US">
+				<entry key="button.label">Contact Sheet</entry>
+				<entry key="button.tooltip">Print an image contact sheet</entry>
+			</entries>
+		</messages>
+
+	</action>
+</plugin>

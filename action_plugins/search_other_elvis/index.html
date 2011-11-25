@@ -1,0 +1,263 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<!--
+
+Licensed under the MIT License
+Copyright (c) 2010, 2011 dutchsoftware.com
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this а and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+
+-->
+<head>
+	<title>Elvis</title>
+	<script src="${pluginsBaseRootUrl}/web.shared/jquery.js" type="text/javascript"></script>
+	<script src="${pluginsBaseRootUrl}/web.shared/jquery.class.js" type="text/javascript"></script>
+	<script src="${pluginsBaseRootUrl}/web.shared/jquery.cookie.js" type="text/javascript"></script>
+	<link  href="${pluginsBaseRootUrl}/web.shared/elvis_api/css/elvis.css" rel="stylesheet" type="text/css"/>
+	<script src="${pluginsBaseRootUrl}/web.shared/elvis_api/js/jquery.elvis.js" type="text/javascript"></script>
+	<link href="styles.css" rel="stylesheet" type="text/css"/>
+	<script type="text/javascript">
+
+var elvisApi = new ElvisAPI("${serverUrl}");
+elvisApi.useAutoLogin("guest", "guest");
+
+// Custom HitRenderer that adds info and download buttons to each hit thumbnail
+var PreviewIconHitRenderer = HitRenderer.extend({
+
+	// redefine method
+	postProcessHit: function(hitElement, hit, index) {
+		// call super method
+		this._parent(hitElement, hit, index);
+
+		// add zoom button
+		$(".elvisMetadata:first", hitElement).append('<img src="resources/zoom.png" class="zoom"/>');
+	}
+
+});
+
+var TagCloudFacetRenderer = FacetRenderer.extend({
+
+	_renderFacet: function(target, field, facetValues) {
+		if (field == "tags") {
+			var html = "";
+
+			if (facetValues.length != 0) {
+				// Determine low and high bound of hitCount
+				var high = facetValues[0].hitCount;
+				var low = high;
+				for (var i = 1; i < facetValues.length; i++) {
+					var hitCount = facetValues[i].hitCount;
+					if (high < hitCount) {
+						high = hitCount;
+					}
+					if (low > hitCount) {
+						low = hitCount;
+					}
+				}
+
+				// Render links
+				for (var i = 0; i < facetValues.length; i++) {
+					var value = facetValues[i].value;
+					var hitCount = facetValues[i].hitCount;
+					var selected = (this._selectedFacets[field] && this._selectedFacets[field][value]);
+
+					// Calculate font size factor
+					var x = (hitCount - low) / (high - low);
+
+					html += '<li{classAttr}><a href="#" onclick="return false" style="font-size:{size}px" title="{title}">{label}</a> </li>'.replaceParams({
+						classAttr: (selected ? ' class="selected"' : ''),
+						label: value,
+						title: value + " (" + hitCount + ")",
+						size: (4 * x + 10)
+					});
+				}
+			}
+
+			target.html(html);
+		}
+		else {
+			this._parent(target, field, facetValues);
+		}
+	}
+
+});
+
+var columnTree = new ColumnTree("#folderBrowser", elvisApi);
+columnTree.pathChange = function() {
+	refreshResults();
+};
+
+var hitRenderer = new PreviewIconHitRenderer();
+hitRenderer.hitsTarget = "#resultContainer";
+hitRenderer.infoTarget = "#infoContainer";
+hitRenderer.pageTarget = "#pageControls";
+hitRenderer.sizeTarget = "#sizeControls";
+//hitRenderer.renderSize = "small";
+hitRenderer.metadataToDisplay = ["name"];
+hitRenderer.selectable = true;
+hitRenderer.multiselect = false;
+hitRenderer.itemClick = function (event, hit, hits, index) {
+	if ($(event.target).hasClass("zoom")) {
+		previewLightbox.showGallery(hits, index);
+
+		return false; // prevent selection handling
+	}
+	return true; // handle selection
+};
+hitRenderer.itemDoubleClick = function (event, hit, hits, index) {
+	previewLightbox.showGallery(hits, index);
+};
+hitRenderer.selectionChange = function (selectedHits) {
+	/*if (selectedHits.length != 0) {
+		$("body").addClass("hasSelection");
+
+		var textContent = selectedHits[0].metadata.textContent;
+		if (textContent) {
+			// trim and filter tripple newlines
+			textContent = textContent.replace(/^\s+|\s+$/g, "").replace(/^ +/gm, "").replace(/(\n\s*){3,}/g, "\n\n");
+
+			$("#textContent").html(textContent);
+
+			$("body").addClass("isTextSelection");
+			$("body").removeClass("isImageSelection");
+		}
+		else {
+			$("body").addClass("isImageSelection");
+			$("body").removeClass("isTextSelection");
+		}
+	} else {
+		$("body").removeClass("hasSelection");
+	}*/
+};
+hitRenderer.pageClick = function (start, num) {
+	refreshResults(start, num);
+};
+
+var facetRenderer = new TagCloudFacetRenderer();
+facetRenderer.facets = ["assetDomain", "tags", "usageRights"];
+facetRenderer.facetClick = function(field, value, selected, element) {
+	// refresh results (and facets), facet selection is already updated by FacetRenderer
+	refreshResults();
+};
+
+var previewLightbox = new PreviewLightbox();
+
+function refreshResults(start, num) {
+	// init defaults for optional parameters
+	if (start == null) {
+		start = 0;
+	}
+	if (num == null) {
+		num = 50;
+	}
+
+	// build query
+	var query = $('#querystring').val();
+	//query += " +(assetDomain:image OR assetDomain:video OR textContent:*)";
+
+	if (columnTree.containerId) {
+		query = "relatedTo:" + columnTree.containerId + " relationTarget:child relationType:contains " + query;
+	}
+	else if (columnTree.folderPath) {
+		query += ' ancestorPaths:"' + columnTree.folderPath + '"';
+	}
+
+	var params = {
+		q: query,
+		start: start,
+		num: num,
+		sort: "name",
+		metadataToReturn: hitRenderer.metadataToDisplay.join(","),
+		facets: facetRenderer.facets.join(",")
+	};
+
+	// add facet selections
+	facetRenderer.addFacetSelectionParams(params);
+
+	// execute search and update results
+	elvisApi.search(params, function(data) {
+
+		hitRenderer.render(data);
+
+		facetRenderer.render(data);
+
+	});
+}
+
+jQuery(function () {
+	// Init search input
+	var elvisCtx = ElvisPlugin.resolveElvisContext(false);
+	if (elvisCtx) {
+		var query = elvisCtx.activeTab.queryString;
+		if (query == null) {
+			query = elvisCtx.app.queryString;
+		}
+		if (query != null) {
+			$("#querystring").val(query);
+		}
+	}
+
+	refreshResults();
+});
+
+</script>
+
+</head>
+<body id="body">
+	<div class="header">
+		<img class="logo" src="resources/logo.png" alt="logo" />
+		<h1>@ London Office</h1>
+	</div>
+	<div id="searchFilter">
+		<form class="search" action="#" onsubmit="refreshResults(); return false">
+			<label>
+				<input id="querystring" type="search" placeholder="Search"/>
+				<input type="image" class="searchicon" src="resources/search_button.png" value="Search"/>
+			</label>
+		</form>
+		<div id="assetDomainFacet">
+			<h1>Kind:</h1>
+		</div>
+		<div id="usageRightsFacet">
+			<h1>Rights:</h1>
+		</div>
+		<div id="tagsFacet">
+			<h1>Tag cloud:</h1>
+		</div>
+	</div>
+	<div id="folderBrowser">
+		<!-- folder tree will be rendered here -->
+	</div>
+	<div id="resultContainer">
+		<!-- result hits will be rendered here -->
+	</div>
+	<div class="footer">
+		<div id="infoContainer">
+			<!-- result info is rendered here -->
+		</div>
+		<div id="pageControls">
+			<!-- size controls will be rendered here -->
+		</div>
+		<div id="sizeControls" class="elvisRenderSize">
+			<!-- size controls will be rendered here -->
+		</div>
+	</div>
+	<div id="throbber" class="elvisThrobber" style="display:none;"></div>
+</body>
+</html>

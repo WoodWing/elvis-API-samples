@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+	<info>
+		<version>
+			<pluginVersion>1.0</pluginVersion>
+			<requiresAtLeast>2.6.1.550</requiresAtLeast>
+		</version>
+		<description>Searching in iStockPhoto</description>
+		<documentationUrl>http://elvis.tenderapp.com/kb/bundled-plugins/action-search-in-external-website</documentationUrl>
+	</info>
+	<action>
+		<url>${pluginUrl}/index.html</url>
+		<icon16Url>${pluginUrl}/icon16.png</icon16Url>
+		<icon24Url>${pluginUrl}/icon24.png</icon24Url>
+
+		<userInterface>
+			<tab/>
+		</userInterface>
+
+		<menuAssignments>
+			<menuAssignment id="applicationMenu" order="9"/>
+			<menuAssignment id="toolBar" order="9"/>
+		</menuAssignments>
+
+		<requiredRoles>
+			<role>ROLE_CUSTOM_SEARCH_ISTOCKPHOTO</role>
+		</requiredRoles>
+
+		<messages>
+			<entries locale="en_US">
+				<entry key="button.label">iStockPhoto</entry>
+				<entry key="button.tooltip">Search in iStockPhoto</entry>
+				<entry key="title">Results from iStockPhoto</entry>
+			</entries>
+		</messages>
+
+	</action>
+</plugin>

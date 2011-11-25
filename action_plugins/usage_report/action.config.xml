@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+	<info>
+		<version>
+			<pluginVersion>1.0</pluginVersion>
+			<requiresAtLeast>2.6.1.550</requiresAtLeast>
+		</version>
+		<description>Report which displays photos from the latest issues (based on InDesign documents).</description>
+		<documentationUrl>http://elvis.tenderapp.com/kb/bundled-plugins/action-photo-usage-report</documentationUrl>
+	</info>
+	<action>
+		<url>${pluginUrl}/index.html</url>
+		<icon16Url>${pluginUrl}/icon16.png</icon16Url>
+		<icon24Url>${pluginUrl}/icon24.png</icon24Url>
+
+		<userInterface>
+			<tab/>
+			<!-- Use externalBrowser if you also want to be able to print the report
+			<externalBrowser loadInIframe="true"/>-->
+		</userInterface>
+
+		<menuAssignments>
+			<menuAssignment id="applicationMenu" order="6"/>
+			<menuAssignment id="toolBar" order="6"/>
+		</menuAssignments>
+
+		<requiredRoles>
+			<role>ROLE_CUSTOM_USAGE_REPORT</role>
+		</requiredRoles>
+
+		<messages>
+			<entries locale="en_US">
+				<entry key="title">Photo usage report</entry>
+				<entry key="button.label">Usage Report</entry>
+				<entry key="button.tooltip">Report photo usage</entry>
+			</entries>
+		</messages>
+
+	</action>
+</plugin>
