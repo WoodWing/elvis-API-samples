@@ -22,7 +22,9 @@ Some of the samples auto-login using the 'guest' user. You will have to either c
 
 jQuery
 --------
-All API samples are now based on the jQuery javascript library. The old 'prototype-js' based samples are still available in the [prototype-js branch](https://github.com/dutchsoftware/elvis-API-samples/tree/prototype-js).
+All API samples are based on the jQuery javascript library.
+
+Old 'prototype-js' based samples are still available in the [prototype-js branch](https://github.com/dutchsoftware/elvis-API-samples/tree/prototype-js). These are not maintained anymore, so it's advised to use the jQuery variant.
 
 
 API Documentation
@@ -46,7 +48,9 @@ Elvis is a digital asset management system. It's main features:
 - Intuitive user interface
 - Easy collaboration and sharing
 - High performance search engine
-- Scalable processing engine to support images, video, office documents, Adobe CS files, PDF, XML and more.
+- Scalable processing engine to preview images, video, office documents, Adobe CS files, PDF, XML and more.
 - Powerful metadata based permission rules
+- REST and SOAP API's
+- Plugin framework to customize server and client functionality
 
 For more information, go to: [www.elvisdam.com](http://www.elvisdam.com)
