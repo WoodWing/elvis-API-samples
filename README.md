@@ -17,26 +17,28 @@ We encourage you to download the samples and customize them. They can provide a 
 
 To use the samples on your own Elvis server, place this folder in the "<config>/plugins/active" folder of your Elvis server. They will then be available on the following url: http://<yourserver>/plugins/...name of folder...
 
-Some of the samples auto-login using the 'guest' user. You will have to either change that, or enable the guest user in "<config>/internal-users.properties.txt" and setup appropriate permissions for that user in Elvis.
+Some of the samples auto-login using the 'guest' user. You will have to either change that, or [enable the guest user](https://elvis.tenderapp.com/kb/special-configurations/creating-a-public-guest-account).
 
 
 jQuery
 --------
 All API samples are based on the jQuery javascript library.
 
-Old 'prototype-js' based samples are still available in the [prototype-js branch](https://github.com/dutchsoftware/elvis-API-samples/tree/prototype-js). These are not maintained anymore, so it's advised to use the jQuery variant.
+Old 'prototype-js' based samples are still available in the [prototype-js branch](https://github.com/dutchsoftware/elvis-API-samples/tree/prototype-js). These are not maintained anymore and quite outdated, so it's advised to use the jQuery variant.
 
 
 API Documentation
 --------
 Documentation for the Elvis API is available at: [https://elvis.tenderapp.com/kb](https://elvis.tenderapp.com/kb/api)
 
+Some of the plugins here are described in the [Bundled plugins section](https://elvis.tenderapp.com/kb/bundled-plugins/bundled-plugins).
+
 
 How to contribute
 --------
 We encourage everyone to share and contribute improvements or new samples back to the elvis community.
 
-If you have experience with Git and Github it is very easy to make contributions. You can [fork the project](http://help.github.com/forking), make your changes and then [send us a pull request](http://help.github.com/pull-requests) so we can incorporate your improvements.
+If you have experience with Git and Github it is very easy to make contributions. You can [fork the code](http://help.github.com/fork-a-repo), make your changes and then [send us a pull request](http://help.github.com/send-pull-requests) so we can incorporate your improvements.
 
 If you [don't have experience with Git](http://help.github.com), you can just email patches or zip files to us and we will include them in the samples.
 
