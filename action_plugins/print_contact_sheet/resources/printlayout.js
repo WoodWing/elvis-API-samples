@@ -52,7 +52,7 @@ var PrintLayout = (function(window) {
 				var pageHits = hitArray.splice(0, Math.min(this.hitsOnPage, hitArray.length));
 
 				html += ("<div class='page'><div class='content'>{previews}</div>" +
-						"<div class='elvisCopyright'>Powered by <a href='http://www.elvisdam.com'>Elvis</a> &copy; <a href='http://www.dutchsoftware.com'>dutchsoftware.com</a></div>" +
+						"<div class='elvisCopyright'>Powered by <a href='http://www.elvisdam.com'>Elvis DAM</a></div>" +
 						"<div class='pagebreak'></div></div>").replaceParams({
 							previews: this.renderPageHits(pageHits)
 						});
