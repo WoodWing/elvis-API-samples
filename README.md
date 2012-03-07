@@ -15,7 +15,7 @@ Use and customize them yourself
 --------
 We encourage you to download the samples and customize them. They can provide a good starting point to build your own interfaces and apps on top of Elvis.
 
-To use the samples on your own Elvis server, place this folder in the "<config>/plugins/active" folder of your Elvis server. They will then be available on the following url: http://<yourserver>/plugins/...name of folder...
+To use the samples on your own Elvis server, place this folder in the "Config/plugins/active" folder of your Elvis server. They will then be available on the following url: http://yourserver/plugins/...name of folder...
 
 Some of the samples auto-login using the 'guest' user. You will have to either change that, or [enable the guest user](https://elvis.tenderapp.com/kb/special-configurations/creating-a-public-guest-account).
 
