@@ -213,8 +213,7 @@ var ElvisAPI = $.Class({
 
 		var request = {
 			url: this._serverUrl + "/services/update",
-			data: metadata,
-			dataType: "text" // server sends empty response, do not try to parse
+			data: metadata
 		};
 
 		if (successHandler) {
@@ -332,8 +331,10 @@ var ElvisAPI = $.Class({
 			}
 		}
 
-		// Fallback: show error message
-		alert('Server call failed, cause: ' + jqXHR.status + ' ' + jqXHR.statusText);
+		if (jqXHR.status >= 300) {
+			// Fallback: show error message
+			alert('Server call failed, cause: ' + jqXHR.status + ' ' + jqXHR.statusText);
+		}
 	},
 
 	_retryRequestAfterLogin: function(request) {
@@ -365,6 +366,11 @@ var ElvisAPI = $.Class({
  * 
  * ElvisPlugin.queryForSelection(pluginHits)
  *	returns a "(id:... OR id:... OR id:...)" query to search all hits in an elvisContext selection
+ * 
+ * ElvisPlugin.resolveQueryString()
+ *	returns the query string that was used as search in the Elvis Desktop client,
+ *  if available, returns the search used in the current search tab,
+ *  otherwise returns the search entered in the top-left search field.
  */ 
 var ElvisPlugin = {
 	resolveElvisContext: function(required) {
@@ -388,6 +394,17 @@ var ElvisPlugin = {
 			assetIds.push(selectedHits[i].id);
 		}
 		return "(id:" + assetIds.join(" OR id:") + ")";
+	},
+	resolveQueryString: function() {
+		var elvisCtx = ElvisPlugin.resolveElvisContext(false);
+		if (!elvisCtx) {
+			return null;
+		}
+		var query = elvisCtx.activeTab.queryString;
+		if (query == null) {
+			query = elvisCtx.app.queryString;
+		}
+		return query;
 	}
 }
 
@@ -962,7 +979,7 @@ var HitRenderer = $.Class({
 			var sizes = ["small", "medium", "large"];
 			for (var i = 0; i < sizes.length; i++) {
 				var size = sizes[i];
-				var linkElement = $("<a/>").addClass(size + (size == this.renderSize ? " selected" : ""));
+				var linkElement = $("<a href='#' onclick='return false'/>").addClass(size + (size == this.renderSize ? " selected" : ""));
 				this.observeSizeControl(linkElement, size);
 
 				$(this.sizeTarget).append(linkElement);

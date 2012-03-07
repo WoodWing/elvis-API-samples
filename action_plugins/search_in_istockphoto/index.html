@@ -25,19 +25,16 @@ THE SOFTWARE.
 -->
 <head>
 	<title>Redirecting...</title>
+	<script src="${pluginsBaseRootUrl}/web.shared/jquery.js" type="text/javascript"></script>
+	<script src="${pluginsBaseRootUrl}/web.shared/jquery.class.js" type="text/javascript"></script>
+	<script src="${pluginsBaseRootUrl}/web.shared/jquery.cookie.js" type="text/javascript"></script>
+	<script src="${pluginsBaseRootUrl}/web.shared/elvis_api/js/jquery.elvis.js" type="text/javascript"></script>
 </head>
 <body>
 <script language="JavaScript">
 
 (function() {
-	if (window.elvisContext == undefined) {
-		alert("Unable to resolve elvisContext, this action plugin has to be triggered from Elvis.");
-		return;
-	}
-	var query = window.elvisContext.activeTab.queryString;
-	if (query == null) {
-		query = window.elvisContext.app.queryString;
-	}
+	var query = ElvisPlugin.resolveQueryString();
 	
 	if (query != null) {
 		window.location = "http://www.istockphoto.com/search/text/" + encodeURIComponent(query);

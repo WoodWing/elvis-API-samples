@@ -202,15 +202,9 @@ function refreshResults(start, num) {
 
 jQuery(function () {
 	// Init search input
-	var elvisCtx = ElvisPlugin.resolveElvisContext(false);
-	if (elvisCtx) {
-		var query = elvisCtx.activeTab.queryString;
-		if (query == null) {
-			query = elvisCtx.app.queryString;
-		}
-		if (query != null) {
-			$("#querystring").val(query);
-		}
+	var query = ElvisPlugin.resolveQueryString();
+	if (query != null) {
+		$("#querystring").val(query);
 	}
 
 	refreshResults();

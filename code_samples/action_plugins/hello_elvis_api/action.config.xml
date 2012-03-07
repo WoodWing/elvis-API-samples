@@ -23,6 +23,10 @@
 
 		<enabledExpression>elvisContext.hasSelection()</enabledExpression>
 		
+		<requiredRoles>
+			<role>ROLE_CUSTOM_HELLO_WORLD</role>
+		</requiredRoles>
+		
 		<messages>
 			<entries locale="en_US">
 				<entry key="button.label">Hello Elvis API</entry>
