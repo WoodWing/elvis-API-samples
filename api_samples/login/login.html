@@ -37,6 +37,10 @@ $(document).ready(function() {
 	// and update hidden form fields
 	var params = $.query.get();
 
+	if (params.clientType) {
+		$("#clientType").val( params.clientType );
+	}
+	
 	if (params.nextUrl) {
 		$("#nextUrl").val( params.nextUrl );
 	}
@@ -70,6 +74,7 @@ $(document).ready(function() {
 <body id="body">
 <div id="wrapper">
 	<form action="${serverUrl}/services/login">
+		<input id="clientType" name="clientType" type="hidden" value=""/>
 		<input id="nextUrl" name="nextUrl" type="hidden" value=""/>
 		<input id="failUrl" name="failUrl" type="hidden" value=""/>
 		<img src="${pluginsBaseRootUrl}/web.shared/elvis_api/images/elvis_on_black_trans_reflection_160x90.png"/>

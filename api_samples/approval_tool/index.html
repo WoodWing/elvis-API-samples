@@ -25,7 +25,7 @@ THE SOFTWARE.
 
 -->
 <head>
-	<title>elvis Approval Tool</title>
+	<title>Approval Tool - Elvis DAM</title>
 	<script src="${pluginsBaseRootUrl}/web.shared/jquery.js" type="text/javascript"></script>
 	<script src="${pluginsBaseRootUrl}/web.shared/jquery.class.js" type="text/javascript"></script>
 	<script src="${pluginsBaseRootUrl}/web.shared/jquery.cookie.js" type="text/javascript"></script>
@@ -93,7 +93,7 @@ var InfoIconHitRenderer = HitRenderer.extend({
 
 // Initialize and setup components
 var elvisApi = new ElvisAPI("${serverUrl}");
-elvisApi.useLoginPage("../login/login.html?nextUrl=" + encodeURIComponent(location));
+elvisApi.useLoginPage("../login/login.html?nextUrl=" + encodeURIComponent(location) + "&clientType=api_sample_ApprovalTool");
 
 var previewLightbox = new SwipingPreviewLightbox();
 

@@ -36,7 +36,7 @@ THE SOFTWARE.
 	<script type="text/javascript">
 
 var elvisApi = new ElvisAPI(tinyMCEPopup ? tinyMCEPopup.editor.settings.elvis_server_url : "${serverUrl}");
-elvisApi.useAutoLogin("guest", "guest");
+elvisApi.useAutoLogin("guest", "guest", "api_sample_WebCMS");
 
 // Custom HitRenderer that adds info and download buttons to each hit thumbnail
 var PreviewIconHitRenderer = HitRenderer.extend({
