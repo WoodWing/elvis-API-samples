@@ -44,7 +44,7 @@ https://elvis.tenderapp.com/kb/api/javascript-library-introduction
 /**
  * ElvisAPI
  * 
- * See documentation on community knowledgebase on:
+ * See documentation at community knowledge base on:
  * http://www.elvisdam.com
  */
 var ElvisAPI = $.Class({
@@ -58,17 +58,19 @@ var ElvisAPI = $.Class({
 
 		this._username = null;
 		this._password = null;
+		this._clientType = null;
 		this._autoLoginInProgress = false;
 		this._requestsToRepeatAfterLogin = [];
 		this._sessionId = $.cookie('elvisSessionId');
 	},
 
-	useAutoLogin: function(username, password) {
+	useAutoLogin: function(username, password, clientType) {
 		this._loginPage = null;
 		this._loginHandler = null;
 
 		this._username = username;
 		this._password = password;
+		this._clientType = clientType;
 	},
 
 	useLoginPage: function(url) {
@@ -87,16 +89,28 @@ var ElvisAPI = $.Class({
 		this._loginHandler = loginHandler;
 	},
 
-	login: function(username, password, successHandler) {
+	login: function(username, password, successHandler, data) {
 		var self = this;
+
+		var params = {
+			//username: username,
+			//password: password
+			cred: (username + ":" + password).base64Encode()
+		};
+
+		// Pass client type if specified by useAutoLogin
+		if (!params.clientType && this._clientType) {
+			params.clientType = this._clientType;
+		}
+
+		// Allow passing additional params through data object
+		if (data) {
+			$.extend(params, data);
+		}
 
 		this._doAjax({
 			url: this._serverUrl + "/services/login",
-			data: {
-				//username: username,
-				//password: password
-				cred: (username + ":" + password).base64Encode()
-			},
+			data: params,
 			success: function(data) {
 				if (data.loginSuccess) {
 					self._sessionId = data.sessionId;
@@ -168,16 +182,7 @@ var ElvisAPI = $.Class({
 			success: function(data) {
 				if (self._sessionId) {
 					for (var i = 0; i < data.hits.length; i++) {
-						var hit = data.hits[i];
-						if (hit.thumbnailUrl) {
-							hit.thumbnailUrl = self._appendSessionId(hit.thumbnailUrl);
-						}
-						if (hit.previewUrl) {
-							hit.previewUrl = self._appendSessionId(hit.previewUrl);
-						}
-						if (hit.originalUrl) {
-							hit.originalUrl = self._appendSessionId(hit.originalUrl);
-						}
+						self._processHitUrls(data.hits[i]);
 					}
 				}
 
@@ -208,7 +213,7 @@ var ElvisAPI = $.Class({
 	},
 
 	update: function(id, metadata, successHandler) {
-		// add id to metadata
+		// Add id to metadata
 		metadata["id"] = id;
 
 		var request = {
@@ -231,7 +236,7 @@ var ElvisAPI = $.Class({
 			request.error = this._onError;
 		}
 
-		// Wrap success handler to provide JSONP error handling by looking for 'errorcode' in response data from elvis
+		// Wrap success handler to provide JSONP error handling by looking for 'errorcode' in response data from Elvis
 		var originalSuccessHandler = request.success;
 		request.success = function(data, textStatus, jqXHR) {
 			if (!data.errorcode) { // || (data.errorcode >= 200 && data.errorcode < 300)) {
@@ -260,7 +265,7 @@ var ElvisAPI = $.Class({
 			};
 		}
 
-		// Add unique part to url when using 'get' to prevent caching
+		// Add unique part to URL when using 'get' to prevent caching
 		// not needed with post (which should never be cached)
 		//_param._ = (new Date()).getTime();
 
@@ -270,10 +275,31 @@ var ElvisAPI = $.Class({
 		$.ajax(request);
 	},
 
+	_processHitUrls: function(hit) {
+		if (hit.thumbnailUrl) {
+			hit.thumbnailUrl = this._processHitUrl(hit.thumbnailUrl);
+		}
+		if (hit.previewUrl) {
+			hit.previewUrl = this._processHitUrl(hit.previewUrl);
+		}
+		if (hit.originalUrl) {
+			hit.originalUrl = this._processHitUrl(hit.originalUrl);
+		}
+		if (hit.thumbnailHits) {
+			for (var i = 0; i < hit.thumbnailHits.length; i++) {
+				this._processHitUrls(hit.thumbnailHits[i]);
+			}
+		}
+	},
+
+	_processHitUrl: function(url) {
+		return this._appendSessionId(url);
+	},
+
 	_appendSessionId: function(url) {
-		// Add sessionId to url in case cookies don't work
+		// Add sessionId to URL in case cookies don't work
 		if (url && this._sessionId) {
-			// TODO should we remove ;jsessionid=[a-zA-Z0-9-_]+ if is already in the url? could that happen?
+			// TODO should we remove ;jsessionid=[a-zA-Z0-9-_]+ if is already in the URL? could that happen?
 			var idx = url.indexOf("?");
 			if (idx == -1) {
 				url += ";jsessionid=" + this._sessionId;
@@ -368,7 +394,7 @@ var ElvisAPI = $.Class({
  *	returns a "(id:... OR id:... OR id:...)" query to search all hits in an elvisContext selection
  * 
  * ElvisPlugin.resolveQueryString()
- *	returns the query string that was used as search in the Elvis Desktop client,
+ *	returns the query string that was used as search in the Elvis desktop client,
  *  if available, returns the search used in the current search tab,
  *  otherwise returns the search entered in the top-left search field.
  */ 
@@ -395,6 +421,17 @@ var ElvisPlugin = {
 		}
 		return "(id:" + assetIds.join(" OR id:") + ")";
 	},
+	queryForFolderSelection: function(selectedFolders) {
+		if (selectedFolders.length == 0) {
+			return "";
+		}
+
+		var paths = new Array();
+		for (var i = 0; i < selectedFolders.length; i++) {
+			paths.push(selectedFolders[i].assetPath);
+		}
+		return '(ancestorPaths:"' + paths.join('" OR ancestorPaths:"') + '")';
+	},
 	resolveQueryString: function() {
 		var elvisCtx = ElvisPlugin.resolveElvisContext(false);
 		if (!elvisCtx) {
@@ -413,13 +450,15 @@ var ElvisPlugin = {
  * 
  * Utility to check permissions 'mask' for available permissions.
  * The permissions mask consists of a string with one character for
- * every permission available in elvis: VPUMECD
+ * every permission available in Elvis: VPUMERXCD
  * 
  * V = VIEW
  * P = VIEW_PREVIEW
  * U = USE_ORIGINAL
  * M = EDIT_METADATA
  * E = EDIT
+ * R = RENAME
+ * X = MOVE
  * C = CREATE
  * D = DELETE
  */
@@ -439,38 +478,38 @@ var AssetPermissions = {
  *
  * TODO explain how to setup and customize...
 
-// setup path to locate /images/document_*.png
+// Setup path to locate /images/document_*.png
 HitRenderer.resources = "shared_resources/elvis_api";
 
 // Create a hitRenderer instance and configure it
 var hitRenderer = new HitRenderer();
 
-// id of element that will contain the rendered hits (optional)
+// Id of element that will contain the rendered hits (optional)
 hitRenderer.hitsTarget = "elementId";
 
-// array with metadata field names that should be displayed below the each hit
+// Array with metadata field names that should be displayed below the each hit
 hitRenderer.metadataToDisplay = ["name", "rating", "credit"];
 
-// callback funtion, will be called when a hit is clicked
+// Callback funtion, will be called when a hit is clicked
 hitRenderer.itemClick = function (hit) {
 	... your code ...
 };
 
-// id of element that will contain an info message about how many results were found (optional)
+// Id of element that will contain an info message about how many results were found (optional)
 hitRenderer.infoTarget = "resultInfo";
 
-// id of element that will contain a result pager
+// Id of element that will contain a result pager
 hitRenderer.pageTarget = "resultPager";
 
-// callback function, will be called when a page link is clicked
+// Callback function, will be called when a page link is clicked
 hitRenderer.pageClick = function (start, num) {
 	... your code to 'search' the requested page ...
 };
 
-// once a render is setup you can can use it by calling it's 'render' method:
+// Once a render is setup you can can use it by calling it's 'render' method:
 hitRenderer.render( results from elvisApi.search OR array of hits OR single hit );
 
-// it is also possible to pass the render method as callback to the elvisApi.search method
+// It is also possible to pass the render method as callback to the elvisApi.search method
 elvisApi.search(..., myRenderer.render)
 
  */
@@ -481,8 +520,8 @@ var HitRenderer = $.Class({
 	 */
 
 	init: function() {
-		// set default options
-		// these can be customized
+		// Set default options
+		// These can be customized
 		this.hitsTarget = null;
 		this.infoTarget = null;
 		this.pageTarget = null;
@@ -501,30 +540,30 @@ var HitRenderer = $.Class({
 
 		this.maxPageLinks = 9;
 
-		// handler functions
+		// Handler functions
 		this.itemClick = null;
 		this.pageClick = null;
 		this.selectionChange = null;
 
-		// resolve HitRenderer.resources if not explicitly configured
+		// Resolve HitRenderer.resources if not explicitly configured
 		if (!HitRenderer.resources) {
 			var elvisApiUrl = "${pluginsBaseRootUrl}/web.shared/elvis_api";
 			if (elvisApiUrl.indexOf("$") == 0) {
-				// variable was not replaced, we are probably not running on an
-				// elvis server, try to lookup url in elvisContext
+				// Variable was not replaced, we are probably not running on an
+				// Elvis server, try to lookup URL in elvisContext
 				var elvisCtx = ElvisPlugin.resolveElvisContext(false);
 				if (elvisCtx != undefined) {
 					elvisApiUrl = elvisCtx.app.pluginsBaseRootUrl + "/web.shared/elvis_api";
 				}
 				else {
-					// unable to resolve elvisContext, use backward compatible default
+					// Unable to resolve elvisContext, use backward compatible default
 					elvisApiUrl = "shared_resources/elvis_api";
 				}
 			}
 			HitRenderer.resources = elvisApiUrl;
 		}
 
-		// private instance variables
+		// Private instance variables
 		this.hits = null;
 
 		// Hack to bind 'public' method so it can be passed as reference
@@ -542,14 +581,14 @@ var HitRenderer = $.Class({
 	 * This method is flexible, it accepts:
 	 * - an array of hits
 	 * - a single hit
-	 * - a data object returned by the elvis API
+	 * - a data object returned by the Elvis API
 	 *
 	 * The last option means you can provide this method
 	 * directly as callback to
 	 *
 	 *	  elvisApi.search(..., myRenderer.render)
 	 *
-	 * The following html structure is rendered:
+	 * The following HTML structure is rendered:
 	 *	 
 	 *	  div.elvisHitBox
 	 *		  a
@@ -578,7 +617,7 @@ var HitRenderer = $.Class({
 	 * Resolves hit array from various types of data. It accepts:
 	 * - an array of hits
 	 * - a single hit
-	 * - a data object returned by the elvis API
+	 * - a data object returned by the Elvis API
 	 */
 	getHitsFromData: function(data) {
 		if (data == null) {
@@ -646,10 +685,10 @@ var HitRenderer = $.Class({
 
 		this.renderSize = size;
 
-		// scale square thumbnails
+		// Scale square thumbnails
 		this.rescaleSquareThumbs(targetElement);
 
-		// update controls
+		// Update controls
 		this.renderSizeControls();
 	},
 
@@ -699,7 +738,7 @@ var HitRenderer = $.Class({
 				thumbnail: this.renderThumbnail(hit)
 			});
 		} else {
-			// do not create link if we don't have an itemClick handler and no linkClass or linkRel
+			// Do not create link if we don't have an itemClick handler and no linkClass or linkRel
 			return this.renderThumbnail(hit);
 		}
 	},
@@ -776,7 +815,7 @@ var HitRenderer = $.Class({
 		var renderedValue = this.renderValue(hit, field, value);
 
 		return '<div title="{title}" class="{cssClass}">{value}</div>'.replaceParams({
-			title: escape(field + ": " + renderedValue),
+			title: field + ": " + renderedValue,
 			cssClass: this.getValueCssClass(hit, field, value, renderedValue),
 			value: renderedValue
 		});
@@ -853,7 +892,7 @@ var HitRenderer = $.Class({
 	 */
 
 	postProcessTarget: function(targetElement) {
-		// find and process hit boxes
+		// Find and process hit boxes
 		var elements = $(".elvisHitBox", targetElement);
 
 		for (var i = 0; i < elements.length; i++) {
@@ -864,7 +903,7 @@ var HitRenderer = $.Class({
 	postProcessHit: function(hitElement, hit, index) {
 		var self = this;
 
-		// register click handler
+		// Register click handler
 		if (this.itemClick || this.selectable) {
 			$(hitElement).bind("click", function(event) {
 				var result = (self.itemClick ? self.itemClick(event, hit, self.hits, index) : true);
@@ -876,7 +915,7 @@ var HitRenderer = $.Class({
 			});
 		}
 
-		// register click handler
+		// Register double-click handler
 		if (this.itemDoubleClick) {
 			$(hitElement).bind("dblclick", function(event) {
 				self.itemDoubleClick(event, hit, self.hits, index);
@@ -889,21 +928,21 @@ var HitRenderer = $.Class({
 	toggleSelected: function(hitElement, hit, index) {
 		var hitElementJQ = $(hitElement);
 		if (this.multiselect) {
-			// remove or add selected hit
+			// Remove or add selected hit
 			if (hitElementJQ.hasClass("selected")) {
 				this.selectedHits.splice(jQuery.inArray(hit, this.selectedHits), 1);
 			} else {
 				this.selectedHits.push(hit);
 			}
 		} else {
-			// select this hit
+			// Select this hit
 			if (hitElementJQ.hasClass("selected")) {
 				this.selectedHits = [];
 			} else {
 				this.selectedHits = [hit];
 			}
 
-			// unselect other hits
+			// Unselect other hits
 			hitElementJQ.siblings().removeClass("selected");
 		}
 
@@ -927,7 +966,7 @@ var HitRenderer = $.Class({
 
 	squareFillImage: function(img) {
 		var imgElmt = img.context;
-		// wait until image has loaded so we know its dimensions
+		// Wait until image has loaded so we know its dimensions
 		if (imgElmt.naturalWidth == 0 || this.findParent(img, "div.square").context.clientWidth == 0) {
 			var self = this;
 			img.bind("load", function(){
@@ -936,11 +975,11 @@ var HitRenderer = $.Class({
 			return;
 		}
 
-		// get 'square' container size
+		// Get 'square' container size
 		// (a little larger to make sure it really fills its container and avoid anti-alias grey areas)
 		var maxSize = this.findParent(img, "div.square").context.clientWidth + 2;
 
-		// default sizing (for square images)
+		// Default sizing (for square images)
 		var style = {
 			width: maxSize + "px",
 			height: maxSize + "px",
@@ -948,16 +987,16 @@ var HitRenderer = $.Class({
 			top: "-1px"
 		};
 
-		// adjust scaling for landscape and portrait images
+		// Adjust scaling for landscape and portrait images
 		if (imgElmt.naturalWidth > imgElmt.naturalHeight) {
-			// landscape (height is smallest)
+			// Landscape (height is smallest)
 			var width = (maxSize / imgElmt.naturalHeight) * imgElmt.naturalWidth;
 			var offset = (maxSize - width) / 2;
 
 			style.width = width + "px";
 			style.left = offset + "px";
 		} else if (imgElmt.naturalWidth < imgElmt.naturalHeight) {
-			// portrait (width is smallest)
+			// Portrait (width is smallest)
 			var height = (maxSize / imgElmt.naturalWidth) * imgElmt.naturalHeight;
 			var offset = (maxSize - height) / 2;
 
@@ -1010,14 +1049,14 @@ var HitRenderer = $.Class({
 			var lastPageIdx = numPages - 1;
 			var linkHtml = '';
 
-			// render prev link
+			// Render prev link
 			if (curPageIdx > 0) {
 				linkHtml += this.renderPageLink(curPageIdx - 1, "Prev", "elvisPagePrev");
 			} else {
 				linkHtml += '<span class="elvisPagePrev elvisPageDisabled">Prev</span>';
 			}
 
-			// render page links around current page
+			// Render page links around current page
 			if (numPages > 1) {
 				var pageRangeStart = Math.max(0, Math.min(curPageIdx - Math.floor(this.maxPageLinks / 2), numPages - this.maxPageLinks));
 				var pageRangeEnd = Math.min(lastPageIdx + 1, pageRangeStart + this.maxPageLinks);
@@ -1031,14 +1070,14 @@ var HitRenderer = $.Class({
 				}
 			}
 
-			// render next link
+			// Render next link
 			if (curPageIdx < lastPageIdx) {
 				linkHtml += this.renderPageLink(curPageIdx + 1, "Next", "elvisPageNext");
 			} else {
 				linkHtml += '<span class="elvisPageNext elvisPageDisabled">Next</span>';
 			}
 
-			// update html
+			// Update HTML
 			var targetElement = $(this.pageTarget);
 			targetElement.html('');
 
@@ -1046,7 +1085,7 @@ var HitRenderer = $.Class({
 				targetElement.html('<div class="elvisPager">' + linkHtml + '</div>');
 			}
 
-			// add event handlers
+			// Add event handlers
 			var self = this;
 			targetElement.find("a").bind("click", function(event){
 				var pageIdx = parseInt($(this).attr("rel"));
@@ -1069,14 +1108,14 @@ var HitRenderer = $.Class({
 var FacetRenderer = $.Class({
 
 	init: function() {
-		// set default options
-		// these can be customized
+		// Set default options
+		// These can be customized
 		this.facets = null;
 		this.facetTargetPostfix = "Facet";
 		this.facetClick = null;
 		//this.maxValuesToDisplay = 30;
 
-		// private instance variables
+		// Private instance variables
 		this._selectedFacets = {};
 
 		// Hack to bind 'public' method so it can be passed as reference
@@ -1246,7 +1285,7 @@ var ColumnTree = $.Class({
 	},
 
 	_render: function (browseResult) {
-		// empty result, do nothing
+		// Empty result, do nothing
 		if (browseResult.length == 0) {
 			return;
 		}
@@ -1299,14 +1338,14 @@ var ColumnTree = $.Class({
 		if (data.directory) {
 			this.containerId = null;
 
-			// remove any displayed subfolders
+			// Remove any displayed subfolders
 			listElement.nextAll().remove();
 
-			// browse to subfolder
+			// Browse to subfolder
 			this._browse(data.assetPath);
 		}
 		else if (data.containerId) {
-			// select container
+			// Select container
 			this.containerId = data.containerId;
 		}
 
@@ -1347,16 +1386,23 @@ var PreviewLightbox = $.Class({
 
 		$('body').append(template);
 
+		$('#elvisPreview').bind("click", function(event) {
+			self.close();
+			return false;
+		});
 		$('#elvisPreviewClose').bind("click", function(event) {
 			self.close();
+			return false;
 		});
 
 		$('#elvisPreviewPrev').bind("click", function(event) {
 			self.prev();
+			return false;
 		});
 
 		$('#elvisPreviewNext').bind("click", function(event) {
 			self.next();
+			return false;
 		});
 
 		$(window).resize(function(){
@@ -1372,7 +1418,7 @@ var PreviewLightbox = $.Class({
 	},
 
 	next: function() {
-		if (this.hits && this.currentIndex < this.hits.length - 1) {
+		if (this.hits != null && this.currentIndex < this.hits.length - 1) {
 			this.show(this.hits[++this.currentIndex]);
 		} else {
 			this.close();
@@ -1380,7 +1426,7 @@ var PreviewLightbox = $.Class({
 	},
 
 	prev: function() {
-		if (this.hits && this.currentIndex > 0) {
+		if (this.hits != null && this.currentIndex > 0) {
 			this.show(this.hits[--this.currentIndex]);
 		} else {
 			this.close();
@@ -1392,7 +1438,7 @@ var PreviewLightbox = $.Class({
 			return;
 		}
 
-		// find preview url
+		// Find preview URL
 		if (previewUrlOrHit.previewUrl) {
 			this.previewUrl = previewUrlOrHit.previewUrl;
 		} else if (typeof(previewUrlOrHit) == 'string') {
@@ -1401,28 +1447,28 @@ var PreviewLightbox = $.Class({
 			this.previewUrl = "";
 		}
 
-		// only insert html once
+		// Only insert HTML once
 		if (!this.htmlCreated) {
 			this.insertHtml();
 
 			this.htmlCreated = true;
 		}
 
-		// clear natural size so we can capture it again
+		// Clear natural size so we can capture it again
 		this.naturalPreviewSize = null;
 
-		// clear contents
+		// Clear contents
 		var previewBox = $('#elvisPreviewBox');
 		previewBox.css({
 			visibility: "hidden"
 		});
 		previewBox.html("");
 
-		// determine previewType
+		// Determine previewType
 		var typeMatch = /.*\.(jpg|mp4|html)/.exec(this.previewUrl);
 		this._previewType = (typeMatch == null || typeMatch.length == 1) ? null : typeMatch[1];
 
-		// insert preview contents
+		// Insert preview contents
 		if (this._previewType == "jpg") {
 			previewBox.html('<img id="elvisPreviewObject" class="elvisPreviewImage" src="{src}"/>'.replaceParams({
 				src: this.previewUrl
@@ -1448,10 +1494,13 @@ var PreviewLightbox = $.Class({
 			}));
 		}
 
-		// show loading icon
+		// Show loading icon
 		$('#elvisPreview').addClass("elvisThrobber");
 
 		this.adjustSize();
+
+		$('#elvisPreviewPrev').toggle(this.hits != null && this.currentIndex > 0);
+		$('#elvisPreviewNext').toggle(this.hits != null && this.currentIndex < this.hits.length - 1);
 
 		$('#elvisPreviewOverlay').show();
 		$('#elvisPreview').show();
@@ -1461,15 +1510,15 @@ var PreviewLightbox = $.Class({
 		$('#elvisPreview').hide();
 		$('#elvisPreviewOverlay').hide();
 
-		// remove preview element to stop video
+		// Remove preview element to stop video
 		$('#elvisPreviewBox').html("");
 		
-		// clear hits so next call will not show old gallery
+		// Clear hits so next call will not show old gallery
 		this.hits = null;
 	},
 
 	adjustSize: function() {
-		//Adding check to determine the object exists to prevent unwarrented errors.
+		// Adding check to determine the object exists to prevent unwarrented errors.
 		var previewObject = $('#elvisPreviewObject');
 		if (previewObject != null && previewObject.width() == 0) {
 			// Delay adjustSize until we know preview size
@@ -1481,7 +1530,7 @@ var PreviewLightbox = $.Class({
 			return;
 		}
 
-		// store natural size first time
+		// Store natural size first time
 		var isFirstAdjust = (this.naturalPreviewSize == null);
 		if (isFirstAdjust) {
 			this.naturalPreviewSize = {
@@ -1490,7 +1539,7 @@ var PreviewLightbox = $.Class({
 			};
 		}
 
-		// set size on preview object
+		// Set size on preview object
 		var jqViewport = $(window);
 		var style = {
 			width: jqViewport.width(),
@@ -1500,25 +1549,25 @@ var PreviewLightbox = $.Class({
 		if (this._previewType == "jpg") {
 			style.marginTop = 0;
 
-			// determine correct scale factor (smallest = best fit)
+			// Determine correct scale factor (smallest = best fit)
 			var fH = style.width / this.naturalPreviewSize.width;
 			var fV = style.height / this.naturalPreviewSize.height;
 			var f = Math.min(fH, fV);
 
-			// prevent upscaling
+			// Prevent upscaling
 			f = Math.min(f, 1.0);
 
-			// apply scaling
+			// Apply scaling
 			style.width = Math.round(this.naturalPreviewSize.width * f);
 			style.height = Math.round(this.naturalPreviewSize.height * f);
 		}
 		else if (this._previewType == "mp4") {
-			// make sure video does not overlap close button
+			// Make sure video does not overlap close button
 			style.marginTop = 60;
 			style.height = style.height - 60;
 		}
 
-		//Adding check to determine the object exists to prevent unwarrented errors.
+		// Adding check to determine the object exists to prevent unwarrented errors.
 		if ($('#elvisPreviewObject') != null) {
 			$('#elvisPreviewObject').css({
 				marginTop: style.marginTop + 'px',
@@ -1527,12 +1576,12 @@ var PreviewLightbox = $.Class({
 			});
 		}
 		if (isFirstAdjust) {
-			//$('#body')[0].css({height: document.viewport.height()+"px", overflow: "hidden"});
+			// $('#body')[0].css({height: document.viewport.height()+"px", overflow: "hidden"});
 			$('#elvisPreviewBox').css({
 				visibility: "visible"
 			});
 
-			// hide loading icon
+			// Hide loading icon
 			$('#elvisPreview').removeClass("elvisThrobber");
 		}
 	}
@@ -1540,19 +1589,23 @@ var PreviewLightbox = $.Class({
 
 
 /**
- * Extensions of javascript String
+ * Extensions of JavaScript String
  * 
- * Generic code for ajax throbber
+ * Generic code for AJAX throbber
  */
 
 (function() {
 
-	//Douglas Crockford's Supplant. Read http://javascript.crockford.com/remedial.html for details.
+	// Douglas Crockford's Supplant. Read http://javascript.crockford.com/remedial.html for details.
 	String.prototype.replaceParams = function(o) {
 		return this.replace(/{([^{}]*)}/g,
 		function(a, b) {
-			var r = eval("o." + b);
-			return typeof r === 'string' || typeof r === 'number' ? r : a;
+			try {
+				var r = eval("o." + b);
+				return typeof r === 'string' || typeof r === 'number' ? r : a;
+			} catch (e) {
+				return "";
+			}
 		}
 		);
 	};
@@ -1608,8 +1661,8 @@ var PreviewLightbox = $.Class({
 	};
 
 	/**
-	 * Ajax throbber
-	 * Shows throbber when ajax requests are executed
+	 * AJAX throbber
+	 * Shows throbber when AJAX requests are executed
 	 *
 	 * http://ajaxload.info/
 	 */

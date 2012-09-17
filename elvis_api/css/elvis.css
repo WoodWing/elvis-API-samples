@@ -569,15 +569,19 @@ div.elvisColumnTreeList {
 }
 #elvisPreviewPrev {
 	left: 0px;
+	background-image: url("../images/nav_left.png");
+	opacity: 0.2;
 }
 #elvisPreviewPrev:hover {
-	background-image: url("../images/nav_left.png");
+	opacity: 1;
 }
 #elvisPreviewNext {
 	right: 0px;
+	background-image: url("../images/nav_right.png");
+	opacity: 0.2;
 }
 #elvisPreviewNext:hover {
-	background-image: url("../images/nav_right.png");
+	opacity: 1;
 }
 #elvisPreviewWrapper
 {
