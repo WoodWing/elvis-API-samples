@@ -1,0 +1,72 @@
+#search-result-title{
+	display: inline-block;
+    font-size: 18px;
+    margin-left: 10px;
+    padding-top:10px;
+}
+
+#popular-search-report{
+    padding: 0px;
+}
+
+#search-content{
+    overflow: hidden;
+    padding: 10px;
+}
+
+#search-details{
+    min-height: 500px;
+    width: 75%;
+    margin-top:-10px;
+    float: right;
+}
+
+#search-cloud{
+	float:right;
+	width: 75%;
+	height: 270px;
+}
+
+#searchresult-item-detail{
+    padding-left: 10px;
+    padding-bottom: 10px;
+    min-width: 450px;
+    height: 90%;
+    border: 1px solid #c0c0c0;
+}
+
+div.details-title{
+   margin-top: 13px;
+   font-weight: bold;
+   color: #007FB2;
+}
+
+div.details-item{
+   padding-left:10px;
+}
+
+
+#search-queries{
+    float: left;
+    padding-top: 10px;
+}
+
+div.result-item{
+    margin-left: 10px;
+    line-height: 18px;
+}
+
+div.searchresult-content{
+    min-height: 400px;
+    padding-bottom:10px;
+}
+
+div.searchresult-load {
+    margin-left: 50%;
+    line-height: 250px;
+}
+
+a.search-link {
+    color: #007FB2;
+    text-decoration: underline;
+}

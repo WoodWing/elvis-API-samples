@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Usage log table</title>
+
+    <link rel="stylesheet" href="css/demo_table_jui.css">
+    <link rel="stylesheet" href="css/base/jquery.ui.all.css">
+    <script src="js/jquery-1.7.2.min.js"></script>
+    <script src="js/jquery-ui-1.8.21.custom.min.js"></script>
+    <script src="js/jquery.dataTables.min.js"></script>
+    <script src="js/jquery.format-1.2.min.js"></script>
+    <script src="js/helpers.js"></script>
+    <script type="text/javascript">
+        var data = [];
+
+        $(document).ready(function () {
+
+            <!-- change metadata dialog initialization -->
+            $('#changedMetadataDialog').dialog({
+                autoOpen:false,
+                modal:true,
+                width:800,
+                resizable:false
+            });
+
+            <!-- data refresh - button initialization -->
+            $("#refresh-usage").button();
+            $("#refresh-usage").show();
+            $("#refresh-usage").click(function() {
+	            loadData();
+	        });
+
+            <!--load data in table-->
+            loadData();
+        });
+
+        function loadData() {
+
+            var params = [];
+            params.push({name:'queryFile', value:'${pluginId}/sql/usagelog.sql'});
+
+            $.ajax({
+                url:'/services/queryStats',
+                data:params,
+                success:function (d, status) {
+                    // column model
+                    var columns = [
+
+                        {mDataProp:'log_date', sTitle:'Log Date', fnRender:function (obj) {
+                            return fieldToString('log_date', obj.aData['log_date']);
+                        }, sWidth:'80px', sDefaultContent: ''},
+                        {mDataProp:'action_type', sTitle:'Action Type', sWidth:'50px', sDefaultContent: ''},
+                        {mDataProp:'user_name', sTitle:'User Name', sWidth:'50px', sDefaultContent: ''},
+                        {mDataProp:'user_groups', sTitle:'User Groups', sWidth:'50px', sDefaultContent: ''},
+                        {mDataProp:'asset_id', sTitle:'AssetID', sWidth:'130px', sDefaultContent: ''},
+                        {mDataProp:'asset_path', sTitle:'Asset Path', sWidth:'200px', sDefaultContent: ''},
+                        {mDataProp:'asset_type', sTitle:'Asset Type', sWidth:'50px', sDefaultContent: ''},
+                        {mDataProp:'asset_domain', sTitle:'Asset Domain', sWidth:'50px', sDefaultContent: ''},
+                        {mDataProp:'source_asset_id', sTitle:'Source Asset Id', sWidth:'50px', sDefaultContent: ''},
+                        {mDataProp:'source_asset_path', sTitle:'Source Asset Path', sWidth:'50px', sDefaultContent: ''},
+                        {mDataProp:'details', sTitle:'Details', sWidth:'50px', sDefaultContent: ''},
+                        {mDataProp:'remote_addr', sTitle:'Remote Address', sWidth:'50px', sDefaultContent: ''},
+                        {mDataProp:'remote_host', sTitle:'Remote Host', sWidth:'50px', sDefaultContent: ''},
+                        {mDataProp:'changed_metadata', sTitle:'Changed Metadata', fnRender:function (obj) {
+                            return '<div style="cursor:pointer;text-align:center" onclick="displayChangedMetadata(this, ' + obj.iDataRow + ')">...</div>';
+                        }, bSearchable:false, bSortable:false, sDefaultContent:'', sWidth:'80px', sDefaultContent: ''}
+
+                    ];
+                    data = d;
+
+                    var dt = $('#usagelog').dataTable({
+                        bProcessing:false,
+                        aaData:d,
+                        aoColumns:columns,
+                        bDestroy:true,
+                        "bJQueryUI":true,
+                        "sPaginationType":"full_numbers",
+			"iDisplayLength": 25,
+			bLengthChange: true
+                    });
+		    dt.fnSort([
+		                [0, 'desc']
+		    ]);
+                },
+                error:function (jqXHR, status, errorThrown) {
+                    alert('Error');
+                }
+            });
+
+        }
+
+        function displayChangedMetadata(e, rowIndex) {
+            var cm = data[rowIndex]['changed_metadata'];
+            var assetPath = data[rowIndex]['asset_path'];
+            var cmData = [];
+            if (typeof cm != 'undefined') {
+                // convert changed metadata object to array
+                for (var field in cm) {
+                    var row = [];
+                    row.push(field);
+                    row.push(fieldToString(field, cm[field]['oldValue']));
+                    row.push(fieldToString(field, cm[field]['newValue']));
+                    cmData.push(row);
+                }
+            }
+            var dt1 = $('#cmDataTable').dataTable({
+                bProcessing:false,
+                aaData:cmData,
+                aoColumns:[
+                    {sTitle:'Field', sWidth:'100px'},
+                    {sTitle:'Old value', sWidth:'350px'},
+                    {sTitle:'New value', sWidth:'350px'}
+                ],
+		bAutoWidth: false,
+		bDestroy: true,
+                bJQueryUI:true,
+                sPaginationType:"full_numbers",
+		"iDisplayLength": 50,
+		bLengthChange: true
+
+            });
+            // force sorting by action date column to fix column title width (incorrect when used sScrollY option)
+            $('#changedMetadataDialog').dialog('option', {title:assetPath}).dialog('open');
+            dt1.fnSort([
+                [0, 'asc']
+            ]);
+        }
+
+    </script>
+</head>
+<body>
+<div>
+
+    <div class="toolbar">
+		<span>Note: There can be a delay of up to 10 seconds for activity to be logged</span>
+        <button id="refresh-usage" style="display:none;">Refresh</button>
+    </div>
+
+    <div class="maintable">
+        <table cellpadding="0" cellspacing="0" border="0" class="display" id="usagelog">
+        </table>
+    </div>
+
+    <!-- changed metadata popup-->
+    <div id="changedMetadataDialog">
+        <table cellpadding="0" cellspacing="0" border="0" class="display" id="cmDataTable">
+        </table>
+    </div>
+</div>
+</body>
+</html>

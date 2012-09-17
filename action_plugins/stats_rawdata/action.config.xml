@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+	<info>
+		<version>
+			<pluginVersion>1.0</pluginVersion>
+			<requiresAtLeast>3.5.1.665</requiresAtLeast>
+		</version>
+		<description>Shows raw stats data that is logged</description>
+	</info>
+	<action>
+		<url>${pluginUrl}/index.html</url>
+		<icon16Url>${pluginUrl}/icon16.png</icon16Url>
+		<icon24Url>${pluginUrl}/icon24.png</icon24Url>
+
+		<userInterface>
+			<externalBrowser loadInIframe="true"/>
+		</userInterface>
+
+		<menuAssignments>
+			<menuAssignment id="applicationMenu" order="11"/>
+			<menuAssignment id="toolBar" order="11"/>
+		</menuAssignments>
+
+		<requiredRoles>
+			<role>ROLE_SUPERUSER</role>
+		</requiredRoles>
+
+		<messages>
+			<entries locale="en_US">
+				<entry key="button.label">RAW Stats data</entry>
+				<entry key="button.tooltip">Shows raw stats data that is logged</entry>
+			</entries>
+		</messages>
+
+	</action>
+</plugin>

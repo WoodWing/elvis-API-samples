@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+	<info>
+		<version>
+			<pluginVersion>1.0</pluginVersion>
+			<requiresAtLeast>3.5.1.665</requiresAtLeast>
+		</version>
+		<description>Reports about Elvis usage</description>
+		<documentationUrl>http://elvis.tenderapp.com/kb/bundled-plugins/action-stats</documentationUrl>
+	</info>
+	<action>
+		<url>${pluginUrl}/index.html</url>
+		<icon16Url>${pluginUrl}/icon16.png</icon16Url>
+		<icon24Url>${pluginUrl}/icon24.png</icon24Url>
+
+		<userInterface>
+			<externalBrowser loadInIframe="true"/>
+		</userInterface>
+
+		<menuAssignments>
+			<menuAssignment id="applicationMenu" order="10"/>
+			<menuAssignment id="toolBar" order="10"/>
+		</menuAssignments>
+
+		<requiredRoles>
+			<role>ROLE_STATS</role>
+		</requiredRoles>
+
+		<messages>
+			<entries locale="en_US">
+				<entry key="button.label">Stats</entry>
+				<entry key="button.tooltip">Reports about Elvis usage</entry>
+				<entry key="title">Stats</entry>
+			</entries>
+		</messages>
+
+	</action>
+</plugin>
