@@ -1,0 +1,266 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<!--
+
+Licensed under the MIT License
+Copyright (c) 2010-2012 dutchsoftware.com
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+
+-->
+<head>
+	<title>Download Portal - Elvis DAM</title>
+	<script src="${pluginsBaseRootUrl}/web.shared/jquery.js" type="text/javascript"></script>
+	<script src="${pluginsBaseRootUrl}/web.shared/jquery.class.js" type="text/javascript"></script>
+	<script src="${pluginsBaseRootUrl}/web.shared/jquery.cookie.js" type="text/javascript"></script>
+	<link  href="${pluginsBaseRootUrl}/web.shared/elvis_api/css/elvis.css" rel="stylesheet" type="text/css"/>
+	<script src="${pluginsBaseRootUrl}/web.shared/elvis_api/js/jquery.elvis.js" type="text/javascript"></script>
+	<script src="resources/jquery.jswipe-0.1.2.js" type="text/javascript"></script>
+	<link  href="resources/styles.css" rel="stylesheet" type="text/css"/>
+	<script type="text/javascript">
+
+// Custom PreviewLightbox that supports left and right swipe gestures on touch screens
+var SwipingPreviewLightbox = PreviewLightbox.extend({
+
+	// redefine method
+	insertHtml: function() {
+		// call super method
+		this._parent();
+
+		// add swipe handlers
+        var self = this;
+		$("#elvisPreview").swipe({
+			threshold: {
+				x: 30,
+				y: 50
+			},
+			swipeLeft: function(changeX, changeY) {
+				self.next();
+			},
+			swipeRight: function() {
+				self.prev();
+			}
+		});
+	}
+	
+});
+
+// Custom HitRenderer that adds download link below hit metadata
+var InfoIconHitRenderer = HitRenderer.extend({
+
+	// redefine method
+	postProcessTarget: function(targetElement) {
+		// start with no previous category
+		this.prevCategory = "";
+		
+		// call super method
+		this._parent(targetElement);
+	},
+	
+	// redefine method
+	postProcessHit: function(hitElement, hit, index) {
+		// call super method
+		this._parent(hitElement, hit, index);
+		
+		// category headers
+		this._insertCategory(hitElement, hit);
+
+		// preview tooltip
+		$(".elvisThumbnailImageOverlay", hitElement).attr('title', 'Show preview').append('<div class="elvisThumbnailPreviewIndicator"></div>');
+
+		// download link
+		this._addDownloadLink(hitElement, hit);
+	},
+	
+	_insertCategory: function(hitElement, hit) {
+		var rootFolder = "/Demo Zone/";
+
+		var currCategory = hit.metadata.assetPath.replace(new RegExp("^" + rootFolder + "|/[^/]+$", "g"), "");
+		if (this.prevCategory == "" || this.prevCategory != currCategory) {
+			
+			var prevLevels = this.prevCategory.split(new RegExp("/"));
+			var currLevels = currCategory.split(new RegExp("/"));
+			
+			var html = "";
+			for (var i = 0; i < currLevels.length; i++) {
+				if (html != "" || prevLevels.length < i || currLevels[i] != prevLevels[i]) {
+					html += '<h' + (i+1) + ' class="category">';
+					html += currLevels[i];
+					html += '</h' + (i+1) + '>';
+				}
+			}
+			if (html != "") {
+				$(hitElement).before(html);
+			}
+			
+			this.prevCategory = currCategory;
+		}
+	},
+	
+	_addDownloadLink: function(hitElement, hit) {
+		var html = '<div class="elvisMetadataValue">';
+		
+		if (hit.originalUrl && hit.metadata.assetDomain != "container"
+			&& AssetPermissions.hasUseOriginal(hit.permissions))
+		{
+			html += '<a href="' + hit.originalUrl.appendQueryParam("forceDownload", "true") + '" title="Download">';
+			html += '<span class="more">Download (' + hit.metadata.fileSize.formatted + ')</span>';
+			html += '</a>';
+		}
+		
+		html += '</div>';
+
+		$(".elvisMetadata:first", hitElement).append(html);
+	}
+
+});
+
+// Initialize and setup components
+var elvisApi = new ElvisAPI("${serverUrl}");
+elvisApi.useAutoLogin("guest", "guest", "api_DownloadPortal");
+
+var previewLightbox = new SwipingPreviewLightbox();
+
+var hitRenderer = new InfoIconHitRenderer();
+hitRenderer.hitsTarget = "#resultContainer";
+hitRenderer.infoTarget = "#infoContainer";
+hitRenderer.pageTarget = "#pageControls";
+hitRenderer.sizeTarget = "#sizeControls";
+hitRenderer.squareThumbs = false;
+hitRenderer.metadataToDisplay = ["name"];
+hitRenderer.maxPageLinks = 5
+hitRenderer.itemClick = function(event, hit, hits, index) {
+    var btnLink = $($(event.target).parents("a").get(0));
+	if (btnLink && btnLink.attr("title") == "Download")
+	{
+		window.location = btnLink.attr("href");
+	}
+	else if (hit.previewUrl) {
+		previewLightbox.showGallery(hits, index);
+	}
+};
+hitRenderer.pageClick = function (start, num) {
+	refreshResults(start, num);
+};
+
+var searchParams = null;
+
+function searchAll() {
+	$("#resultContainer").html("");
+
+	var query = $('#querystring').val();
+	if (query != "") {
+		query += "*";
+	}
+	
+	searchParams = {
+		q: query,
+		sort: "assetPath",
+		num: 100
+	};
+
+	refreshResults();
+}
+
+function refreshResults(start, num) {
+	// apply start and num if needed
+	if (start != undefined) {
+		searchParams.start = start;
+	}
+	if (num != undefined) {
+		searchParams.num = num;
+	}
+
+	// execute search and update results
+	elvisApi.search(searchParams, preProcessUrls);
+}
+
+function preProcessUrls(data) {
+	// replaces preview and download urls so they point to a CDN
+	// the CDN should be configured to use the Elvis server as its origin
+	
+	// loop through result hits and replace urls
+//	// UNCOMMENT and customize to enable
+//	for (var i = 0; i < data.hits.length; i++) }
+//		processHitUrls(data.hits[i]);
+//	}
+
+	// render results
+	hitRenderer.render(data);
+}
+
+function processHitUrls(hit) {
+	if (hit.thumbnailUrl) {
+		hit.thumbnailUrl = createURLforCDN(hit.thumbnailUrl);
+	}
+	if (hit.previewUrl) {
+		hit.previewUrl = createURLforCDN(hit.previewUrl);
+	}
+	if (hit.originalUrl) {
+		hit.originalUrl = createURLforCDN(hit.originalUrl);
+	}
+	if (hit.thumbnailHits) {
+		for (var i = 0; i < hit.thumbnailHits.length; i++) {
+			processHitUrls(hit.thumbnailHits[i]);
+		}
+	}
+}
+
+function createURLforCDN(url) {
+	// strip jsessionid if it is in url
+	url = url.replace(/;jsessionid=.*?([?&;\/])/, "$1");
+	
+	// add authentication to url
+	url += (/\?/.test(url) ? "&" : "?") + "authcred=" + ("guest:guest".base64Encode());
+	
+	// replace domain with CDN domain
+	url = url.replace(/(http.?:\/\/).*?(\/.*)/, "$1cdn.example.com$2");
+
+	return url;
+}
+
+$(document).ready(searchAll);
+
+	</script>
+</head>
+<body>
+	<header>
+		<div id="headerWrapper">
+			<div class="logo">
+			</div>
+			<form id="search" action="#" onSubmit="searchAll(); return false">
+				<input type="text" name="q" id="querystring" accesskey="s" autocomplete="off">
+			</form>
+			<div id="pageControls">
+				<!-- page controls will be rendered here -->
+			</div>
+			<div id="sizeControls" class="elvisRenderSize">
+				<!-- size controls will be rendered here -->
+			</div>
+		</div>
+	</header>
+	<div id="resultWrapper">
+		<div id="resultContainer">
+			<!-- result hits will be rendered here -->
+		</div>
+	</div>
+	<div class="elvisCopyright">Powered by <a href="http://www.elvisdam.com">Elvis</a> &copy; <a href="http://www.dutchsoftware.com">dutchsoftware.com</a></div>
+	<div id="throbber" class="elvisThrobber" style="display:none;"></div>
+</body>
+</html>
