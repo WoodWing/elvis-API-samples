@@ -22,6 +22,8 @@
 		<menuAssignments>
 			<menuAssignment id="applicationMenu" order="6"/>
 			<menuAssignment id="toolBar" order="6"/>
+			<menuAssignment id="assetContextMenu" order="6"/>
+			<menuAssignment id="folderContextMenu" order="6"/>
 		</menuAssignments>
 
 		<requiredRoles>
@@ -32,7 +34,7 @@
 			<entries locale="en_US">
 				<entry key="title">Photo usage report</entry>
 				<entry key="button.label">Usage Report</entry>
-				<entry key="button.tooltip">Report photo usage</entry>
+				<entry key="button.tooltip">Photo usage report</entry>
 			</entries>
 		</messages>
 

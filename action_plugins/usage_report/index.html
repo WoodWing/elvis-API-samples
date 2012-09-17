@@ -32,7 +32,11 @@ THE SOFTWARE.
 	<link  href="${pluginsBaseRootUrl}/web.shared/elvis_api/css/elvis.css" rel="stylesheet" type="text/css"/>
 	<script src="${pluginsBaseRootUrl}/web.shared/elvis_api/js/jquery.elvis.js" type="text/javascript"></script>
 	<link  href="resources/styles.css" rel="stylesheet" type="text/css"/>
-	<script type="text/javascript">
+	
+<script type="text/javascript">
+
+//window.htmlLoader.cacheResponse = false;
+//window.htmlLoader.useCache = false;
 
 String.prototype.capitalizeFieldName = function () {
     return this.charAt(0).toUpperCase() + this.substring(1);
@@ -42,52 +46,230 @@ var elvisApi = new ElvisAPI("${serverUrl}");
 
 var previewLightbox = new PreviewLightbox();
 
+var elvisContext = ElvisPlugin.resolveElvisContext();
+
+var layoutSearchParams = null;
+
 // Load issue list
 $(document).ready(function() {
-	elvisApi.search({
-			q: "extension:indd AND publicationDate:*"/* sceIssue:* AND assetDomain:container */,
-			sort: "publicationDate-desc,filename",
-			metadataToReturn: "issueName,publicationDate,publicationName"
-		},
-		function(data) {
-			// Collect issues from layouts
-			var issues = [];
-			var issueNames = [];
-			for (var i = 0; i < data.hits.length; i++) {
-				var hit = data.hits[i];
-				var issueName = hit.metadata.issueName;
-				
-				var issue = issues[issueName];
-				if (!issue) {
-					issue = issues[issueName] = {
-						layoutHits: []
-					};
-					issueNames.push(issueName);
-				}
-				
-				issue.element = renderListItem(hit, issue);
-				issue.layoutHits.push(hit);
-			}
-			
-			// Render issues
-			for (var j = 0; j < issueNames.length; j++) {
-				$("#issueContainer").append(issues[issueNames[j]].element);
-			}
-		}
-	);
+	loadIssueList(elvisContext.activeTab.assetSelection,
+	              elvisContext.activeTab.folderSelection);
 });
 
-function renderListItem(hit, issue) {
+function loadIssueList(assetSelection, folderSelection) {
+	// Reset view
+	$("#noLayoutsFound").hide();
+	$("#issueSingleTxt").hide();
+	$("#issueList").hide();
+	$("#issueList").hide();
+	$("#issueContainer").html("");
+
+	layoutSearchParams = {
+		sort: "publicationDate-desc,filename",
+		metadataToReturn: "filename,folderPath,issueName,publicationDate,publicationName"
+	};
+	
+	// On asset selection:
+	if (assetSelection != null && assetSelection.length > 0) {
+		$("#issueChooseTxt").html(
+			'The selected assets contain layouts for the following issues, please select an issue:');
+	
+		layoutSearchParams.q = ElvisPlugin.queryForSelection(assetSelection) + " AND extension:indd";
+		layoutSearchParams.num = assetSelection.length;
+	}
+	// On folder selection:
+	else if (folderSelection != null && folderSelection.length > 0) {
+		$("#issueChooseTxt").html(
+			'The selected folder contains layouts for the following issues, please select an issue:'
+			+'<div class="details">' + folderSelection[0].assetPath + '</div>');
+
+		layoutSearchParams.q = ElvisPlugin.queryForFolderSelection(folderSelection) + " AND extension:indd";
+		layoutSearchParams.num = 500;
+	}
+	// In other cases:
+	else {
+		$("#issueChooseTxt").html(
+			'No folder or assets selected, please select an issue:'
+			+'<div class="details">These issues are composed from the 50 last imported layouts. Because not all layouts are included, some issues might be incomplete.</div>');
+
+		$("#issueSingleTxt").html(
+			'No folder or assets selected, showing report for 50 most recent layouts.'
+			+'<div class="details">These are the 50 last imported layouts. Because not all layouts are included, some issues might be incomplete.</div>');
+		
+		layoutSearchParams.q = "extension:indd";
+		//layoutSearchParams.sort = "assetCreated,filename";
+	}
+	
+	elvisApi.search(layoutSearchParams, renderIssues);
+}
+
+function renderIssues(results) {
+	// Collect issues from layouts
+	// group by publicationName+issueName
+	var groupKeys = [];
+
+	// issuesByKey == {
+	//   <key:pub+issue>:  { publicationName: .., issueName: .., publicationDate.., layoutHits: [hit, ..] },
+	//   ..
+	// ]
+	var issuesByGroupKey = [];
+
+	// Loop through found layouts
+	for (var i = 0; i < results.hits.length; i++) {
+		var hit = results.hits[i];
+		
+		// Use 'Unknown - Issue' as name when publicationName or issueName is not specified in metadata
+		var publicationName = (hit.metadata.publicationName ? hit.metadata.publicationName : "Unknown");
+		var issueName = (hit.metadata.issueName ? hit.metadata.issueName : "Issue");
+		var key = publicationName + "|" + issueName;
+		
+		var issue = issuesByGroupKey[key];
+		if (!issue) {
+			issue = issuesByGroupKey[key] = {
+				publicationName: publicationName,
+				issueName: issueName,
+				publicationDate: (hit.metadata.publicationDate ? hit.metadata.publicationDate.formatted : "unknown"),
+				layoutHits: []
+			};
+			groupKeys.push(key);
+		}
+		
+		issue.layoutHits.push(hit);
+	}
+
+	if (groupKeys.length == 0) {
+	
+		// No layouts found
+		$("#noLayoutsFound").show();
+		
+	} else if (groupKeys.length == 1) {
+	
+		$("#issueSingleTxt").show();
+		$("#issueList").show();
+	
+		// Auto show report if we have only one result
+		showReport(issue);
+		
+	} else {
+	
+		// Render issue list
+		for (var j = 0; j < groupKeys.length; j++) {
+			$("#issueContainer").append(renderListItem( issuesByGroupKey[groupKeys[j]] ));
+		}
+		$("#issueList").show();
+		
+	}
+}
+
+function renderListItem(issue) {
 	var element = $("<li/>");
 	
-	element.html(('<div class="name">{publicationName}</div>'
-		+ '<div>{issueName} ({publicationDate.formatted})</div>').replaceParams(hit.metadata));
+	var hit = issue.layoutHits[0];
+	
+	element.html(('<div class="publication">{publicationName}</div>' +
+		'<div class="issue">{issueName}</div>' +
+		'<div class="layouts">{layoutHits.length} layout(s)</div>' +
+		'<div class="date">Publication date: {publicationDate}</div>').replaceParams(issue));
 
 	element.bind("click", function (event) {
 		showReport(issue);
 	});
 	
 	return element;
+}
+
+
+
+
+var currentIssue = null;
+
+function showReport(issue) {
+	currentIssue = issue;
+	
+	issue.imageHits = [];
+	issue.usageFeeTotal = 0.0;
+	
+	$("#reportWrapper").hide();
+	$("#reportContainer").html("");
+	
+	renderReportRecursive(issue, 0);
+}
+
+function showLayouts() {
+	elvisContext.openSearch({
+		label: "Layouts from report",
+		query: ElvisPlugin.queryForSelection(currentIssue.layoutHits),
+		sort: layoutSearchParams.sort
+	});
+}
+
+function showImages() {
+	elvisContext.openSearch({
+		label: "Images from report",
+		query: ElvisPlugin.queryForSelection(currentIssue.imageHits),
+		sort: layoutSearchParams.sort
+	});
+}
+
+function renderReportRecursive(issue, layoutIdx) {
+	if (layoutIdx < issue.layoutHits.length) {
+		$("#reportBuildProgress").html(
+			"Building report for " + issue.layoutHits.length + " layouts... "
+			+ Math.round(layoutIdx / issue.layoutHits.length * 100) + "%");
+
+		var layoutHit = issue.layoutHits[layoutIdx];
+		
+		// Create header for layout and prepare box for images
+		var layoutHeader = $("<h2/>");
+		layoutHeader.append('<div class="layoutThumb"><img src="'+layoutHit.thumbnailUrl+'"/></div>');
+		layoutHeader.append('Layout: ' + layoutHit.metadata.filename);
+		layoutHeader.append('<div class="location">Location: '+ layoutHit.metadata.folderPath + '</div>');
+		layoutHeader.bind('click', function(event) {
+			previewLightbox.show(layoutHit);
+		});
+		
+		$("#reportContainer").append(layoutHeader);
+		$("#reportContainer").append( $("<div/>").attr("id", "layout_"+layoutIdx).attr("class", "layoutImages") );
+		
+		// Create renderer for images
+		var layoutReportRenderer = new LayoutReportRenderer();
+		layoutReportRenderer.hitsTarget = "#layout_"+layoutIdx;
+		layoutReportRenderer.metadataToDisplay = ["name","copyright","usageRights","usageFee"];
+		
+		layoutReportRenderer.issue = issue;
+		
+		elvisApi.search({
+				q: "relatedTo:"+layoutHit.id+" +assetDomain:image",
+				sort: "assetCreated-desc"
+			},
+			function (data) {
+				layoutReportRenderer.render(data);
+			
+				// recursively render report for each layout
+				renderReportRecursive(issue, layoutIdx+1);
+			}
+		);
+		
+	} else {
+		// All layouts rendered, create header with totals
+		$("#reportInfoContainer").html(
+			("<ul>"
+			+"<li>{publicationName} - {issueName}</li>"
+			+'<li class="small">Publication date: {publicationDate}'
+			+'<li class="small">Number of layouts: {layoutHits.length}'
+			+(issue.layoutHits.length == 0 ? '' : '<input value="Show layouts" type="button" class="noPrint" onclick="showLayouts(); return false"/></li>')
+			+'<li class="small">Referenced images: {imageHits.length}'
+			+(issue.imageHits.length == 0 ? '' : '<input value="Show images" type="button" class="noPrint" onclick="showImages(); return false"/></li>')
+			+"<li>Total costs: <b>€ {usageFeeTotal}</b></li>"
+			+"</ul>").replaceParams(issue)
+		);
+		
+		$("#reportBuildProgress").html("");
+		
+		$("#reportWrapper").show();
+	
+		return;
+	}
 }
 
 var LayoutReportRenderer = HitRenderer.extend({
@@ -105,7 +287,7 @@ var LayoutReportRenderer = HitRenderer.extend({
 
 	postProcessHit: function(hitElement, hit, index) {
 		// Gather totals
-		this.issue.imageCount++;
+		this.issue.imageHits.push(hit);
 		
 		var usageFee = parseFloat(hit.metadata.usageFee);
 		if (!isNaN(usageFee)) {
@@ -114,7 +296,6 @@ var LayoutReportRenderer = HitRenderer.extend({
 		
 		// Register image click handler
         $(".elvisThumbnailWrapper:first", hitElement).bind("click", function(event) {
-		//hitElement.select(".elvisThumbnailWrapper")[0].observe('click', function(event) {
 			previewLightbox.show(hit);
 		});
 		
@@ -147,71 +328,36 @@ var LayoutReportRenderer = HitRenderer.extend({
 	}
 });
 
-function showReport(issue) {
-	issue.imageCount = 0;
-	issue.usageFeeTotal = 0.0;
-	
-	insertLayoutReport(issue, 0);
-}
-
-function insertLayoutReport(issue, layoutIdx) {
-	if (layoutIdx >= issue.layoutHits.length) {
-		// all layouts displayed, render totals
-		$("#reportInfoContainer").html(
-			("<ul>"
-			+"<li>{publicationName} - {issueName}</li>"
-			+"<li>Number of images: {imageCount}</li>"
-			+"<li>Total costs: <b>{usageFeeTotal}</b></li>"
-			+"</ul>").replaceParams({
-				publicationName: issue.layoutHits[0].metadata.publicationName,
-				issueName: issue.layoutHits[0].metadata.issueName,
-				usageFeeTotal: "€"+issue.usageFeeTotal,
-				imageCount: issue.imageCount
-			})
-		);
-		
-		return;
-	}
-	
-	var hit = issue.layoutHits[layoutIdx];
-	
-	$("#reportContainer").append($("<div/>").attr("id", "layout_"+layoutIdx));
-	
-	var layoutReportRenderer = new LayoutReportRenderer();
-	layoutReportRenderer.hitsTarget = "#layout_"+layoutIdx;
-	layoutReportRenderer.metadataToDisplay = ["name","copyright","usageRights","usageFee"];
-	
-	layoutReportRenderer.issue = issue;
-	
-	elvisApi.search({
-			q: "relatedTo:"+hit.id+" +assetDomain:image",
-			sort: "assetCreated-desc"
-		},
-		function (data) {
-			layoutReportRenderer.render(data);
-		
-			insertLayoutReport(issue, layoutIdx+1);
-		}
-	);
-}
-
 </script>
 </head>
 <body>
-	<div class="issueList">
-		<h1>Photo usage report:</h1>
-		<h2>Latest issues:</h2>
+	<div id="issueList" style="display:none" class="noPrint">
+		<!-- Select from available issues -->
+		<h2 id="issueChooseTxt"></h2>
+		<h2 id="issueSingleTxt" style="display:none"></h2>
 		<div>
 			<ul id="issueContainer">
-				<!-- issues will be rendered here -->
+				<!-- Issues will be rendered here -->
 			</ul>
 		</div>
 	</div>
-	<div id="resultWrapper">
+	
+	<div id="reportBuildProgress">
+	</div>
+	<div id="noLayoutsFound" style="display:none;position: fixed; top: 50%; left: 50%; margin-top: -50px; margin-left: -150px; width: 330px; ">
+		No layouts found, make sure you:
+		<ul>
+			<li>select a folder that contains layouts</li>
+			<li>select a collection that contains layouts</li>
+			<li>select a number of layouts</li>
+		</ul>
+		<input value="OK, let me try again" type="button" onclick="elvisContext.close(); return false"/>
+	</div>
+	<div id="reportWrapper">
 		<div id="reportInfoContainer">
 		</div>
 		<div id="reportContainer">
-			<!-- result hits will be rendered here -->
+			<!-- Results are rendered here -->
 		</div>
 	</div>
 	<div id="throbber" class="elvisThrobber" style="display:none;"></div>
@@ -221,3 +367,4 @@ function insertLayoutReport(issue, layoutIdx) {
 	</div>
 </body>
 </html>
+

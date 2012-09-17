@@ -30,69 +30,98 @@ html, body {
 }
 
 body {
-	background: ;/*url("main_bg.jpg") repeat-x scroll #000000;*/
+	background: #FFFFFF;
 	color: #000000;
 	font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif;
 	font-size: 12px;
 }
 
-.issueList {
-	position: absolute;
-	width: 275px;
-	top: 0px;
-	bottom: 0px;
-	overflow-x: hidden;
-	overflow-y: auto;
+#issueList .details {
+	font-size: 11px;
+	color: #666;
+	margin-top: 10px;
+}
+#issueList {
 	background-color: #EEE;
-	border-right: 1px solid #CCC;
+	border: 1px solid #CCC;
 	z-index: 1;
 }
-.issueList h1, .issueList h2 {
-	margin: 20px;
+#issueList h2 {
+	font-size: 16px;
+	margin: 20px 20px 12px 20px;
 	margin-left: 10px;
 	font-weight: normal;
 }
-.issueList ul {
+#issueList ul {
 	margin: 0;
-	padding: 0;
+	padding: 8px 0 0 0;
+	max-height: 200px;
+	overflow-y: auto;
 }
-.issueList li {
-	margin: 10px;
+#issueContainer li {
+	display: inline-block;
+	vertical-align: middle;
+	margin: 0 0 10px 10px;
 	padding: 8px;
 	list-style: none;
 	cursor: pointer;
 	border: 1px solid #BBB;
 	background-color: #DDD;
-}
-.issueList .name {
-	text-decoration: underline;
+	line-height: 1.4em;
 }
 
-#resultWrapper {
-	position:absolute;
+#issueContainer .publication {
+	font-weight: bold;
+	display:inline-block;
+	margin-right: 10px;
+}
+#issueContainer .issue {
+	display:inline-block;
+}
+#issueContainer .date, #issueContainer .layouts {
+	color: #666;
+	font-size: 11px;
+}
+
+#reportWrapper {
 	bottom: 16px;
 	top: 0px;
 	right: 0px;
-	left: 275px;
 	overflow: auto;
 	display: block;
 	background: #FFFFFF;
 }
 
-#reportInfoContainer {
+#reportBuildProgress {
+	position: fixed;
+	top: 50%;
+	width: 100%;
+	margin-top: -60px;
+	text-align: center;
 }
+
+#reportInfoContainer {
+	width: 400px;
+	margin: 0px auto;
+}
+
 #reportInfoContainer ul {
-	margin: 20px auto;
+	margin: 40px 0;
 	padding: 0;
-	width: 600px;
-	border: #CCC thin solid;
-	background: #EEE;
-	border-radius: 4px;
 	font-size: 18px;
 	list-style: none;
 }
 #reportInfoContainer li {
-	margin: 10px;
+	clear: right;
+	margin: 6px 0;
+}
+#reportInfoContainer li.small {
+	font-size: 11px;
+}
+#reportInfoContainer input {
+	font-size: 11px;
+	float: right;
+	margin: 0;
 }
 
 #reportContainer {
@@ -100,12 +129,37 @@ body {
 	margin: 0px auto;
 }
 #reportContainer .elvisHitBox {
-	float: none;
-	width: auto;
-	
 	border: #CCC thin solid;
 	background: #EEE;
-	border-radius: 4px;
+}
+#reportContainer h2 {
+	margin: 10px 0;
+	font-weight: normal;
+	font-size: 14px;
+	padding: 10px 0 0 0;
+	border-top: 1px solid #CCC;
+}
+#reportContainer h2 .layoutThumb {
+	float: left;
+	width: 90px;
+	min-height: 150px;
+	margin-right: 10px;
+	margin-top: -11px;
+}
+#reportContainer h2 .layoutThumb img {
+	max-width: 90px;
+}
+#reportContainer h2 .location {
+	color: #666;
+	font-size: 11px;
+}
+#reportContainer .layoutImages {
+	overflow: hidden; /* force indent same as thumbnail */
+}
+#reportContainer .elvisHitBox {
+	float: none;
+	width: auto;
+	margin: 0;
 	margin-bottom: 10px;
 	position: relative;
 }
@@ -117,13 +171,15 @@ body {
 	overflow: hidden;
 }
 #reportContainer .elvisMetadata .field {
+	clear: left;
 	float: left;
 	width: 90px;
 }
 #reportContainer .elvisMetadata div {
 	text-align: left;
-	margin-bottom: 4px;
+	margin-bottom: 8px;
 	height: auto;
+	min-height: 18px;
 }
 
 .linkedPdf {
@@ -181,4 +237,8 @@ body {
 	color: #3399CC;
 	font-weight: bold;
 	text-decoration:underline;
+}
+
+@media print {
+.noPrint { display: none; }
 }
