@@ -1,0 +1,128 @@
+
+#all {
+	width: 100%; height:100%;
+	z-index: 10;
+}
+
+#searchbox
+{
+	position: absolute;
+	z-index: 5;
+	top: 12px;
+	left: 36px;
+	background: white;
+	border: 1px solid #D9D9D9;
+	border-top: 1px solid silver;
+	padding: 4px;
+	width: 250px;
+	font-size: 16px;
+	opacity: 0.85;
+}
+
+#mapWrapper
+{
+	position: absolute;
+	width: 100%;
+	top: 0px; bottom: 220px;
+}
+#mapWrapper #map
+{
+	width: 100%; height: 100%;
+}
+
+#legend
+{
+	position: absolute;
+	bottom: 195px;
+	width: 100%;
+	background-color: #262626;
+}
+#legend p
+{
+	border-bottom: 1px solid #39C;
+	border-top: 1px solid #595959;
+	border-left: 0px;
+	border-right: 0px;
+	margin: 0px 0px 0 0px;
+	padding: 4px 5px 4px 25px;
+	color: #262626;
+	background: url(resources/information.png) #E3EFF6 no-repeat;
+	background-position-x: 4px;
+	background-position-y: center;
+}
+
+#wrapper
+{
+	position: absolute;
+	bottom: 0px;
+	width: 100%; height: 195px;
+	overflow-x: auto;
+}
+
+#wrapper #thumbnailList
+{
+	position:relative; float:left; margin-right:-30000px;
+}
+
+.hit
+{
+	float:left;
+	margin:10px 0 0 10px;
+	max-width: 250px; overflow: hidden;
+}
+.hit img.thumb
+{
+	height: 150px;
+}
+.hit img.icon
+{
+	display:block;position:absolute;
+}
+.hit p
+{
+	text-align: center; margin: 0; height: 1.2em; overflow: hidden;
+}
+
+.infowindow
+{
+	width: 360px;
+}
+.infowindow img.thumb
+{
+	float: left;
+	max-width: 160px; max-height: 160px;
+}
+.infowindow div
+{
+	float: left;
+	width: 185px;
+	margin-left: 15px;
+}
+.infowindow div p.filename
+{
+	font-size: 13px;
+	color: black;
+}
+.infowindow div p
+{
+	font-size: 11px;
+	color: #4a4a4a;
+	margin: 0 0 10px 0;
+}
+
+html, body
+{
+	height: 100%;
+	width: 100%;
+	border: none;
+	padding: 0px;
+	margin: 0px;
+}
+body
+{
+	background-color: #262626;
+	color: white;
+	font-family: Verdana, Geneva, sans-serif;
+	font-size: 12px;
+	display: block;
+}

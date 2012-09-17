@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html>
+<!--
+
+Licensed under the MIT License
+Copyright (c) 2010-2012 dutchsoftware.com
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+
+-->
+<head>
+	<title>Map</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<style type="text/css">
+	</style>
+	<script src="${pluginsBaseRootUrl}/web.shared/jquery.js" type="text/javascript"></script>
+	<script src="${pluginsBaseRootUrl}/web.shared/jquery.class.js" type="text/javascript"></script>
+	<script src="${pluginsBaseRootUrl}/web.shared/jquery.cookie.js" type="text/javascript"></script>
+	<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.21/jquery-ui.min.js"></script>
+	<link  href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.21/themes/base/jquery-ui.css" rel="stylesheet" type="text/css"/>
+	<link  href="${pluginsBaseRootUrl}/web.shared/elvis_api/css/elvis.css" rel="stylesheet" type="text/css"/>
+	<script src="${pluginsBaseRootUrl}/web.shared/elvis_api/js/jquery.elvis.js" type="text/javascript"></script>
+	<!-- <script src="https://maps.googleapis.com/maps/api/js?key=API_KEY&sensor=false" type="text/javascript"></script>-->
+	<script src="https://maps.googleapis.com/maps/api/js?sensor=false" type="text/javascript"></script>
+	<link  href="styles.css" rel="stylesheet" type="text/css"/>
+	<script type="text/JavaScript">
+
+$(function() {
+
+	var markerCount = 0;
+
+	function searchHitsAndRenderBar() {
+		var selectedHits = ElvisPlugin.resolveElvisContext().activeTab.assetSelection;
+		if (selectedHits.length == 0) {
+			alert("Selection is empty. Select one or more images or a collection of images from the Elvis Desktop client.");
+		}
+
+		var query = ElvisPlugin.queryForSelection(selectedHits);
+
+		elvisApi.search({
+			q: query,
+			num: selectedHits.length,
+			sort: "filename",
+			metadataToReturn: "filename, gpsLatitude, gpsLatitudeReference, gpsLongitude, gpsLongitudeReference, tags, description"
+		}, renderHits);
+	}
+
+	function renderHits(data) {
+		var bounds = new google.maps.LatLngBounds();
+
+		for (var i = 0; i < data.hits.length; i++) {
+			renderHit(data.hits[i], bounds);
+		}
+
+		if (!bounds.isEmpty()) {
+			map.fitBounds(bounds);
+		}
+	}
+
+	function renderHit(hit, bounds) {
+		if (hasGpsData(hit)) {
+			// We have GPS coordinates so we can create markers for our hit
+			var lat = (hit.metadata.gpsLatitudeReference  == "S" ? -1 : 1) * hit.metadata.gpsLatitude;
+			var lng = (hit.metadata.gpsLongitudeReference == "W" ? -1 : 1) * hit.metadata.gpsLongitude;
+			var latLng = new google.maps.LatLng(lat, lng);
+
+			// Save coordinates to center and zoom the map optimally so that all markers are visible
+			bounds.extend(latLng);
+
+			var icon = getMarkerIcon(true);
+			var marker = createMarker(latLng, icon);
+			var hitDivHtml = getHitDivHtml(hit, icon);
+
+			// Create a hitDiv
+			var hitDiv = $(hitDivHtml).appendTo('#thumbnailList');
+
+			// Open the info window when the div is clicked
+			hitDiv.click(showInfoWindow(marker, hit));
+
+			// Open info window when marker on the map is clicked
+			google.maps.event.addListener(marker, 'click', showInfoWindow(marker, hit));
+
+			google.maps.event.addListener(marker, "dragstart", function() {
+				infoWindow.close();
+			});
+
+			google.maps.event.addListener(marker, "dragend", (function(marker, hit) {
+				return function() {
+					var lat = marker.getPosition().lat();
+					var lng = marker.getPosition().lng();
+
+					saveGps(hit,lat,lng);
+				}
+			})(marker,hit));
+		}
+		else {
+			var hitDivHtml = getHitDivHtml(hit, null);
+
+			// Create a hitDiv
+			var hitDiv = $(hitDivHtml).appendTo('#thumbnailList');
+
+			hitDiv.draggable({
+				containment: "#all",
+				appendTo: '#all',
+				cursorAt: { top: 2, left: 0 },
+				helper: function( event ) {
+					return $( "<div>" + getMarkerImageHtml(false) + "</div>" );
+				}
+			}).data("draggedHit", hit);
+		}
+	}
+
+	function hasGpsData(hit) {
+		return hit.metadata.gpsLatitude != null && hit.metadata.gpsLongitude != null;
+	}
+
+	function getHitDivHtml(hit, markerIconPath) {
+		//Div is being created and the width of the div is determined by the width of the original image divided by
+		//the original image height divided by the thumbnail height. That number rounded to no decimals.
+		var hitDivHtml = "<div class='hit'>";
+
+		if (markerIconPath != null) {
+			hitDivHtml += "<img src='" + markerIconPath + "' class='icon'/>";
+		}
+
+		hitDivHtml += "<img class='thumb' src='" + hit.thumbnailUrl + "'/>"
+			+ "<p>" + hit.metadata.filename + "</p>"
+			+ "</div>";
+
+		return hitDivHtml;
+	}
+
+	function getMarkerIcon(isActive) {
+		var iconFilename = isActive ? "marker" : "marker_grey";
+		if (markerCount <= 25) {
+			var chr = String.fromCharCode(65 + markerCount);
+			return "http://www.google.com/mapfiles/" + iconFilename + chr + ".png";
+		}
+		else {
+			return "resources/" + iconFilename + ".png";
+		}
+	}
+
+	function getMarkerImageHtml(isActive, cssClass) {
+		if (cssClass == true) {
+			return "<img class='icon' src='" + getMarkerIcon(true) + "'/>";
+		}
+		else {
+			return "<img id='markerIcon' src='" + getMarkerIcon(isActive) + "'/>";
+		}
+	}
+
+	function createMarker(position, icon) {
+		var g = google.maps;
+		var image = new g.MarkerImage(
+			icon,
+			new g.Size(32, 32),
+			new g.Point(0, 0),
+			new g.Point(15, 32)
+		);
+
+		var shadow = new g.MarkerImage(
+			"resources/shadow.png",
+			new g.Size(59, 32),
+			new g.Point(0, 0),
+			new g.Point(20, 32)
+		);
+
+		var marker = new g.Marker({
+			position: position,
+			map: map,
+			clickable: true,
+			draggable: true,
+			raiseOnDrag: false,
+			icon: image,
+			shadow: shadow
+		});
+
+		// Increase marker count as we created a new marker
+		markerCount++;
+
+		return marker;
+	}
+
+	function createDraggedMarker(point, hit, icon) {
+
+		var g = google.maps;
+
+		var marker = createMarker(point, icon);
+
+		lat = marker.getPosition().lat();
+		lng = marker.getPosition().lng();
+
+		saveGps(hit,lat,lng);
+
+		g.event.addListener(marker, "click", showInfoWindow(marker, hit));
+
+		g.event.addListener(marker, "dragstart", function() {
+			// Close infowindow when dragging the marker whose infowindow is open
+			infoWindow.close();
+		});
+
+		g.event.addListener(marker, "dragend", function() {
+			lat = marker.getPosition().lat();
+			lng = marker.getPosition().lng();
+			saveGps(hitId,lat,lng);
+		});
+
+		return marker;
+	}
+
+	function saveGps(hit, lat, lng) {
+		elvisApi.update(hit.id, {
+			gpsLatitude: Math.abs(lat),
+			gpsLatitudeReference: (lat < 0 ? "S" : "N"),
+			gpsLongitude: Math.abs(lng),
+			gpsLongitudeReference: (lng < 0 ? "W" : "E")
+		});
+	}
+
+	function showInfoWindow(marker, hit) {
+		return function() {
+			var c = '<div class="infowindow">'
+			      	+ '<img class="thumb" src="'+ hit.thumbnailUrl + '">'
+			      	+ '<div><p class="filename">' + hit.metadata.filename + '<p/>'
+			      	+ '<p>@ ' + marker.getPosition().lat().toFixed(6) + ', ' + marker.getPosition().lng().toFixed(6) + '<p/>'
+			      	+ (hit.metadata.description ? '<p>Description: ' + hit.metadata.description + '<p/>' : '')
+			      + '</div></div>';
+
+			infoWindow.setContent(c);
+			infoWindow.open(map, marker);
+		};
+	}
+
+
+
+	var infoWindow = new google.maps.InfoWindow();
+
+	var elvisApi = new ElvisAPI("${serverUrl}");
+
+	var map = new google.maps.Map(document.getElementById("map"), {
+		center: new google.maps.LatLng(46.056407,14.06765),
+		zoom: 2,
+		mapTypeId: google.maps.MapTypeId.TERRAIN,
+		streetViewControl: false,
+		mapTypeControlOptions: {
+			mapTypeIds: [google.maps.MapTypeId.ROADMAP, google.maps.MapTypeId.SATELLITE, google.maps.MapTypeId.TERRAIN]
+		},
+		panControl: false,
+		zoomControlOptions: {
+			style: google.maps.ZoomControlStyle.SMALL
+		}
+	});
+
+	function DummyOView() {
+		// Bind this to the map to access MapCanvasProjection
+		this.setMap(map);
+		// MapCanvasProjection is only available after draw has been called.
+		this.draw = function() {};
+	}
+
+	DummyOView.prototype = new google.maps.OverlayView();
+
+	// Add a dummy overlay for later use.
+	// Needed for API v3 to convert pixels to latlng.
+	var dummy = new DummyOView();
+
+	$("#map").droppable({
+		over: function(event, ui) {
+			infoWindow.close();
+			$("#markerIcon").replaceWith(getMarkerImageHtml(true));
+		},
+		out: function(event, ui) {
+			$("#markerIcon").replaceWith(getMarkerImageHtml(false));
+		},
+		drop: function(event, ui) {
+			var xOffset = 5;
+			var yOffset = 22;
+
+			// Find the object's pixel position in the map container
+			var pixelpoint = new google.maps.Point((event.clientX + xOffset), (event.clientY + yOffset));
+
+			// Corresponding geo point on the map
+			var proj = dummy.getProjection();
+			var latLng = proj.fromContainerPixelToLatLng(pixelpoint);
+
+			var draggedHit = $(ui.draggable).data("draggedHit");
+
+			//isActive is true and cssClass is true
+			$(getMarkerImageHtml(true,true)).prependTo(ui.draggable);
+
+			// Create a corresponding marker on the map
+			var marker = createDraggedMarker(latLng, draggedHit, getMarkerIcon(true));
+			$(ui.draggable).draggable("disable");
+
+			// Open the info window when the div is clicked
+			$(ui.draggable).click(showInfoWindow(marker, draggedHit));
+		}
+	});
+
+	var geocoder = new google.maps.Geocoder();
+
+	$("#searchbox").autocomplete({
+		source: function (request, response) {
+			geocoder.geocode({
+				'address': request.term
+			}, function (results, status) {
+				if (status == google.maps.GeocoderStatus.OK) {
+
+					var searchLoc = results[0].geometry.location;
+					var lat = results[0].geometry.location.lat();
+					var lng = results[0].geometry.location.lng();
+					var latlng = new google.maps.LatLng(lat, lng);
+					var bounds = results[0].geometry.bounds;
+
+					geocoder.geocode({
+						'latLng': latlng
+					}, function (results1, status1) {
+						if (status1 == google.maps.GeocoderStatus.OK) {
+							if (results1[1]) {
+								response($.map(results1, function (loc) {
+									return {
+										label: loc.formatted_address,
+										value: loc.formatted_address,
+										bounds: loc.geometry.bounds
+									}
+								}));
+							}
+						}
+					});
+				}
+			});
+		},
+		select: function (event, ui) {
+			var pos = ui.item.position;
+			var lct = ui.item.locType;
+			var bounds = ui.item.bounds;
+
+			if (bounds) {
+				map.fitBounds(bounds);
+			}
+		}
+	});
+
+
+
+	searchHitsAndRenderBar();
+
+});
+
+	</script>
+</head>
+<body>
+	<div id="all">
+		<input id="searchbox" type="text" value="" placeholder="Search location">
+		<div id="mapWrapper">
+			<div id="map"></div>
+		</div>
+		<div id="legend">
+			<p>Drop thumbnails without a marker onto the map to assign location metadata. Location can be changed by dragging the marker inside the map.</p>
+		</div>
+		<div id="wrapper">
+			<div id="thumbnailList"></div>
+		</div>
+	</div>
+</body>
+</html>

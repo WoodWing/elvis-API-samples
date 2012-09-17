@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+	<info>
+		<version>
+			<pluginVersion>1.0</pluginVersion>
+			<requiresAtLeast>3.5.1.665</requiresAtLeast>
+		</version>
+		<description>Shows your images and videos location on Google maps</description>
+	</info>
+	<action>
+		<url>${pluginUrl}/index.html</url>
+		<icon16Url>${pluginUrl}/icon16.png</icon16Url>
+		<icon24Url>${pluginUrl}/icon24.png</icon24Url>
+
+		<userInterface>
+	<tab/>
+		</userInterface>
+
+		<menuAssignments>
+			<menuAssignment id="applicationMenu" order="201"/>
+			<menuAssignment id="toolBar" order="201"/>
+			<menuAssignment id="assetContextMenu" order="201"/>
+		</menuAssignments>
+
+		<enabledExpression>elvisContext.hasSelection()</enabledExpression>		
+		
+		<filterExpression>item.hasAssetDomain("image") || item.hasAssetDomain("video")</filterExpression>
+
+		<requiredPermissionMask>VPU------</requiredPermissionMask>
+
+		<requiredRoles>
+			<role>ROLE_CUSTOM_SHOW_ON_MAP</role>
+		</requiredRoles>
+
+		<messages>
+			<entries locale="en_US">
+				<entry key="button.label">Show on Map</entry>
+				<entry key="button.tooltip">Shows your images and videos location on Google maps</entry>
+				<entry key="title">Show on map</entry>
+			</entries>
+		</messages>
+
+	</action>
+</plugin>
