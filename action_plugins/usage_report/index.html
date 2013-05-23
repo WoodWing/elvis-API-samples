@@ -31,304 +31,328 @@ THE SOFTWARE.
 	<script src="${pluginsBaseRootUrl}/web.shared/jquery.cookie.js" type="text/javascript"></script>
 	<link  href="${pluginsBaseRootUrl}/web.shared/elvis_api/css/elvis.css" rel="stylesheet" type="text/css"/>
 	<script src="${pluginsBaseRootUrl}/web.shared/elvis_api/js/jquery.elvis.js" type="text/javascript"></script>
+	<script src="resources/jquery.usage.report.hitrenderer.js" type="text/javascript"></script>
 	<link  href="resources/styles.css" rel="stylesheet" type="text/css"/>
-	
-<script type="text/javascript">
 
-//window.htmlLoader.cacheResponse = false;
-//window.htmlLoader.useCache = false;
+	<script type="text/javascript">
 
-String.prototype.capitalizeFieldName = function () {
-    return this.charAt(0).toUpperCase() + this.substring(1);
-};
+	(function () {
 
-var elvisApi = new ElvisAPI("${serverUrl}");
+		var elvisApi = new ElvisAPI('${serverUrl}');
 
-var previewLightbox = new PreviewLightbox();
+		var previewLightbox = new PreviewLightbox();
 
-var elvisContext = ElvisPlugin.resolveElvisContext();
+		var elvisContext = ElvisPlugin.resolveElvisContext();
 
-var layoutSearchParams = null;
+		var currentIssue = null;
+		var layoutSearchParams = null;
+		var showOnlyUsed = false;
+		var showHidden = false;
 
-// Load issue list
-$(document).ready(function() {
-	loadIssueList(elvisContext.activeTab.assetSelection,
-	              elvisContext.activeTab.folderSelection);
-});
+		var renderIssue = false;
 
-function loadIssueList(assetSelection, folderSelection) {
-	// Reset view
-	$("#noLayoutsFound").hide();
-	$("#issueSingleTxt").hide();
-	$("#issueList").hide();
-	$("#issueList").hide();
-	$("#issueContainer").html("");
+		$(function () {
+			$('.showOnlyUsedAndHidden input').click(function (e) {
+				// Adjust values of showOnlyUsed and showHidden
+				showOnlyUsed = $('#chk_used').is(':checked');
+				showHidden = $('#chk_hidden').is(':checked');
 
-	layoutSearchParams = {
-		sort: "publicationDate-desc,filename",
-		metadataToReturn: "filename,folderPath,issueName,publicationDate,publicationName"
-	};
-	
-	// On asset selection:
-	if (assetSelection != null && assetSelection.length > 0) {
-		$("#issueChooseTxt").html(
-			'The selected assets contain layouts for the following issues, please select an issue:');
-	
-		layoutSearchParams.q = ElvisPlugin.queryForSelection(assetSelection) + " AND extension:indd";
-		layoutSearchParams.num = assetSelection.length;
-	}
-	// On folder selection:
-	else if (folderSelection != null && folderSelection.length > 0) {
-		$("#issueChooseTxt").html(
-			'The selected folder contains layouts for the following issues, please select an issue:'
-			+'<div class="details">' + folderSelection[0].assetPath + '</div>');
-
-		layoutSearchParams.q = ElvisPlugin.queryForFolderSelection(folderSelection) + " AND extension:indd";
-		layoutSearchParams.num = 500;
-	}
-	// In other cases:
-	else {
-		$("#issueChooseTxt").html(
-			'No folder or assets selected, please select an issue:'
-			+'<div class="details">These issues are composed from the 50 last imported layouts. Because not all layouts are included, some issues might be incomplete.</div>');
-
-		$("#issueSingleTxt").html(
-			'No folder or assets selected, showing report for 50 most recent layouts.'
-			+'<div class="details">These are the 50 last imported layouts. Because not all layouts are included, some issues might be incomplete.</div>');
-		
-		layoutSearchParams.q = "extension:indd";
-		//layoutSearchParams.sort = "assetCreated,filename";
-	}
-	
-	elvisApi.search(layoutSearchParams, renderIssues);
-}
-
-function renderIssues(results) {
-	// Collect issues from layouts
-	// group by publicationName+issueName
-	var groupKeys = [];
-
-	// issuesByKey == {
-	//   <key:pub+issue>:  { publicationName: .., issueName: .., publicationDate.., layoutHits: [hit, ..] },
-	//   ..
-	// ]
-	var issuesByGroupKey = [];
-
-	// Loop through found layouts
-	for (var i = 0; i < results.hits.length; i++) {
-		var hit = results.hits[i];
-		
-		// Use 'Unknown - Issue' as name when publicationName or issueName is not specified in metadata
-		var publicationName = (hit.metadata.publicationName ? hit.metadata.publicationName : "Unknown");
-		var issueName = (hit.metadata.issueName ? hit.metadata.issueName : "Issue");
-		var key = publicationName + "|" + issueName;
-		
-		var issue = issuesByGroupKey[key];
-		if (!issue) {
-			issue = issuesByGroupKey[key] = {
-				publicationName: publicationName,
-				issueName: issueName,
-				publicationDate: (hit.metadata.publicationDate ? hit.metadata.publicationDate.formatted : "unknown"),
-				layoutHits: []
-			};
-			groupKeys.push(key);
-		}
-		
-		issue.layoutHits.push(hit);
-	}
-
-	if (groupKeys.length == 0) {
-	
-		// No layouts found
-		$("#noLayoutsFound").show();
-		
-	} else if (groupKeys.length == 1) {
-	
-		$("#issueSingleTxt").show();
-		$("#issueList").show();
-	
-		// Auto show report if we have only one result
-		showReport(issue);
-		
-	} else {
-	
-		// Render issue list
-		for (var j = 0; j < groupKeys.length; j++) {
-			$("#issueContainer").append(renderListItem( issuesByGroupKey[groupKeys[j]] ));
-		}
-		$("#issueList").show();
-		
-	}
-}
-
-function renderListItem(issue) {
-	var element = $("<li/>");
-	
-	var hit = issue.layoutHits[0];
-	
-	element.html(('<div class="publication">{publicationName}</div>' +
-		'<div class="issue">{issueName}</div>' +
-		'<div class="layouts">{layoutHits.length} layout(s)</div>' +
-		'<div class="date">Publication date: {publicationDate}</div>').replaceParams(issue));
-
-	element.bind("click", function (event) {
-		showReport(issue);
-	});
-	
-	return element;
-}
-
-
-
-
-var currentIssue = null;
-
-function showReport(issue) {
-	currentIssue = issue;
-	
-	issue.imageHits = [];
-	issue.usageFeeTotal = 0.0;
-	
-	$("#reportWrapper").hide();
-	$("#reportContainer").html("");
-	
-	renderReportRecursive(issue, 0);
-}
-
-function showLayouts() {
-	elvisContext.openSearch({
-		label: "Layouts from report",
-		query: ElvisPlugin.queryForSelection(currentIssue.layoutHits),
-		sort: layoutSearchParams.sort
-	});
-}
-
-function showImages() {
-	elvisContext.openSearch({
-		label: "Images from report",
-		query: ElvisPlugin.queryForSelection(currentIssue.imageHits),
-		sort: layoutSearchParams.sort
-	});
-}
-
-function renderReportRecursive(issue, layoutIdx) {
-	if (layoutIdx < issue.layoutHits.length) {
-		$("#reportBuildProgress").html(
-			"Building report for " + issue.layoutHits.length + " layouts... "
-			+ Math.round(layoutIdx / issue.layoutHits.length * 100) + "%");
-
-		var layoutHit = issue.layoutHits[layoutIdx];
-		
-		// Create header for layout and prepare box for images
-		var layoutHeader = $("<h2/>");
-		layoutHeader.append('<div class="layoutThumb"><img src="'+layoutHit.thumbnailUrl+'"/></div>');
-		layoutHeader.append('Layout: ' + layoutHit.metadata.filename);
-		layoutHeader.append('<div class="location">Location: '+ layoutHit.metadata.folderPath + '</div>');
-		layoutHeader.bind('click', function(event) {
-			previewLightbox.show(layoutHit);
-		});
-		
-		$("#reportContainer").append(layoutHeader);
-		$("#reportContainer").append( $("<div/>").attr("id", "layout_"+layoutIdx).attr("class", "layoutImages") );
-		
-		// Create renderer for images
-		var layoutReportRenderer = new LayoutReportRenderer();
-		layoutReportRenderer.hitsTarget = "#layout_"+layoutIdx;
-		layoutReportRenderer.metadataToDisplay = ["name","copyright","usageRights","usageFee"];
-		
-		layoutReportRenderer.issue = issue;
-		
-		elvisApi.search({
-				q: "relatedTo:"+layoutHit.id+" +assetDomain:image",
-				sort: "assetCreated-desc"
-			},
-			function (data) {
-				layoutReportRenderer.render(data);
-			
-				// recursively render report for each layout
-				renderReportRecursive(issue, layoutIdx+1);
-			}
-		);
-		
-	} else {
-		// All layouts rendered, create header with totals
-		$("#reportInfoContainer").html(
-			("<ul>"
-			+"<li>{publicationName} - {issueName}</li>"
-			+'<li class="small">Publication date: {publicationDate}'
-			+'<li class="small">Number of layouts: {layoutHits.length}'
-			+(issue.layoutHits.length == 0 ? '' : '<input value="Show layouts" type="button" class="noPrint" onclick="showLayouts(); return false"/></li>')
-			+'<li class="small">Referenced images: {imageHits.length}'
-			+(issue.imageHits.length == 0 ? '' : '<input value="Show images" type="button" class="noPrint" onclick="showImages(); return false"/></li>')
-			+"<li>Total costs: <b>€ {usageFeeTotal}</b></li>"
-			+"</ul>").replaceParams(issue)
-		);
-		
-		$("#reportBuildProgress").html("");
-		
-		$("#reportWrapper").show();
-	
-		return;
-	}
-}
-
-var LayoutReportRenderer = HitRenderer.extend({
-
-	// Custom metadata value rendering
-	layoutValue: function(hit, field, value) {
-		var renderedValue = this.renderValue(hit, field, value);
-
-		return '<div class="field">{field}:</div><div class="{cssClass}">{value}</div>'.replaceParams({
-			field: field.capitalizeFieldName(),
-			cssClass: this.getValueCssClass(hit, field, value, renderedValue),
-			value: renderedValue
-		});
-	},
-
-	postProcessHit: function(hitElement, hit, index) {
-		// Gather totals
-		this.issue.imageHits.push(hit);
-		
-		var usageFee = parseFloat(hit.metadata.usageFee);
-		if (!isNaN(usageFee)) {
-			this.issue.usageFeeTotal += usageFee;
-		}
-		
-		// Register image click handler
-        $(".elvisThumbnailWrapper:first", hitElement).bind("click", function(event) {
-			previewLightbox.show(hit);
-		});
-		
-		this._parent(hitElement, hit, index);
-		
-		// Search and display linked PDF
-		elvisApi.search({
-				q: "relatedTo:"+hit.id+" +assetDomain:pdf",
-				sort: "assetCreated-desc",
-				metadataToReturn: 'name',
-				num: 1
-			},
-			function (data) {
-				if (data.hits.length == 0) {
-					return;
+				if (showOnlyUsed && showHidden) {
+					if (e.target.id == "chk_used") {
+						showHidden = false;
+					} else {
+						showOnlyUsed = false;
+					}
+					$('.showOnlyUsedAndHidden input').filter(':checked').not(e.target).removeAttr('checked');
 				}
-				
-				var pdfHit = data.hits[0];
-			
-				var linkedPdf = $("<div/>").addClass("linkedPdf");
-				linkedPdf.append("<h3>Used on page:</h3>");
-				linkedPdf.append('<img src="'+pdfHit.thumbnailUrl+'"/>');
-				linkedPdf.bind('click', function(event) {
-					previewLightbox.show(pdfHit);
-				});
-				
-				$(hitElement).append(linkedPdf);
-			}
-		);
-	}
-});
 
-</script>
+				// Reload report
+				showReport(currentIssue);
+			});
+
+			// Load issue list on DOM ready
+			loadIssueList(elvisContext.activeTab.assetSelection,
+					elvisContext.activeTab.folderSelection);
+		});
+
+		function loadIssueList(assetSelection, folderSelection) {
+			// Reset view
+			$('#noLayoutsFound').hide();
+			$('#issueSingleTxt').hide();
+			$('#issueList').hide();
+			$('#issueList').hide();
+			$('#issueContainer').html('');
+
+			layoutSearchParams = {
+				sort:'publicationDate-desc,filename',
+				metadataToReturn:'filename,folderPath,issueName,publicationDate,publicationName'
+			};
+
+			// On asset selection:
+			if (assetSelection != null && assetSelection.length > 0) {
+				$('#issueChooseTxt').html('The selected assets contain layouts for the following issues, please select an issue:');
+				layoutSearchParams.q = ElvisPlugin.queryForSelection(assetSelection) + ' AND extension:indd';
+				layoutSearchParams.num = assetSelection.length;
+			}
+			// On folder selection:
+			else if (folderSelection != null && folderSelection.length > 0) {
+				$('#issueChooseTxt').html('The selected folder contains layouts for the following issues, please select an issue:'
+								+ '<div class="details">' + folderSelection[0].assetPath + '</div>');
+				layoutSearchParams.q = ElvisPlugin.queryForFolderSelection(folderSelection) + ' AND extension:indd';
+				layoutSearchParams.num = 500;
+			}
+			// In other cases:
+			else {
+				$('#issueChooseTxt').html('No folder or assets selected, please select an issue:'
+								+ '<div class="details">These issues are composed from the 50 last imported layouts. Because not all layouts are included, some issues might be incomplete.</div>');
+
+				$('#issueSingleTxt').html('No folder or assets selected, showing report for 50 most recent layouts.'
+								+ '<div class="details">These are the 50 last imported layouts. Because not all layouts are included, some issues might be incomplete.</div>');
+
+				layoutSearchParams.q = 'extension:indd';
+				//layoutSearchParams.sort = "assetCreated,filename";
+			}
+
+			elvisApi.search(layoutSearchParams, renderIssues);
+		}
+
+		function renderIssues(results) {
+			// Collect issues from layouts
+			// group by publicationName+issueName
+			var issuesByGroupKey = {};
+
+			// Loop through found layouts
+			for (var i = 0; i < results.hits.length; i++) {
+				var hit = results.hits[i];
+
+				// Use 'Unknown - Issue' as name when publicationName or issueName is not specified in metadata
+				var publicationName = (hit.metadata.publicationName ? hit.metadata.publicationName : 'Unknown');
+				var issueName = (hit.metadata.issueName ? hit.metadata.issueName : 'Issue');
+				var key = publicationName + '|' + issueName;
+
+				var issue = issuesByGroupKey[key];
+				if (!issue) {
+					issue = issuesByGroupKey[key] = {
+						publicationName:publicationName,
+						issueName:issueName,
+						publicationDate:(hit.metadata.publicationDate ? hit.metadata.publicationDate.formatted : 'unknown'),
+						layoutHits:[],
+						layoutContentHits:{}
+					};
+				}
+
+				issue.layoutHits.push(hit);
+			}
+
+			var groupKeys = Object.keys(issuesByGroupKey);
+			if (groupKeys.length == 0) {
+
+				// No layouts found
+				$('#noLayoutsFound').show();
+
+			} else if (groupKeys.length == 1) {
+
+				$('#issueSingleTxt').show();
+				$('#issueList').show();
+
+				// Auto show report if we have only one result
+				showReport(issue);
+
+			} else {
+
+				// Render issue list
+				for (var j = 0; j < groupKeys.length; j++) {
+					$('#issueContainer').append(renderListItem(issuesByGroupKey[groupKeys[j]]));
+				}
+				$('#issueList').show();
+
+			}
+		}
+
+		function renderListItem(issue) {
+			var element = $('<li/>');
+
+			var hit = issue.layoutHits[0];
+
+			element.html(('<div class="publication">{publicationName}</div>' +
+					'<div class="issue">{issueName}</div>' +
+					'<div class="layouts">{layoutHits.length} layout(s)</div>' +
+					'<div class="date">Publication date: {publicationDate}</div>').replaceParams(issue));
+
+			element.bind("click", function (event) {
+				showReport(issue);
+			});
+
+			return element;
+		}
+
+		function showReport(issue) {
+			if (renderIssue) return;
+			renderIssue = true;
+
+			currentIssue = issue;
+
+			issue.imageHits = [];
+
+			$('#reportWrapper').hide();
+			$('#reportContainer').html('');
+
+			renderReportRecursive(issue, 0);
+		}
+
+		function updateReportInfo() {
+			renderReportInfo(currentIssue);
+		}
+
+		function showLayouts() {
+			elvisContext.openSearch({
+				label:'Layouts from report',
+				query:ElvisPlugin.queryForSelection(currentIssue.layoutHits),
+				sort:layoutSearchParams.sort
+			});
+		}
+
+		function showImages() {
+			elvisContext.openSearch({
+				label:'Images from report',
+				query:ElvisPlugin.queryForSelection(currentIssue.imageHits),
+				sort:layoutSearchParams.sort
+			});
+		}
+
+		function renderReportRecursive(issue, layoutIdx) {
+			if (layoutIdx < issue.layoutHits.length) {
+				$('#reportBuildProgress').html('Building report for ' + issue.layoutHits.length + ' layouts... '
+								+ Math.round(layoutIdx / issue.layoutHits.length * 100) + '%');
+
+				var layoutHit = issue.layoutHits[layoutIdx];
+
+				// Create header for layout and prepare box for images
+				var layoutHeader = $('<h2/>');
+				layoutHeader.append('<div class="layoutThumb"><img src="' + layoutHit.thumbnailUrl + '"/></div>');
+				layoutHeader.append('Layout: ' + layoutHit.metadata.filename);
+				layoutHeader.append('<div class="location">Location: ' + layoutHit.metadata.folderPath + '</div>');
+				layoutHeader.bind('click', function (event) {
+					previewLightbox.show(layoutHit);
+				});
+
+				$('#reportContainer').append(layoutHeader);
+				$('#reportContainer').append($('<div/>').attr('id', 'layout_' + layoutIdx).attr('class', 'layoutImages'));
+
+				// Create renderer for images
+				var layoutReportRenderer = new UsageReportHitRenderer(elvisApi);
+				layoutReportRenderer.hitsTarget = '#layout_' + layoutIdx;
+				layoutReportRenderer.metadataToDisplay = ['name', 'copyright', 'usageRights', 'usageFee', 'used', 'ignore'];
+				layoutReportRenderer.editableMetadataToDisplay = ['copyright', 'usageRights', 'usageFee'];
+				layoutReportRenderer.externalThrobberTarget = '#throbber';
+				layoutReportRenderer.onThumbnailClick = function (e, hit) {
+					previewLightbox.show(hit);
+				};
+				layoutReportRenderer.onLinkedPdfClick = function (e, hit) {
+					previewLightbox.show(hit);
+				};
+				layoutReportRenderer.onUpdateMetadata = function (hitElement, hit, fieldName) {
+					var value = hit.metadata[fieldName];
+					if ((!value && fieldName == 'used' && showOnlyUsed) ||
+							(value && fieldName == 'ignore' && !showHidden)) {
+						// hide hit
+						for (var i = 0; i < issue.imageHits.length; i++) {
+							if (issue.imageHits[i].id == hit.id) {
+								issue.imageHits.splice(i, 1);
+								break;
+							}
+						}
+						$(hitElement).hide(500);
+						updateReportInfo();
+					} else if (fieldName == 'usageFee') {
+						updateReportInfo();
+					}
+				};
+
+				layoutReportRenderer.issue = issue;
+
+				var q = 'relatedTo:' + layoutHit.id + ' +assetDomain:image';
+
+				if (showOnlyUsed && !showHidden) {
+					q += ' AND used:true AND NOT ignore:true';
+				}
+				else if (showHidden && !showOnlyUsed) {
+					q += ' OR ignore:true';
+				}
+				else {
+					q += ' -ignore:true';
+				}
+
+				elvisApi.search({
+							q:q,
+							sort:'assetCreated-desc'
+						},
+						function (data) {
+							layoutReportRenderer.render(data);
+
+							issue.imageHits = issue.imageHits.concat(data.hits);
+
+							// recursively render report for each layout
+							renderReportRecursive(issue, layoutIdx + 1);
+						}
+				);
+			} else {
+				// All layouts rendered, create header with totals
+				renderReportInfo(issue);
+
+				$('#reportBuildProgress').html('');
+
+				$('#reportWrapper').show();
+
+				// use custom tooltip because air client browser not supported '@title' attribute
+				$('.elvisMetadataValue input:text').mouseenter(
+						function (e) {
+							var value = $(this).val();
+							var test = $('<div/>').text(value).css({display:'inline', width:'auto', visibility:'hidden'}).appendTo('body');
+							if ($(this).width() < test.width()) {
+								// display tooltip only if text clipped
+								$('#tooltip').css({left:e.pageX + 10, top:e.pageY}).text(value).fadeIn(100);
+							}
+							test.remove();
+						}).mouseleave(function (e) {
+							$('#tooltip').hide();
+						});
+
+				renderIssue = false;
+			}
+		}
+
+		function renderReportInfo(issue) {
+			var total = 0;
+			for (var i = 0; i < issue.imageHits.length; i++) {
+				var hit = issue.imageHits[i];
+				var usageFee = parseFloat(hit.metadata.usageFee);
+				usageFee = isNaN(usageFee) ? 0 : usageFee;
+				total += usageFee;
+			}
+			$('#reportInfoContainer').html(
+					('<ul>'
+							+ '<li>{publicationName} - {issueName}</li>'
+							+ '<li class="small">Publication date: {publicationDate}'
+							+ '<li class="small">Number of layouts: {layoutHits.length}'
+							+ (issue.layoutHits.length == 0 ? '' : '<input id="showLayouts" value="Show layouts" type="button" class="noPrint"/></li>')
+							+ '<li class="small"><label class="referencedImages">Referenced images: {imageHits.length}</label>'
+							+ (issue.imageHits.length == 0 ? '' : '<input id="showImages" value="Show images" type="button" class="noPrint"/></li>')
+							+ '<li class="totalUsageFee">Total costs: <b>€ ' + total + '</b></li>'
+							+ "</ul>").replaceParams(issue)
+			);
+			$('#showLayouts').click(function () {
+				showLayouts();
+				return false;
+			});
+			$('#showImages').click(function () {
+				showImages();
+				return false;
+			});
+		}
+
+	})();
+	</script>
 </head>
 <body>
 	<div id="issueList" style="display:none" class="noPrint">
@@ -339,9 +363,19 @@ var LayoutReportRenderer = HitRenderer.extend({
 			<ul id="issueContainer">
 				<!-- Issues will be rendered here -->
 			</ul>
+			<div class="showOnlyUsedAndHidden" style='text-align: right; padding-right:7px; background-color: #CCC; color: #333; vertical-align:middle'>
+				<label for="chk_used" style="padding-right: 10px">
+					<input type="checkbox" id="chk_used" name="showOnlyUsed" class="showOnlyUsedAndHidden" style="vertical-align: middle;"/>
+					<span style="vertical-align: middle;">Show only used</span>
+				</label>
+				<label for="chk_hidden">
+					<input type="checkbox" id="chk_hidden" name="showHidden" class="showOnlyUsedAndHidden" style="vertical-align: middle;" />
+					<span style="vertical-align: middle;">Show hidden</span>
+				</label>
+			</div>
 		</div>
 	</div>
-	
+
 	<div id="reportBuildProgress">
 	</div>
 	<div id="noLayoutsFound" style="display:none;position: fixed; top: 50%; left: 50%; margin-top: -50px; margin-left: -150px; width: 330px; ">
@@ -360,10 +394,11 @@ var LayoutReportRenderer = HitRenderer.extend({
 			<!-- Results are rendered here -->
 		</div>
 	</div>
+	<div id="tooltip"></div>
 	<div id="throbber" class="elvisThrobber" style="display:none;"></div>
-	<div class="copyright" style="position:fixed;">
-		Powered by <a href="http://www.elvisready.com">elvis</a> &copy; 
-		<a href="http://www.dutchsoftware.com">dutchsoftware.com</a>
+	<div class="elvisCopyright" style="position:fixed;">
+		Powered by <a href="http://www.elvisdam.com">Elvis</a> &copy;
+		<a href="http://www.woodwing.com">WoodWing Software</a>
 	</div>
 </body>
 </html>

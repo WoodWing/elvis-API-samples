@@ -125,8 +125,8 @@ body {
 }
 
 #reportContainer {
-	width: 600px;
-	margin: 0px auto;
+	width: 614px;
+	margin: 0px auto 18px auto;
 }
 #reportContainer .elvisHitBox {
 	border: #CCC thin solid;
@@ -138,6 +138,7 @@ body {
 	font-size: 14px;
 	padding: 10px 0 0 0;
 	border-top: 1px solid #CCC;
+	clear: both;
 }
 #reportContainer h2 .layoutThumb {
 	float: left;
@@ -175,6 +176,11 @@ body {
 	float: left;
 	width: 90px;
 }
+#reportContainer .elvisMetadata .field  span {
+	display: inline-block;
+	padding-top: 3px;
+}
+
 #reportContainer .elvisMetadata div {
 	text-align: left;
 	margin-bottom: 8px;
@@ -208,7 +214,7 @@ body {
 	height: 32px;
 }
 
-.copyright {
+.elvisCopyright {
 	position:absolute;
 	padding: 2px 0px;
 	bottom: 0px;
@@ -241,4 +247,45 @@ body {
 
 @media print {
 .noPrint { display: none; }
+}
+
+.inputFocus {
+	border-width: 1px;
+	border-color: transparent; 
+	background: #EEE url(img/edit_pencil.png) right no-repeat;
+	width: 115px; 
+	text-overflow: ellipsis; 
+	overflow: hidden; 
+	white-space: nowrap; 
+	padding-right: 25px;
+	font-size: 12px;
+}
+.inputBlur {
+	background: white;
+	border-color: black;
+	border-width: 1px;
+	width: 140px;
+	font-size: 12px;
+}
+.lblInput {
+	border-width: 1px;
+	border-color: transparent; 
+	color: black; 
+	background: #EEE;
+	width: 175px;
+	overflow: hidden; 
+	white-space: nowrap;
+}
+
+#tooltip {
+	position: absolute; 
+	z-index: 9999; 
+	border: 1px solid #CCC; 
+	background-color: #EEE; 
+	padding: 5px 10px; 
+	font-size: 8pt; font-weight: normal; 
+	box-shadow: 3px 3px 8px #202020;
+	-webkit-box-shadow: 3px 3px 8px #202020;
+	-moz-box-shadow: 3px 3px 8px #202020;	 	
+	display: none;
 }
