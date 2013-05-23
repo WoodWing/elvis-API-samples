@@ -1,6 +1,6 @@
 /**
  * Licensed under the MIT License
- * Copyright (c) 2010-2012 dutchsoftware.com
+ * Copyright (c) 2010-2013 WoodWing Software
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -1387,8 +1387,8 @@ var PreviewLightbox = $.Class({
 		$('body').append(template);
 
 		$('#elvisPreview').bind("click", function(event) {
-			self.close();
-			return false;
+				self.close();
+				return false;
 		});
 		$('#elvisPreviewClose').bind("click", function(event) {
 			self.close();
