@@ -248,7 +248,7 @@
 		}
 		// send request
 		$.ajax({
-			url: '/services/queryStats',
+			url: '${serverUrl}/services/queryStats',
 			data: params,
 			success: function(data, status) {
 				if (typeof data.errorcode != 'undefined') {
@@ -308,7 +308,7 @@
 		
 		// send request
 		$.ajax({
-			url: '/services/queryStats',
+			url: '${serverUrl}/services/queryStats',
 			data: params,
 			success: function(data, status) {
 				if (typeof data.errorcode != 'undefined') {

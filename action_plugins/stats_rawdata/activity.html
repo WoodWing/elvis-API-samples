@@ -33,7 +33,7 @@
             params.push({name:'queryFile', value:'${pluginId}/sql/activitylog.sql'});
 
             $.ajax({
-                url:'/services/queryStats',
+                url:'${serverUrl}/services/queryStats',
                 data:params,
                 success:function (d, status) {
                     // column model

@@ -208,7 +208,7 @@
 		$(requests).each(function() {
 			var o = this;
 			$.ajax({
-				url: '/services/queryStats',
+				url: '${serverUrl}/services/queryStats',
 				data: o.params,
 				success: function(data, status) {
 					if (typeof data.errorcode != 'undefined') {
@@ -318,7 +318,7 @@
 		$(requests).each(function() {
 			var o = this;
 			$.ajax({
-				url: '/services/queryStats',
+				url: '${serverUrl}/services/queryStats',
 				data: o.params,
 				success: function(data, status) {
 					if (typeof data.errorcode != 'undefined') {

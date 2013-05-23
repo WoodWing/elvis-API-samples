@@ -27,7 +27,7 @@ function updateTable(parameters, tableElementId, onSuccess, onError) {
 	}
 	// send request
 	$.ajax({
-		url: '/services/queryStats',
+		url: '${serverUrl}/services/queryStats',
 		data: params,
 		success: function(d, status) {
 			if (typeof d.errorcode != 'undefined') {

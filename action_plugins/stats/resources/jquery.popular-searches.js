@@ -34,7 +34,7 @@
 		params.push({name: 'period_end', value: jQuery.datepicker.formatDate(window.statsOptions.dbDateFormat, window.statsOptions.periodEnd)});
 
 		$.ajax({
-			url:'/services/queryStats',
+			url:'${serverUrl}/services/queryStats',
 			data:params,
 			dataType:'json',		
 			success:function (d, status) {
@@ -92,7 +92,7 @@
 		params.push({name: 'period_end', value: jQuery.datepicker.formatDate(window.statsOptions.dbDateFormat, window.statsOptions.periodEnd)});
 
 		$.ajax({
-			url:'/services/queryStats',
+			url:'${serverUrl}/services/queryStats',
 			data:params,
 			dataType:'json',		
 			success:function (d, status) {
@@ -122,7 +122,7 @@
 
 				<!--load hot dates-->
 				$.ajax({
-					url:'/services/queryStats',
+					url:'${serverUrl}/services/queryStats',
 					data:paramsHotDates,
 					dataType:'json',		
 					success:function (d, status) {
@@ -140,7 +140,7 @@
 
 						 <!--load average-->
 						 $.ajax({
-							url:'/services/queryStats',
+							url:'${serverUrl}/services/queryStats',
 							data:paramsHotDates,
 							dataType:'json',		
 							success:function (d, status) {
