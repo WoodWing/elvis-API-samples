@@ -1387,8 +1387,11 @@ var PreviewLightbox = $.Class({
 		$('body').append(template);
 
 		$('#elvisPreview').bind("click", function(event) {
+			var targetId = $(event.target).attr('id');
+			if (targetId == "elvisPreview" || targetId == "elvisPreviewBox") {
 				self.close();
 				return false;
+			}
 		});
 		$('#elvisPreviewClose').bind("click", function(event) {
 			self.close();
@@ -1403,6 +1406,21 @@ var PreviewLightbox = $.Class({
 		$('#elvisPreviewNext').bind("click", function(event) {
 			self.next();
 			return false;
+		});
+
+		$(document).keydown(function(e){
+			if (e.keyCode == 27 || e.keyCode == 32) { // esc or spacebar
+				self.close();
+				return false;
+			} else if (e.keyCode == 37) { // left
+				self.prev();
+				return false;
+			}
+			else if (e.keyCode == 39) { // right
+				self.next();
+				return false;
+			}
+			return true;
 		});
 
 		$(window).resize(function(){
