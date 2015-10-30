@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+	<info>
+		<version>
+			<pluginVersion>1.0</pluginVersion>
+			<requiresAtLeast>2.6.1.550</requiresAtLeast>
+		</version>
+		<description>Elvis Web Client</description>
+	</info>
+	<action>
+		<url>${serverUrl}/web</url>
+		<icon16Url>${pluginUrl}/icon16.png</icon16Url>
+		<icon24Url>${pluginUrl}/icon24.png</icon24Url>
+		
+		<userInterface>
+			<externalBrowser/>
+		</userInterface>
+		
+		<menuAssignments>
+			<menuAssignment id="applicationMenu" order="50"/>
+			<menuAssignment id="toolBar" order="50"/>
+		</menuAssignments>
+		
+		<requiredRoles>
+			<role>ROLE_CUSTOM_WEB_CLIENT</role>
+		</requiredRoles>
+		
+		<messages>
+			<entries locale="en_US">
+				<entry key="button.label">Web Client</entry>
+				<entry key="button.tooltip">Elvis Web Client</entry>
+			</entries>
+		</messages>
+		
+	</action>
+</plugin>

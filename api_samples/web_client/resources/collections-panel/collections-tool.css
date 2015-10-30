@@ -1,0 +1,96 @@
+@CHARSET "UTF-8";
+
+div.elvis-collection-box { width: 200px; padding: 3px; background-color: #aaaaaa; color: #ffffff; font-size: 12px; border-radius: 0; font-family: Tahoma, Verdana, Arial; }
+div.elvis-collection-box div.ec-create-new-box { position: absolute; top: 0; left: 0; right: 0; bottom: 0;	background-color: #333333; padding: 10px 5px; border-radius: 5px; }
+div.elvis-collection-box div.ec-create-new-box.droppable-active,
+div.elvis-collection-box div.ec-list-box div.ec-collection-box.droppable-active { background-color: #222222; }
+div.elvis-collection-box div.ec-create-new-box.droppable-hover,
+div.elvis-collection-box div.ec-list-box div.ec-collection-box.droppable-hover { background-color: #555555; }
+div.elvis-collection-box div.ec-create-new-box p { margin: 0; padding: 0; text-align: center; }
+div.elvis-collection-box div.ec-create-new-box p.ec-label {  }
+div.elvis-collection-box div.ec-create-new-box p.ec-icon-box { margin-top: 3px; height: 33px; text-align: center; }
+div.elvis-collection-box div.ec-create-new-box a.ec-icon { height: 32px; background: url(round_plus.png) no-repeat 0 0; width: 32px; display: inline-block; }
+div.elvis-collection-box div.ec-create-new-box a.ec-icon-pushed { margin: 1px 0 0 1px; }
+div.elvis-collection-box div.ec-list-box { }
+div.elvis-collection-box div.ec-list-box div.ec-collection-box { position: relative;	 background-color: #333333; margin: 7px; border-radius: 5px; }
+div.elvis-collection-box div.ec-collection-box div.ec-collection-body { 	position: absolute; top: 24px; left: 4px; right: 4px; bottom: 4px; overflow: auto; }
+div.elvis-collection-box div.ec-collection-box div.ec-collection-header-box { padding: 4px 8px; }
+div.elvis-collection-box div.ec-collection-box div.ec-collection-header-box span.items-count { float: right; margin-left: 5px; }
+div.elvis-collection-box div.ec-collection-box div.ec-collection-header-box a.button { float: right; width: 16px; height: 16px; margin-left: 5px; }
+div.elvis-collection-box div.ec-collection-box div.ec-collection-header-box a.collection-deactivate { background: url(button-collection-deactivate.png) no-repeat 0 0; }
+div.clear { clear: both; }
+
+
+
+
+/* additional styles */
+
+div.elvis-collection-box { float: left; margin: 0 5px 5px 0; }
+
+#resultContainer div.image-box { float: left; width: 140px; height: 140px; margin: 0 5px 5px 0; }
+#resultContainer div.image-box img { max-height: 138px; max-width: 138px; border: 1px solid #999999; }
+
+.drag-count-label {
+	display: inline-block;
+	position: absolute;
+	bottom: 0px;
+	right: 0px;
+	min-height: 20px;
+	min-width: 20px;
+	background-color: #f00;
+	-webkit-border-radius: 10px;
+	-moz-border-radius: 10px;
+	border-radius: 10px;
+}
+.drag-count-label div {
+	font-size: 10px; 
+	color: #fff;
+	text-align: center;
+	margin-top: 3px;
+}
+
+
+/* auto-size collection */
+.elvis-collection-float-box {}
+.elvis-collection-float-box div.elvis-collection-box { float: none; margin: 0; position: absolute; top: 0; left: 0; right: 0; bottom: 0; width: auto; }
+.elvis-collection-float-box div.elvis-collection-box div.ec-list-box { 
+	height: auto; 
+	/*position: absolute; top: 7px; left: 7px; right: 7px; bottom: 7px; */
+	position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+}
+
+/* customize hitRenderer styles */
+.hitsContainer .elvisHitBox.selected {
+	border: 0;
+	background-color: #616c86;
+}
+.hitsContainer .elvisHitBox {
+	width: 52px;
+	height: 52px;
+	border: 0;
+	padding: 4px;
+	margin: 0;
+}
+.hitsContainer .elvisThumbnailWrapper,
+.hitsContainer .elvisThumbnailImage,
+.hitsContainer .elvisThumbnailIcon {
+	width: 52px;
+	height: 52px;
+}
+.hitsContainer .elvisThumbnailWrapper.square,
+.hitsContainer .elvisThumbnailText {
+	border: 0;
+	width: 52px;
+	height: 52px;
+}
+.hitsContainer .elvisThumbnailImage img,
+.hitsContainer .elvisThumbnailIcon img {
+	//max-width: 52px;
+	//max-height: 52px;
+}
+.hitsContainer .elvisThumbnailText span {
+	width: 48px;
+	height: 48px;
+	margin: 0 2px;
+	font-size: 8px;
+}

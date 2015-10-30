@@ -1,0 +1,905 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<!--
+
+Licensed under the MIT License
+Copyright (c) 2010-2012 dutchsoftware.com
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this а and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+
+-->
+<head>
+	<title>Elvis</title>
+	<script src="${pluginsBaseRootUrl}/web.shared/jquery.js" type="text/javascript"></script>
+	<script src="${pluginsBaseRootUrl}/web.shared/jquery.class.js" type="text/javascript"></script>
+	<script src="${pluginsBaseRootUrl}/web.shared/jquery.cookie.js" type="text/javascript"></script>
+	<link  href="${pluginsBaseRootUrl}/web.shared/elvis_api/css/elvis.css" rel="stylesheet" type="text/css"/>
+	<script src="${pluginsBaseRootUrl}/web.shared/elvis_api/js/jquery.elvis.js" type="text/javascript"></script>
+	
+	<script src="resources/jquery.jswipe-0.1.2.js" type="text/javascript"></script>
+	
+	<script src="resources/jquery.layout.js" type="text/javascript"></script>
+	<script src="resources/jquery-ui-1.8.20.custom.min.js" type="text/javascript"></script>
+	<link href="resources/jquery-ui-1.8.21.custom.css" rel="stylesheet" type="text/css" />
+	<script src="resources/date.js" type="text/javascript"></script>
+	
+	<link href="resources/styles.css" rel="stylesheet" type="text/css"/>
+
+	
+	<link href="resources/jquery.elvis-dialogs.css" rel="stylesheet" type="text/css" />
+	<script src="resources/jquery.elvis-dialogs.class.js" type="text/javascript"></script>
+
+	<!-- metadata panel -->
+	<link href="resources/metadata-panel/jquery.metadata-panel.css" rel="stylesheet" type="text/css" />
+	<script src="resources/metadata-panel/jquery.metadata-panel.class.js" type="text/javascript"></script>
+
+	<!-- collections panel -->
+	<script src="resources/collections-panel/collections-tool.js" type="text/javascript"></script>
+	<link  href="resources/collections-panel/collections-tool.css" rel="stylesheet" type="text/css"/>
+
+	<!-- import panel -->
+	<script src="resources/jquery.iframe-transport.js" type="text/javascript"></script>
+	<script src="resources/jquery.fileupload.js" type="text/javascript"></script>
+	<script src="resources/load-image.js" type="text/javascript"></script>
+	<link href="resources/import-panel/jquery.import-panel.class.css" rel="stylesheet" type="text/css" />
+	<script src="resources/import-panel/jquery.import-panel.class.js" type="text/javascript"></script>
+	
+	<!-- context menu -->
+	<link href="resources/context-menu/jquery.context-menul.css" rel="stylesheet" type="text/css" />
+	<script src="resources/context-menu/jquery.context-menul.class.js" type="text/javascript"></script>
+
+	<script type="text/javascript">
+	
+		var profile, refreshTimer, searchParams = null, currentContainerId = null;
+		
+		// Initialize and setup components
+		var elvisApi = new ElvisAPI("${serverUrl}");
+		elvisApi.useLoginPage("login.html?nextUrl=" + encodeURIComponent(location) + "&clientType=api_sample_WebClient");
+		
+		// get user profile
+		elvisApi.getProfile(function(data) {
+			profile = data;
+			$(document).ready(function() {
+				$('#browse-user').button({label: profile.username});
+				$('#logout').button({label: 'Logout ' + profile.username});
+				importPanel.setFolderPath(profile.userZone);
+			});
+		});
+		
+		var CollectionsPanel = CollectionsToolExt.extend({
+			createHitRenderer: function() {
+				var hitRenderer = new CollectionsHitRenderer();
+				hitRenderer.squareThumbs = true;
+				hitRenderer.metadataToDisplay = null;
+				hitRenderer.selectable = true;
+				hitRenderer.multiselect = this.options.multiSelect;
+				hitRenderer.itemDoubleClick = function (event, hit, hits, index) {
+					if (hit.previewUrl) {
+						previewLightbox.showGallery(hits, index);
+					}
+				}
+				return hitRenderer;
+			}
+		});
+		
+		var collectionsPanel = new CollectionsPanel({
+				collectionsTarget: '#collectionsContainer',
+				onChangeCollectionsList: function(collections) {
+					var ids = [];
+					$.each(collections, function(i, collection){ids.push(collection.data.id)});
+					ids.reverse();
+					$.cookie('active_collections', ids.join(','), {expires: 365});
+				}
+			}
+			, elvisApi);
+
+		var TagCloudFacetRenderer = FacetRenderer.extend({
+			_renderFacet : function (target, field, facetValues) {
+				if (field == "tags") {
+					var html = "";
+					
+					if (facetValues.length != 0) {
+						// Determine low and high bound of hitCount
+						var high = facetValues[0].hitCount;
+						var low = high;
+						for (var i = 1; i < facetValues.length; i++) {
+							var hitCount = facetValues[i].hitCount;
+							if (high < hitCount) {
+								high = hitCount;
+							}
+							if (low > hitCount) {
+								low = hitCount;
+							}
+						}
+						
+						// Render links
+						for (var i = 0; i < facetValues.length; i++) {
+							var value = facetValues[i].value;
+							var hitCount = facetValues[i].hitCount;
+							var selected = (this._selectedFacets[field] && this._selectedFacets[field][value]);
+							
+							// Calculate font size factor
+							var x = (hitCount - low) / (high - low);
+							
+							html += '<li{classAttr}><a href="#" onclick="return false" style="font-size:{size}px" title="{title}">{label}</a> </li>'.replaceParams({
+								classAttr : (selected ? ' class="selected"' : ''),
+								label : value,
+								title : value + " (" + hitCount + ")",
+								size : (4 * x + 10)
+							});
+						}
+					}
+					
+					target.html(html);
+				} else {
+					this._parent(target, field, facetValues);
+				}
+			},
+			clear: function() {
+				this._selectedFacets = {};
+			}
+			
+		});
+		var facetRenderer = new TagCloudFacetRenderer();
+		facetRenderer.facets = ["assetDomain", "tags", "usageRights"];
+		facetRenderer.facetClick = function(field, value, selected, element) {
+			// refresh results (and facets), facet selection is already updated by FacetRenderer
+			filter();
+		};
+		
+		
+		// hitRenderer
+		var CollectionsHitRenderer = DraggableHitRenderer.extend({
+			// redefine method
+			postProcessHit : function (hitElement, hit, index) {
+				var self = this;
+				// call super method
+				this._parent(hitElement, hit, index);
+				// context menu
+				hitContextMenu.bindContext(hitElement, {
+					index: index, 
+					hit: hit, 
+					hitElement: hitElement, 
+					getSelectedHits: function() {
+						return self.selectedHits.slice(0);
+					},
+					getContainerId: function() {
+						return hit.collection && hit.collection.data ? hit.collection.data.id : null;
+					},
+					getHitRenderer: function() {return self}
+				});
+			},
+			
+		});
+		
+		// hitRenderer
+		var FrontHitRenderer = DraggableHitRenderer.extend({
+			// redefine method
+			postProcessHit : function (hitElement, hit, index) {
+				var self = this;
+				// call super method
+				this._parent(hitElement, hit, index);
+				// context menu
+				hitContextMenu.bindContext(hitElement, {
+					index: index, 
+					hit: hit, 
+					hitElement: hitElement, 
+					getSelectedHits: function() {
+						return self.selectedHits.slice(0);
+					},
+					getContainerId: function() {
+						return currentContainerId;
+					},
+					getHitRenderer: function() {return self}
+				});
+			},
+			
+			generateHelper: function(sourceElement) {
+				var helper = this._parent(sourceElement);
+				$('.elvisMetadata', helper).remove();
+				return helper;
+			}
+		});
+		
+		
+		var hitRenderer = new FrontHitRenderer();
+		hitRenderer.hitsTarget = "#resultContainer";
+		hitRenderer.infoTarget = "#infoContainer";
+		hitRenderer.pageTarget = "#pageControls";
+		hitRenderer.sizeTarget = "#sizeControls";
+		hitRenderer.squareThumbs = true;
+		hitRenderer.metadataToDisplay = ["name", "rating"];
+		hitRenderer.maxPageLinks = 5
+		hitRenderer.selectable = true;
+		hitRenderer.multiselect = true;
+		hitRenderer.itemDoubleClick = function (event, hit, hits, index) {
+			if (hit.metadata.assetDomain == "container") {
+				browseCollection(hit.id);
+			} else if (hit.previewUrl) {
+				previewLightbox.showGallery(hits, index);
+			}
+		}
+		hitRenderer.selectionChange = function (hits) {
+			metadataPanel.setHits(hits);
+			
+		}
+		hitRenderer.pageClick = function (start, num) {
+			refreshResults(start, num);
+		};
+		
+		var hitContextMenu = new ContextMenu();
+		hitContextMenu.items = [
+			{label: 'Activate Collection', disabled: disableActivateCollection, action: activateCollection},
+			null,
+			{label: 'Download Original', disabled: true},
+			{label: 'Download Preview', disabled: true},
+			null,
+			{label: 'Rating', items: [
+				{label: 'No Rating', action: (function(rating) {return function(context) {updateRating(context, rating)}})(0)},
+				{label: 'Reject', action: (function(rating) {return function(context) {updateRating(context, rating)}})(-1)},
+				{label: String.fromCharCode(9733), action: (function(rating) {return function(context) {updateRating(context, rating)}})(1)},
+				{label: String.fromCharCode(9733, 9733), action: (function(rating) {return function(context) {updateRating(context, rating)}})(2)},
+				{label: String.fromCharCode(9733, 9733, 9733), action: (function(rating) {return function(context) {updateRating(context, rating)}})(3)},
+				{label: String.fromCharCode(9733, 9733, 9733, 9733), action: (function(rating) {return function(context) {updateRating(context, rating)}})(4)},
+				{label: String.fromCharCode(9733, 9733, 9733, 9733, 9733), action: (function(rating) {return function(context) {updateRating(context, rating)}})(5)}
+			]},
+			null,
+			{label: 'Move...', action: moveFiles},
+			{label: 'Copy...', action: copyFiles},
+			{label: 'Delete...', action: deleteFiles},
+			null,
+			{label: 'Remove from Collection', disabled: disableRemoveFromCollection, action: removeFromCollection}
+		];
+		hitContextMenu.onShow = function(e) {
+			var context = e.data;
+			var hits = context.getSelectedHits ? context.getSelectedHits() : null;
+			var hitRenderer = context.getHitRenderer ? context.getHitRenderer() : null;
+			if (hits && hitRenderer) {
+				if ($.inArray(context.hit, hits) < 0) {
+					// fix selection if context menu called for asset out of selection
+					hitRenderer.toggleSelected({}, context.hitElement, context.hit, context.index);
+				}
+			}
+		}
+		
+		function disableActivateCollection(context) {
+			var hits = context.getSelectedHits ? context.getSelectedHits() : null;
+			if (hits) {
+				for (var i = 0; i < hits.length; i++) if (hits[i].metadata.assetDomain === 'container') return false;
+			}
+			return true;
+		}
+		function activateCollection(context) {
+			var hits = context.getSelectedHits ? context.getSelectedHits() : null;
+			if (hits) {
+				for (var i = 0; i < hits.length; i++) {
+					if (hits[i].metadata.assetDomain === 'container') {
+						collectionsPanel.addElvisCollection(hits[i].id);
+					}
+				}
+			}
+			
+		}
+		function deleteFiles(context) {
+			var hits = context.getSelectedHits ? context.getSelectedHits() : null;
+			if (hits) {
+				// TODO separate messages for files, collectios and mixed selection
+				var deleteFilesDialog = new DeleteFilesDialog();
+				deleteFilesDialog.message = 'Are you sure you want to delete ' + hits.length + ' file(s)?'
+				deleteFilesDialog.onOk = function() {
+					var ids = [];
+					$.each(hits, function(i, hit) {ids.push(hit.id)});
+					elvisApi.remove({ids: ids.join(',')}, function() {
+						refreshResults();
+						// TODO refresh collections panel
+					});
+				}
+				deleteFilesDialog.show();
+			}
+		}
+		function disableRemoveFromCollection(context) {
+			var disable = true;
+			if (context.getContainerId && context.getContainerId() != null) disable = false;
+			return disable;
+		}
+		function removeFromCollection(context) {
+			var containerId = context.getContainerId ? context.getContainerId() : null;
+			var hits = context.getSelectedHits ? context.getSelectedHits() : null;
+			if (containerId && hits) {
+				var self = this;
+				$.each(hits, function(i, hit) {
+					var params = {
+						q : 'relatedTo:' + containerId + ' id:' + hit.id,
+						relationTarget : "child",
+						relationType : "contains"
+					};
+					elvisApi.search(params, function (data) {
+						if (data.hits.length > 0) {
+							var metadata = {
+								relationIds : data.hits[0].relation.relationId
+							}
+							elvisApi.removeRelation(metadata, function() {
+								refreshResultsPostponed();
+								// TODO revise why callback not called
+							});
+							refreshResultsPostponed();
+							// TODO update collections panel
+						}
+					});
+					collectionsPanel.removeFromCollection(containerId, hit.id);
+				});
+			}
+			// TODO update collections panel
+		}
+		function moveFiles(context) {
+			var hits = context.getSelectedHits ? context.getSelectedHits() : null;
+			if (hits) {
+				var moveFilesDialog = new MoveFilesDialog(elvisApi);
+				moveFilesDialog.onOk = function() {
+					$.each(hits, function(i, hit) {
+						var params = {source: hit.metadata.assetPath, target: moveFilesDialog.folderPath + '/' + hit.metadata.filename};
+						elvisApi.move(params, function() {refreshResultsPostponed()});
+					});
+				}
+				moveFilesDialog.show();
+			}
+		}
+		function copyFiles(context) {
+			var hits = context.getSelectedHits ? context.getSelectedHits() : null;
+			if (hits) {
+				var copyFilesDialog = new CopyFilesDialog(elvisApi);
+				copyFilesDialog.onOk = function() {
+					$.each(hits, function(i, hit) {
+						var params = {source: hit.metadata.assetPath, target: copyFilesDialog.folderPath + '/' + hit.metadata.filename};
+						elvisApi.copy(params, function() {refreshResultsPostponed()});
+					});
+				}
+				copyFilesDialog.show();
+			}
+		}
+		function updateRating(context, rating) {
+			var hits = context.getSelectedHits ? context.getSelectedHits() : null;
+			if (hits) {
+				var assetIds = [];
+				$.each(hits, function(i, hit) {assetIds.push(hit.id)});
+				if (assetIds.length > 0) {
+					var query = 'id:(' + assetIds.join(' OR ') + ')';
+					var metadata = {rating : rating}
+					elvisApi.updatebulk(query, {metadata: JSON.stringify(metadata)}, function() {
+						// update front hitRenderer
+						$.each(hitRenderer.hits, function(i, hit) {
+							if ($.inArray(hit.id, assetIds) >= 0) {
+								hit.metadata = $.extend(hit.metadata, metadata);
+							}
+						});
+						refresh();
+						// update metadata panel
+						metadataPanel.setHits(hitRenderer.selectedHits);
+					});
+				}
+			}
+			
+		}
+		
+		// Custom PreviewLightbox that supports left and right swipe gestures on touch screens
+		var SwipingPreviewLightbox = PreviewLightbox.extend({
+			// redefine method
+			insertHtml: function() {
+				// call super method
+				this._parent();
+				// add swipe handlers
+				var self = this;
+				$("#elvisPreview").swipe({
+					threshold: {
+						x: 30,
+						y: 50
+					},
+					swipeLeft: function(changeX, changeY) {
+						self.next();
+					},
+					swipeRight: function() {
+						self.prev();
+					}
+				});
+			}
+		});		
+		var previewLightbox = new SwipingPreviewLightbox();
+
+		var MetadataPanelEx = MetadataPanel.extend({
+			init: function(metadataTarget, elvisApi) {
+				this._parent(metadataTarget, elvisApi);
+			},
+			setHits: function(hits) {
+				$.each(hits, function(i, hit) {
+					hit.metadata.id = hit.id
+				});
+				this._parent(hits);
+			}
+		});
+		var metadataPanel = new MetadataPanelEx('#metadataPanel', elvisApi);
+		metadataPanel.calendarImage = 'resources/metadata-panel/mp-field-cal.png';
+		metadataPanel.allowChangeFilename = true;
+		metadataPanel.onUiUpdateMetadata = function(assetId, metadata) {
+			$.each(hitRenderer.hits, function(i, hit) {
+				if (hit.id == assetId) {
+					hit.metadata = $.extend(hit.metadata, metadata);
+					refresh();
+					return;
+				}
+			});
+		}
+		var prevOnUpdateMetadata = metadataPanel.onUpdateMetadata;
+		metadataPanel.onUpdateMetadata = function(assetIds, metadata) {
+			
+			if (prevOnUpdateMetadata) {
+				prevOnUpdateMetadata(assetIds, metadata);
+			}
+		}
+
+		var CustormColumnTree = ColumnTree.extend({
+			init: function(targetId, elvisApi) {
+				this._parent(targetId, elvisApi);
+			},
+			_createItem: function(data, listElement) {
+				var li = this._parent(data, listElement);
+				columnTreeContextMenu.bindContext(li, {data: data, ul: listElement, li: li});
+				return li;
+			}
+		});
+		
+		
+		var columnTree = new CustormColumnTree("#folderBrowser", elvisApi);
+		columnTree.pathChange = function () {
+			browseFolder();
+		};
+		
+		var columnTreeContextMenu = new ContextMenu();
+		columnTreeContextMenu.items = [
+			{label: 'Create Collection...', disabled: onCollection, action: createCollection},
+			{label: 'Create Folder...', disabled: onCollection, action: createFolder},
+			null,
+			{label: 'Rename Folder...', disabled: onCollection, action: renameFolder},
+			{label: 'Copy Folder...', disabled: onCollection, action: copyFolder},
+			{label: 'Move Folder...', disabled: onCollection, action: moveFolder},
+			null,
+			{label: 'Delete Folder...', disabled: onCollection, action: deleteFolder},
+			{label: 'Delete Collection...', disabled: onFolder, action: deleteCollection}
+		];
+		columnTreeContextMenu.onShow = function(e) {
+			var context = e.data;
+			if (context && context.data) {
+				columnTree._itemClick(context.data, context.li, context.ul);
+			}
+		}
+		
+		function createCollection() {
+			createCollectionDialog.name = '';
+			createCollectionDialog.show();
+		}
+		function createFolder() {
+			createFolderDialog.name = '';
+			createFolderDialog.show();
+		}
+		function renameFolder() {
+			renameFolderDialog.name = columnTree.name;
+			renameFolderDialog.show();
+		}
+		function copyFolder() {
+			copyFolderDialog.folderPath = columnTree.folderPath;
+			copyFolderDialog.show();
+		}
+		function moveFolder() {
+			moveFolderDialog.folderPath = columnTree.folderPath;
+			moveFolderDialog.show();
+		}
+		function deleteFolder() {
+			deleteFolderDialog.message = 'Are you sure you want to permanently delete the folder "' + columnTree.name + '"? All files and folders contained in this folder will also be deleted';
+			deleteFolderDialog.show();
+		}
+		function deleteCollection() {
+			deleteCollectionDialog.message = 'Are you sure you want to collection "' + columnTree.name + '" (assets in this collection will not be deleted)?';
+			deleteCollectionDialog.show();
+		}
+		function onCollection() {
+			return typeof columnTree.containerId !== 'undefined' && columnTree.containerId != null;
+		}
+		function onFolder() {
+			return !onCollection();
+		}
+		
+		var deleteCollectionDialog = new DeleteCollectionDialog();
+		deleteCollectionDialog.onOk = function() {
+			elvisApi.remove({ids: columnTree.containerId}, function() {
+				// TODO update collections panel
+				columnTree.refresh();
+				refreshResults();
+			});
+		}
+		var deleteFolderDialog = new DeleteFolderDialog();
+		deleteFolderDialog.onOk = function() {
+			elvisApi.remove({folderPath: columnTree.folderPath}, function() {
+				columnTree.refresh();
+				refreshResults();
+			});
+		}
+		var createCollectionDialog = new CreateCollectionDialog();
+		createCollectionDialog.onOk = function() {
+			if (createCollectionDialog.name) {
+				var metadata = {folderPath : columnTree.folderPath, assetType: "collection", name: createCollectionDialog.name};
+				elvisApi.create(metadata, function(data) {
+					collectionsPanel.addElvisCollection(data.id);
+					columnTree.refresh();
+					refreshResults();
+				});
+			}
+		}
+		var createFolderDialog = new CreateFolderDialog();
+		createFolderDialog.onOk = function() {
+			if (createFolderDialog.name) {
+				var params = {path : columnTree.folderPath + '/' + createFolderDialog.name};
+				elvisApi.createFolder(params, function() {
+					columnTree.refresh();
+					refreshResults();
+				});
+			}
+		}
+		var renameFolderDialog = new RenameFolderDialog();
+		renameFolderDialog.onOk = function() {
+			if (renameFolderDialog.name) {
+				var targetFolderPath = columnTree.folderPath.slice(0, columnTree.folderPath.lastIndexOf('/')) + '/' + renameFolderDialog.name;
+				var params = {source: columnTree.folderPath, target: targetFolderPath};
+				elvisApi.move(params, function() {
+					columnTree.folderPath = targetFolderPath;
+					columnTree.refresh();
+					refreshResults();
+				});
+			}
+		}
+		var copyFolderDialog = new CopyFolderDialog(elvisApi);
+		copyFolderDialog.onOk = function() {
+			if (copyFolderDialog.folderPath) {
+				var target = copyFolderDialog.folderPath + '/' + columnTree.name;
+				var params = {source: columnTree.folderPath, target: target};
+				elvisApi.copy(params, function() {
+					columnTree.folderPath = target;
+					columnTree.refresh();
+					refreshResults();
+				});
+			}
+		}
+		var moveFolderDialog = new MoveFolderDialog(elvisApi);
+		moveFolderDialog.onOk = function() {
+			if (moveFolderDialog.folderPath) {
+				var target = moveFolderDialog.folderPath + '/' + columnTree.name;
+				var params = {source: columnTree.folderPath, target: target};
+				elvisApi.move(params, function() {
+					columnTree.folderPath = target;
+					columnTree.refresh();
+					refreshResults();
+				});
+			}
+		}
+		
+		var importPanel = new ImportPanel('#importPanel', elvisApi);
+		importPanel.newFileDefaultIcon = 'resources/import-panel/ip-new-file.png';
+		importPanel.selectionChange = function(hits) {
+			importMetadataPanel.setHits(hits);
+		}
+		importPanel.onCreateCollection = function(collection) {
+			collectionsPanel.addElvisCollection(collection.id);
+		}
+
+		var importMetadataPanel = new MetadataPanel('#importMetadataPanel', elvisApi);
+		importMetadataPanel.metadataToDisplay = ['filename', 'tags', 'description', 'copyright'];
+		importMetadataPanel.expandGroups = true;
+		importMetadataPanel.onInit = function(fieldGroups) {
+			$.each(fieldGroups, function(i, group) {
+				$.each(group.fields, function(i, field) {
+					field.editable = true;
+					if (field.name == 'filename') {
+						field.blockMultipleEdit = true;
+					}
+				});
+			});
+			return fieldGroups;
+		}
+		importMetadataPanel.onUpdateMetadata = null; // don't send update to server
+		importMetadataPanel.onUiUpdateMetadata = function(assetId, metadata) {
+			importPanel.updateMetadata(assetId, metadata);
+		}
+		
+		function toggleMode(mode) {
+			switch (mode) {
+				case 'browse': 
+					$("#results").show();
+					$("#importPanel").hide();
+					$("#folderBrowser").show();
+					$("#resultContainer").css('top', '150px');
+					$("#metadataPanel").show();
+					$("#importMetadataPanel").hide();
+					break;
+				case 'search': 
+					$("#results").show();
+					$("#importPanel").hide();
+					$("#folderBrowser").hide();
+					$("#resultContainer").css('top', '33px');
+					$("#metadataPanel").show();
+					$("#importMetadataPanel").hide();
+					break;
+				case 'import':
+					$("#results").hide();
+					$("#importPanel").show();
+					$("#metadataPanel").hide();
+					$("#importMetadataPanel").show();
+					break;
+			}
+		}
+		
+		function search() {
+			toggleMode('search');
+			facetRenderer.clear();
+			currentContainerId = null;
+			
+			var querystring = $('#querystring').val();
+			
+			searchParams = {
+				q : querystring,
+				sort : "assetCreated",
+				facets : facetRenderer.facets.join(",")
+			};
+			
+			refreshResults();
+			
+			// return false to avoid form submit
+			return false;
+		}
+		
+		function browseFolder() {
+			toggleMode('browse');
+			facetRenderer.clear();
+			var query = '';
+			if (columnTree.containerId) {
+				query = "relatedTo:" + columnTree.containerId + " relationTarget:child";
+				currentContainerId = columnTree.containerId;
+			} else if (columnTree.folderPath) {
+				query += ' ancestorPaths:"' + columnTree.folderPath + '"';
+				currentContainerId = null;
+			}
+			searchParams = {
+				q : query,
+				sort : "assetCreated",
+				facets : facetRenderer.facets.join(",")
+			};
+			refreshResults();
+		}
+
+		function browseCollection(id) {
+			facetRenderer.clear();
+			currentContainerId = id;
+			var query = "relatedTo:" + id + " relationTarget:child";
+			searchParams = {
+				q : query,
+				sort : "assetCreated",
+				facets : facetRenderer.facets.join(",")
+			};
+			refreshResults();
+		}
+		
+		function inport() {
+			importPanel.setFolderPath(columnTree.folderPath || profile.userZone);
+			toggleMode('import');
+		}
+
+		function filter() {
+			var q = searchParams.q;
+			var sort = searchParams.sort;
+			searchParams = {
+				q : q,
+				sort : sort,
+				facets : facetRenderer.facets.join(",")
+			};
+			facetRenderer.addFacetSelectionParams(searchParams);
+
+			refreshResults();
+		}
+
+		function addElvisCollection(collection) {
+			collectionsPanel.createCollection(collection, collection.metadata.name);
+			
+		}
+		
+		function refreshResults(start, num) {
+			if (searchParams) {
+				// apply start and num if needed
+				if (start != undefined && num != undefined) {
+					searchParams.start = start;
+					searchParams.num = num;
+				}
+
+				// execute search and update results
+				elvisApi.search(searchParams, function(data) {
+					hitRenderer.render(data);
+					facetRenderer.render(data);
+				});
+				
+				// clear selection
+				metadataPanel.setHits([]);
+			}
+		}
+		
+		function refresh() {
+			window.clearTimeout(refreshTimer);
+			refreshTimer = window.setTimeout(function() {
+				hitRenderer.refresh() ;
+			}, 200);
+		}
+
+		function refreshResultsPostponed() {
+			window.clearTimeout(refreshTimer);
+			refreshTimer = window.setTimeout(function() {
+				refreshResults() ;
+			}, 200);
+		}
+		
+		function resizeFasetsPanel() {
+			var height = $('#fasets').parent().parent().height();
+			$('#fasets').prevAll().each(function() {
+				height -= $(this).outerHeight();
+			});
+			$('#fasets').outerHeight(height);
+		}
+		
+		$(document).ready(function () {
+			// init layout
+			$('body').layout({
+				defaults : {
+					spacing_open : 10,
+					spacing_closed : 10
+				},
+				north : {
+					size : 38,
+					closable : false,
+					resizable : false,
+					spacing_open : 7,
+					spacing_closed : 7
+				},
+				west : {
+					onresize_end : function () {
+						resizeFasetsPanel();
+					}
+				},
+				east : {
+					size : 360,
+					minSize : 280,
+					onresize_end : function () {
+						$('#right-panel').accordion('resize')
+						collectionsPanel.resize();
+					}
+				},
+				south : {
+					size : 22,
+					closable : false,
+					resizable : false,
+					spacing_open : 0
+				}
+			});
+			// init toolbar
+			$('#search-block form').submit(search);
+			$('#import').button({icons: {primary: 'import-icon'}}).click(inport);
+			$('#search').button({icons: {primary: 'search-icon'}}).click(search);
+			$('#logout').button().click(function() {
+				elvisApi.logout(window.location.toString());
+				return false;
+			});
+			
+			// init right panel groups
+			$('#right-panel').accordion({
+				fillSpace : true,
+			});
+			// init left panel
+			$('#browse-root').button({icons: {primary: 'browse-root-icon'}}).click(function () {
+				columnTree.folderPath = '';
+				columnTree.refresh();
+				browseFolder();
+			});
+			// get user name and userZone from profile
+			$('#browse-user').button({icons: {primary: 'browse-user-icon'}}).click(function () {
+				if (profile && profile.userZone) {
+					columnTree.folderPath = profile.userZone;
+					columnTree.refresh();
+					browseFolder();
+				}
+			});
+			
+			resizeFasetsPanel();
+			
+			toggleMode('search');
+			
+			columnTreeContextMenu.bindContext('#folderBrowser');
+
+			// fill collection panel
+			var ac = $.cookie('active_collections');
+			activeCollections = ac ? ac.split(',') : [];
+			collectionsPanel.addElvisCollections(activeCollections);
+			
+		});
+		
+	</script>
+</head>
+<body>
+	<div id="header" class="ui-layout-north">
+		<div id="search-block">
+			<form action="#">
+				<input id="querystring" type="search" placeholder="Enter search text"/>
+				<div id="search"></div>
+			</form>
+		</div>
+		<div class="toolbar-separator"></div>
+		<a id="import" href="#">Import</a>
+		<a id="logout" href="#">Logout</a>
+	</div>
+	<div id="leftbar" class="ui-layout-west">
+		<div id="left-panel">
+			<h3 class="panel-group">Folders</h3>
+			<div id="folders">
+				<a id="browse-root" href="#">Browse</a>
+				<a id="browse-user" href="#"></a>
+			</div>
+			<h3 class="panel-group">Fasets</h3>
+			<div id="fasets">
+				<div id="assetDomainFacet" style="display: none">
+					<h1>Kind:</h1>
+				</div>
+				<div id="usageRightsFacet" style="display: none">
+					<h1>Rights:</h1>
+				</div>
+				<div id="tagsFacet" style="display: none">
+					<h1>Tag cloud:</h1>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div id="content" class="ui-layout-center">
+		<div id="results">
+			<div id="folderBrowser"></div>
+			<div id="resultToolbar">
+				<div id="pageControls"></div>
+				<div id="sizeControls" class="elvisRenderSize"></div>
+			</div>
+			<div id="resultContainer"></div>
+		</div>
+		<div id="importPanel"></div>
+	</div>
+	<div id="rightbar" class="ui-layout-east">	
+		<div id="right-panel">
+			<h3 class="panel-group override-accordion"><a href="#">Collections</a></h3>
+			<div class="override-accordion" id="collectionsContainer"></div>
+			<h3 class="panel-group override-accordion"><a href="#">Metadata</a></h3>
+			<div class="override-accordion">
+				<div class="metadata-panel-wrapper" id="metadataPanel"></div>
+				<div style="display:none" class="metadata-panel-wrapper" id="importMetadataPanel"></div>
+			</div>
+		</div>
+	</div>
+	<div id="footer" class="ui-layout-south">
+		<div id="infoContainer"></div>
+		<div class="elvisCopyright">Powered by <a href="http://www.woodwing.com/digital-asset-management">Elvis</a> &copy; <a href="http://www.dutchsoftware.com">dutchsoftware.com</a></div>
+	</div>
+</body>
+</html>

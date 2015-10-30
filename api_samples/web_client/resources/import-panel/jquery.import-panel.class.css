@@ -1,0 +1,147 @@
+.ip-box-wrapper {
+}
+
+.ip-box {
+	margin: 10px 10px 10px 80px;
+	border: 1px solid #ffffff;
+	background-color: #595959;
+	-moz-border-radius: 5px;
+	-webkit-border-radius: 5px;
+	-khtml-border-radius: 5px;
+	border-radius: 5px;	
+	padding: 5px;
+	min-height: 40px;
+	color: #ffffff;
+}
+
+.ip-step {
+	margin: 0 10px;
+	padding: 0;
+	width: 48px;
+	height: 48px;
+	float: left;
+}
+.ip-step-1 { background: url('ip-step-1.png') no-repeat; }
+.ip-step-2 { background: url('ip-step-2.png') no-repeat; }
+.ip-step-3 { background: url('ip-step-3.png') no-repeat; }
+.ip-step-4 { background: url('ip-step-4.png') no-repeat; }
+
+#ip-upload-list {
+	height: 300px;
+	border: 1px solid #999999;
+	background-color: #282828;
+	overflow: auto;
+}
+
+.ip-upload-list-toolbar {
+	margin: 10px 0 3px 0;
+} 
+
+.ip-folder-path {
+	float: left;
+}
+
+#ip-upload-list .elvisHitBox {
+	width: auto;
+	float: inherit;
+	margin: 0;
+	padding: 0;
+	border: 0;
+}
+#ip-upload-list .elvisHitBox.selected {
+	background-color: #6e7c9d;
+}
+#ip-upload-list .elvisThumbnailImage {
+	width: 120px;
+	height: 120px;
+}
+#ip-upload-list .elvisThumbnailWrapper {
+	float: left;
+	width: 120px;
+	height: 120px;
+	border: 0;
+}
+#ip-upload-list .elvisMetadata {
+	margin-left: 120px;
+	padding: 0;
+}
+#ip-upload-list .elvisMetadata div {
+	text-align: left;
+	color: #ffffff;
+	font-size: 90%;
+	padding: 2px;
+}
+#ip-upload-list .elvisMetadataName {
+	float: left !important;
+	text-align: right !important;
+	width: 100px !important;
+	font-weight: bold !important;
+}
+#ip-upload-list .elvisMetadataValue {
+	padding-left: 5px;
+	margin-left: 100px;
+}
+		
+.ip-item-progressbar {
+	display: none;
+	height: 6px;
+	width: 110px;
+	position: absolute;
+	top: 100px;
+	left: 5px;
+}
+
+.ip-item-ok {
+	background: url('ip-ok.png') no-repeat;
+	height: 14px;
+	width: 14px;
+	position: absolute;
+	top: 10px;
+	left: 10px;
+}
+
+.ip-item-failed {
+	background: url('ip-failed.png') no-repeat;
+	height: 14px;
+	width: 14px;
+	position: absolute;
+	top: 10px;
+	left: 10px;
+}
+
+#ip-file-upload {
+	position: absolute;
+	opacity: 0;
+	top: 0;
+}
+
+#ip-add-files.ui-button { background-image: url("ip-button-bg.png"); -moz-border-radius: 3px; -webkit-border-radius: 3px; -khtml-border-radius: 3px; border-radius: 3px; border: 1px solid #898b8d; height: 22px; }
+#ip-add-files .ui-button-text { padding: .1em 1em; margin-left: 14px; }
+#ip-add-files.ui-button.ui-state-hover { background-image: url("ip-button-h-bg.png"); border: 1px solid #a3bdd3; }
+#ip-add-files .ui-icon.add-files-icon { background-image: url(ip-add-files.png); width: 14; height: 14; margin-top: -7px; }
+
+#ip-remove-files.ui-button { background-image: url("ip-button-bg.png"); -moz-border-radius: 3px; -webkit-border-radius: 3px; -khtml-border-radius: 3px; border-radius: 3px; border: 1px solid #898b8d; height: 22px; }
+#ip-remove-files .ui-button-text { padding: .1em 1em; margin-left: 14px; }
+#ip-remove-files.ui-button.ui-state-hover { background-image: url("ip-button-h-bg.png"); border: 1px solid #a3bdd3; }
+#ip-remove-files .ui-icon.remove-files-icon { background-image: url(ip-remove-files.png); width: 14; height: 14; margin-top: -7px; }
+#ip-remove-files { margin-left: 8px; }
+
+#ip-select-all.ui-button { background-image: url("ip-button-bg.png"); -moz-border-radius: 3px; -webkit-border-radius: 3px; -khtml-border-radius: 3px; border-radius: 3px; border: 1px solid #898b8d; height: 22px; }
+#ip-select-all .ui-button-text { padding: .1em 1em; }
+#ip-select-all.ui-button.ui-state-hover { background-image: url("ip-button-h-bg.png"); border: 1px solid #a3bdd3; }
+#ip-select-all { float: right; }
+#ip-select-none.ui-button {background-image: url("ip-button-bg.png"); -moz-border-radius: 3px; -webkit-border-radius: 3px; -khtml-border-radius: 3px; border-radius: 3px; border: 1px solid #898b8d; height: 22px; }
+#ip-select-none .ui-button-text { padding: .1em 1em; }
+#ip-select-none.ui-button.ui-state-hover { background-image: url("ip-button-h-bg.png"); border: 1px solid #a3bdd3; }
+#ip-select-none { float: right; margin-left: 8px; }
+
+#ip-change-folder.ui-button {background-image: url("ip-button-bg.png"); -moz-border-radius: 3px; -webkit-border-radius: 3px; -khtml-border-radius: 3px; border-radius: 3px; border: 1px solid #898b8d; height: 22px; }
+#ip-change-folder .ui-button-text { padding: .1em 1em; }
+#ip-change-folder.ui-button.ui-state-hover { background-image: url("ip-button-h-bg.png"); border: 1px solid #a3bdd3; }
+#ip-change-folder { float: right; margin: 8px 0; }
+
+#ip-finish-import.ui-button {background-image: url("ip-button-bg.png"); -moz-border-radius: 3px; -webkit-border-radius: 3px; -khtml-border-radius: 3px; border-radius: 3px; border: 1px solid #898b8d; height: 22px; }
+#ip-finish-import .ui-button-text { padding: .1em 1em; margin-left: 14px; }
+#ip-finish-import.ui-button.ui-state-hover { background-image: url("ip-button-h-bg.png"); border: 1px solid #a3bdd3; }
+#ip-finish-import .ui-icon.finish-import-icon {background-image: url(ip-finish-import.png); width: 14; height: 14; margin-top: -7px; }
+#ip-finish-import { margin: 8px 0; }

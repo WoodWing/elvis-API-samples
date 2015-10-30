@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+	<info>
+		<version>
+			<pluginVersion>1.0</pluginVersion>
+			<requiresAtLeast>2.6.1.550</requiresAtLeast>
+		</version>
+		<description>Outputs debug data, used for testing action plugins</description>
+		<documentationUrl>https://helpcenter.woodwing.com/hc/articles/202967165-Action-debug-plugins</documentationUrl>
+		<basePluginPath>/action.base/debug.base</basePluginPath>
+	</info>
+	<action>
+		<url>${pluginBaseUrl}/index.html</url>
+		<icon16Url>${pluginBaseUrl}/icon16.png</icon16Url>
+		<icon24Url>${pluginBaseUrl}/icon24.png</icon24Url>
+
+		<userInterface>
+			<tab/>
+		</userInterface>
+
+		<menuAssignments>
+			<menuAssignment id="applicationMenu" order="101"/>
+			<menuAssignment id="toolBar" order="101"/>
+			<menuAssignment id="assetContextMenu" order="101"/>
+			<menuAssignment id="folderContextMenu" order="101"/>
+		</menuAssignments>
+
+		<enabledExpression></enabledExpression>
+
+		<filterExpression></filterExpression>
+
+		<requiredPermissionMask>VP-------</requiredPermissionMask>
+
+		<requiredRoles>
+			<role>ROLE_AIR_CLIENT</role>
+			<role>ROLE_CUSTOM_ACTION_DEBUG</role>
+		</requiredRoles>
+
+		<flattenContainersInSelection>true</flattenContainersInSelection>
+
+		<removeContainersFromSelection>true</removeContainersFromSelection>
+
+		<keyBindings>
+			<keyBinding os="Windows" key="i" modifiers="CTRL,SHIFT,ALT"/>
+			<keyBinding os="MacOSX" key="i" modifiers="CMD,SHIFT,ALT"/>
+		</keyBindings>
+
+		<messages>
+			<entries locale="en_US">
+				<entry key="button.label">Debug Info Tab</entry>
+				<entry key="button.tooltip">Show action debug information</entry>
+				<entry key="title">Action Debug info</entry>
+			</entries>
+			<entries locale="nl_NL">
+				<entry key="button.label">Debug Info Tab</entry>
+				<entry key="button.tooltip">Toon actie debug informatie</entry>
+				<entry key="title">Actie Debug info</entry>
+			</entries>
+		</messages>
+
+	</action>
+	<config>
+		<property name="someCustomProperty1">
+			<description>Description of someCustomProperty1, can be used for...</description>
+			<value>foo</value>
+		</property>
+		<property name="someCustomProperty2">
+			<description>Description of someCustomProperty2, can be used for...</description>
+			<value>bar</value>
+		</property>
+	</config>
+</plugin>

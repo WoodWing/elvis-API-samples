@@ -1,3 +1,4 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html>
 <!--
 
@@ -26,6 +27,9 @@ THE SOFTWARE.
 <head>
 	<title>Print contact sheet</title>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<!--[if lt IE 9]>
+	<script src="resources/html5shiv-printshiv.js"></script>
+	<![endif]-->
 	<script src="${pluginsBaseRootUrl}/web.shared/jquery.js" type="text/javascript"></script>
 	<script src="${pluginsBaseRootUrl}/web.shared/jquery.class.js" type="text/javascript"></script>
 	<script src="${pluginsBaseRootUrl}/web.shared/jquery.cookie.js" type="text/javascript"></script>
@@ -81,6 +85,13 @@ jQuery(function() {
 			$('.controls').fadeOut()
 		}, 3000)
 	});
+	document.addEventListener('keydown', function(event) {
+		if ((event.metaKey || event.ctrlKey) && String.fromCharCode(event.keyCode) === 'P') {
+			event.preventDefault();
+			event.stopPropagation();
+			PrintLayout.printSheet();
+		}
+	}, true);
 });
 
 })();

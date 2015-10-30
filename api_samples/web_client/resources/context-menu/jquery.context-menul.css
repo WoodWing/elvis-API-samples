@@ -1,0 +1,41 @@
+ul.elvis-context-menu {
+	display: none;
+	position: absolute;
+	border: 1px solid grey;
+	background-color: #F5F5F5;
+	z-index: 9999;
+	font: normal 12px Verdana;
+	margin: 0;
+	padding: 0;
+	list-style-type: none;
+	box-shadow: 3px 3px 8px #202020;
+	-webkit-box-shadow: 3px 3px 8px #202020;
+	-moz-box-shadow: 3px 3px 8px #202020;	
+}
+
+li.elvis-context-menu-item a {
+	display: block;
+	width: 160px;
+	color: black;
+	text-decoration: none;
+	padding: 4px 10px;
+}
+
+li.elvis-context-menu-item a:hover {
+	background-color: #e0e0e0;
+}
+
+li.elvis-context-menu-item.disabled a {
+	color: gray;
+}
+
+li.elvis-context-menu-item.separator {
+	border-top:1px solid lightgrey;
+	margin: 3px;
+}
+
+a.elvis-context-submenu-item {
+	background-image: url('submenu-icon.png');
+	background-repeat: no-repeat;
+	background-position: right; 
+}

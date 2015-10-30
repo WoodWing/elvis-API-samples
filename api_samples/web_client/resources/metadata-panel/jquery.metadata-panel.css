@@ -1,0 +1,191 @@
+.mp-content {
+	background-color: #c1c1c1;
+	color: #000000;
+	font-family: Verdana, Geneva, sans-serif;
+	font-size: 10px;
+	overflow : auto;
+	position: absolute; 
+	top: 0; 
+	left: 0; 
+	right: 0; 
+	bottom: 23px; 
+}
+
+.mp-content a {
+	color: inherit;
+	text-decoration: none;
+}
+
+.mp-content * {
+	padding: 0;
+	margin: 0;
+}
+
+.mp-empty * {
+	background-color: #c1c1c1;
+	color: #000000;
+	font-family: Verdana, Geneva, sans-serif;
+	font-size: 12px;
+	position: absolute; 
+	top: 0; 
+	left: 0; 
+	right: 0; 
+	bottom: 0; 
+	padding: 0;
+	margin: 0;
+	text-align: center;
+	padding-top: 50%;
+}
+
+.mp-group {
+	background-image: url('mp-group-bg.png');
+	background-repeat: repeat-x;
+	margin: 0px;
+	height: 25px;
+}
+
+.mp-icon {
+	width: 11px;
+	height: 11px;
+	background-repeat: no-repeat;
+	margin: 3px;
+}
+.mp-group-col {
+	background-image: url('mp-group-col.png');
+} 
+.mp-group-exp {
+	background-image: url('mp-group-exp.png');
+} 
+.mp-field-ed {
+	background-image: url('mp-field-ed.png');
+} 
+
+
+.mp-group-content {
+	display: none;
+	background-color: #c1c1c1;
+}
+
+.mp-field {
+	border-top: 1px solid #b1b1b1;
+	overflow: hidden;
+}
+
+.mp-field-name {
+	float: left;
+	width: 150px;
+	font-weight: bold;
+	text-align: right;
+	padding: 3px;
+}
+
+.mp-field-value {
+	margin-left: 150px;
+	overflow: hidden;
+}
+
+.mp-field-text {
+	max-height: 50px;
+	min-height: 20px;
+	overflow: hidden;
+}
+
+.mp-field-static {
+	padding: 3px;
+	margin: 0 17px 0 0;
+}
+
+.mp-field-static-ed {
+	float: right;
+	width: 17px;
+}
+
+.mp-field-input {
+	padding: 0px;
+	margin: 0px;
+}
+
+.mp-field-input-calendar {
+	margin: 0 0 0 3px;
+}
+
+.mp-toolbar {
+	background-image: url('mp-toolbar-bg.png');
+	background-repeat: repeat-x;
+	position: absolute; 
+	display: block;
+	bottom: 0; 
+	height: 23px; 
+	left: 0;	
+	right: 0;	
+}
+.mp-toolbar-ok {
+	background-image: url('mp-toolbar-ok.png');
+	background-repeat: no-repeat;
+	width: 14px;
+	height: 14px;
+	display: block;
+	float: right;
+	margin: 5px;
+} 
+.mp-toolbar-ok-disabled {
+	background-image: url('mp-toolbar-ok-d.png');
+}
+
+.mp-toolbar-cancel {
+	background-image: url('mp-toolbar-cancel.png');
+	background-repeat: no-repeat;
+	width: 14px;
+	height: 14px;
+	display: block;
+	float: right;	
+	margin: 5px;
+} 
+.mp-toolbar-cancel-disabled {
+	background-image: url('mp-toolbar-cancel-d.png');
+}
+
+.mp-rating {
+	width: 12px;
+	height: 12px;
+	background-repeat: no-repeat;
+	position: relative;
+	float: left;
+	padding: 0px 1px 0px 0px;
+}
+
+.mp-rating-dot {
+	background-image: url('mp-rating-dot.png');
+}
+
+.mp-rating-star {
+	background-image: url('mp-rating-star.png');
+}
+
+
+.mp-tristate-icon {
+	width: 14px;
+	height: 14px;
+	min-width: 14px;
+	min-height: 14px;
+	background-repeat: no-repeat;
+	display: block;
+	float: left;	
+}
+
+.mp-tristate-icon-no {
+	background-image: url('mp-tristate-icon-no.png');
+}
+.mp-tristate-icon-yes {
+	background-image: url('mp-tristate-icon-yes.png');
+}
+.mp-tristate-icon-some {
+	background-image: url('mp-tristate-icon-some.png');
+}
+
+.mp-tristate-label {
+	display: block;
+	float: left;	
+}
+
+

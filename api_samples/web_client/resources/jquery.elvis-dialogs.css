@@ -1,0 +1,47 @@
+
+.elvis-dialog {
+}
+
+.elvis-dialog .toolbar-wrapper {
+	overflow: hidden;
+	margin: 0 0 8px 0;
+}
+
+.elvis-dialog .toolbar-wrapper span {
+	float: left
+}
+.elvis-dialog .toolbar-wrapper a {
+	float: right
+}
+
+.foldersbar {
+	overflow: hidden;
+	padding: 5px;
+}
+
+.foldersbar-folder {
+	float: left;
+}
+
+.foldersbar-folder-name {
+	font-family: Arial, sans-serif;
+	font-size: 13px;
+	margin: 5px;
+	float: left;
+}
+
+.foldersbar-folder-icon {
+	background: url("folder.png") no-repeat;
+	width: 14px;
+	height: 14px;
+	margin-top: 5px;
+	float: left;
+}
+
+.foldersbar-separator-icon {
+	background: url("right.png") no-repeat;
+	width: 8px;
+	height: 14px;
+	float: left;
+	margin: 5px;
+}

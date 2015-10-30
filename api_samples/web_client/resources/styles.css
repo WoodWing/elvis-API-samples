@@ -1,0 +1,290 @@
+/**
+ * Licensed under the MIT License
+ * Copyright (c) 2010-2012 dutchsoftware.com
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
+html, body {
+	height: 100%;
+	width: 100%;
+	border: 0px none #000000;
+	padding: 0px;
+	margin: 0px;
+}
+
+body {
+	background-color: #515151;
+	font-family: Verdana, Geneva, sans-serif;
+	font-size: 12px;
+}
+
+
+#search-block {
+	margin-top: 5px;
+	float: left;
+}
+#querystring {
+	margin: 2px 8px 0 10px;
+	float: left;
+	width: 220px;
+	height: 24px;
+	border: 2px solid #4D4D6B;
+	font-size: 12px;
+	color: #000000;
+}
+#search {
+	float: right;
+}
+#search.ui-button { background-image: url("elvis-button-toolbar-bg.png"); -moz-border-radius: 3px; -webkit-border-radius: 3px; -khtml-border-radius: 3px; border-radius: 3px; border: 1px solid #5e6061; height: 26px; }
+#search.ui-button.ui-state-hover { background-image: url("elvis-button-toolbar-h-bg.png"); border: 1px solid #bbd8f2; }
+#search .ui-icon.search-icon { background-image: url(search-icon.png); width: 22px; height: 22px; margin-top: -11px; }
+
+.toolbar-separator {
+	background: url("toolbar-separator.png") no-repeat;
+	float: left;
+	padding: 0;
+	margin: 10px 8px 0 8px;
+	height: 38px;
+	width: 2px;
+}
+
+#import {
+	margin-top: 5px;
+	float: left;
+}
+#import.ui-button {background-image: url("elvis-button-toolbar-bg.png"); -moz-border-radius: 3px; -webkit-border-radius: 3px; -khtml-border-radius: 3px; border-radius: 3px; border: 1px solid #5e6061; height: 26px; }
+#import .ui-button-text { padding: .2em 1em; margin-left: 26px; }
+#import.ui-button.ui-state-hover { background-image: url("elvis-button-toolbar-h-bg.png"); border: 1px solid #bbd8f2; }
+#import .ui-icon.import-icon {background-image: url(import-icon.png); width: 22px; height: 22px; margin-top: -11px; }
+
+#logout {
+	margin: 5px 10px;
+	float: right;
+}
+#logout.ui-button {background-image: url("elvis-button-toolbar-bg.png"); -moz-border-radius: 3px; -webkit-border-radius: 3px; -khtml-border-radius: 3px; border-radius: 3px; border: 1px solid #5e6061; height: 26px; }
+#logout .ui-button-text { padding: .2em 1em; }
+#logout.ui-button.ui-state-hover { background-image: url("elvis-button-toolbar-h-bg.png"); border: 1px solid #bbd8f2; }
+
+#header {
+	background: url("toolbar-bg.png") repeat-x;
+}
+#leftbar {
+	background-color: #262626;
+}
+#content {
+	background-color: #262626;
+	overflow: auto;
+}
+#rightbar {
+	background-color: #262626;
+	overflow: hidden;
+}
+#footer {
+	background-color: #c0c0c0;
+}
+
+.ui-layout-resizer { /* all 'resizer-bars' */ 
+	background: #515151; 
+} 
+
+.ui-layout-toggler { /* all 'toggler-buttons' */ 
+	background: #c2c2c2; 
+} 		
+
+/* right panel */
+#right-panel .override-accordion {
+	-moz-border-radius-topleft: 0 !important; -webkit-border-top-left-radius: 0 !important; -khtml-border-top-left-radius: 0 !important; border-top-left-radius: 0 !important;
+	-moz-border-radius-topright: 0 !important; -webkit-border-top-right-radius: 0 !important; -khtml-border-top-right-radius: 0 !important; border-top-right-radius: 0 !important;
+	-moz-border-radius-bottomleft: 0 !important; -webkit-border-bottom-left-radius: 0 !important; -khtml-border-bottom-left-radius: 0 !important; border-bottom-left-radius: 0 !important;
+	-moz-border-radius-bottomright: 0 !important; -webkit-border-bottom-right-radius: 0 !important; -khtml-border-bottom-right-radius: 0 !important; border-bottom-right-radius: 0 !important;
+	padding: 0;
+	margin: 0;
+	border: 0;
+}
+#right-panel .panel-group  {
+	background: url("panel-group-bg.png") repeat-x;
+	height: 25px;
+}
+#right-panel .panel-group a {
+	color: #d3d3d3;
+}
+
+.metadata-panel-wrapper {
+	position: absolute;
+	float: none; 
+	margin: 0; 
+	top: 0; 
+	left: 0; 
+	right: 0; 
+	bottom: 0; 
+	width: auto; 
+}
+
+/* left panel*/		
+#left-panel  {
+	background: #9b9b9b;
+}
+
+#left-panel .panel-group  {
+	background: url("panel-group-bg.png") repeat-x;
+	height: 21px;
+	margin: 0;
+	padding: 3px 10px 3px 10px;
+	color: lightGrey;
+	font-family: Arial, sans-serif;
+	font-size: 13px;
+	font-weight: bold;
+}
+
+#folders {
+	background-color: #9b9b9b;
+	padding: 3px;
+}
+#browse-root { display: block; margin: 3px; }
+#browse-root.ui-button {background: #9b9b9b none; -moz-border-radius: 3px; -webkit-border-radius: 3px; -khtml-border-radius: 3px; border-radius: 3px; border: none; height: 24px; }
+#browse-root .ui-button-text { padding: .2em 1em; margin-left: 14px; text-align: left; }
+#browse-root.ui-button.ui-state-hover { background-color: #bbd8f2; }
+#browse-root .ui-icon.browse-root-icon {background-image: url(folder.png); width: 14px; height: 14px; margin-top: -7px; }
+
+#browse-user { display: block; margin: 3px; }
+#browse-user.ui-button {background: #9b9b9b none; -moz-border-radius: 3px; -webkit-border-radius: 3px; -khtml-border-radius: 3px; border-radius: 3px; border: none; height: 24px; }
+#browse-user .ui-button-text { padding: .2em 1em; margin-left: 14px; text-align: left; }
+#browse-user.ui-button.ui-state-hover { background-color: #bbd8f2; }
+#browse-user .ui-icon.browse-user-icon {background-image: url(home.png); width: 14px; height: 14px; margin-top: -7px; }
+
+#fasets {
+	overflow-y: auto;
+	padding: 10px;
+}
+#fasets h1 {
+	margin-top: 12px;
+	margin-bottom: 6px;
+	font-size: 11px;
+	font-weight: normal;
+}
+
+#tagsFacet .elvisFacet a {
+	float: left;
+	background: none;
+	display: inline;
+	line-height: 11px;
+	-moz-border-radius: 40px;
+	border-radius: 40px;
+	margin-bottom: 0;
+	padding-left: 0;
+	padding: 4px;
+}
+#tagsFacet .elvisFacet a:hover,
+#tagsFacet .elvisFacet .selected a {
+	background-color: #97A8C7;
+	color: #FFFFFF;
+}
+
+#folderBrowser {
+}
+#resultContainer {
+	overflow: auto;
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+}
+
+#resultToolbar {
+	position: relative;
+	overflow: hidden;
+	height: 33px;
+}
+
+#pageControls {
+	position: absolute;
+	top: 5px;
+	right: 150px;
+}
+
+#sizeControls {
+	position: absolute;
+	top: 5px;
+	right: 30px;
+}
+
+#infoContainer
+{
+	float: left;
+	padding: 3px;
+	font-size: 10px;
+}
+
+.enter-name-dialog.ui-button {background-image: url("elvis-button-toolbar-bg.png"); -moz-border-radius: 3px; -webkit-border-radius: 3px; -khtml-border-radius: 3px; border-radius: 3px; border: 1px solid #5e6061; height: 26px; }
+.enter-name-dialog.ui-button-text { padding: .2em 1em; }
+.enter-name-dialog.ui-button.ui-state-hover { background-image: url("elvis-button-toolbar-h-bg.png"); border: 1px solid #bbd8f2; }
+
+
+/*
+Custom styling for items rendered by elvis HitRenderer
+*/
+
+.elvisHitBox.selected /*, .elvisHitBox:hover*/ {
+	border: 2px solid #568099;
+	background-color: #4B5053;
+}
+
+.elvisMetadata {
+	color: #DDD;
+}
+
+.hitOverlay {
+	position: absolute;
+	bottom: 0px;
+	right: 0px;
+	margin: 0px 4px;
+}
+.hitOverlay a {
+	display: block;
+	padding: 8px 4px;
+	float: left;
+}
+.hitOverlay img {
+	border: 0px none;
+}
+.elvisSmall .hitOverlay {
+	margin: 0px 2px;
+}
+.elvisSmall .hitOverlay a {
+	padding: 4px 2px;
+}
+.elvisSmall .hitOverlay img {
+	max-height: 12px;
+}
+
+.elvisPager a {
+	color: #BBB;
+}
+.elvisPager a:hover, .elvisPageCurrent {
+	color: #000;
+}
+
+.elvisRenderSize a {
+	border: 1px solid #505050;
+}
+.elvisRenderSize a:hover, .elvisRenderSize a.selected {
+	border: 1px solid #BBBBBB;
+}

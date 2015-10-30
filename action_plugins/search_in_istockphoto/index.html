@@ -36,7 +36,7 @@ THE SOFTWARE.
 (function() {
 	var query = ElvisPlugin.resolveQueryString();
 	
-	if (query != null) {
+	if (query) {
 		window.location = "http://www.istockphoto.com/search/text/" + encodeURIComponent(query);
 	}
 	else {

@@ -14,7 +14,7 @@
 		<icon24Url>${pluginUrl}/icon24.png</icon24Url>
 
 		<userInterface>
-			<tab/>
+			<externalBrowser loadInIframe="true"/>
 		</userInterface>
 
 		<menuAssignments>

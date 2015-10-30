@@ -155,7 +155,8 @@ header {
 	-webkit-border-bottom-left-radius: 12px;
 	padding: 3px;
 	text-align: center;
-	background-color:rgba(0,0,0,0.6);
+	background-color: rgb(102,102,102); /* ie8 fallback */
+	background-color: rgba(0,0,0,0.6);
 }
 
 .controls a {
@@ -165,19 +166,21 @@ header {
 	border-radius: 4px;
 	-webkit-border-radius: 4px;
 	-moz-border-radius: 4px;
-	background-color:rgba(255,255,255,0.5);
+	background-color: rgb(179,179,179); /* ie8 fallback */
+	background-color: rgba(255,255,255,0.5);
 	background-repeat: no-repeat;
 	background-position: center;
 	border: 1px ridge #505050;
 }
 
 .controls a.selectedHitsOnPage {
-	background-color:rgba(255,255,255,0.7);
+	background-color: rgb(209,209,209); /* ie8 fallback */
+	background-color: rgba(255,255,255,0.7);
 	border: 1px solid #505050;
 }
 
 .controls div {
-	display:inline-block;
+	display: inline-block;
 	position: absolute;
 	color: #FFFFFF;
 	top: 11px;
