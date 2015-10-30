@@ -6,7 +6,7 @@
 			<requiresAtLeast>3.5.1.665</requiresAtLeast>
 		</version>
 		<description>Reports about Elvis usage</description>
-		<documentationUrl>http://elvis.tenderapp.com/kb/bundled-plugins/action-stats</documentationUrl>
+		<documentationUrl>https://helpcenter.woodwing.com/hc/articles/202249789-Action-Elvis-stats</documentationUrl>
 	</info>
 	<action>
 		<url>${pluginUrl}/index.html</url>

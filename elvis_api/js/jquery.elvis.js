@@ -34,10 +34,10 @@ make sure these are loaded BEFORE this file.
 --------------------------------------------------------------------------------
 
 This file defines useful 'classes' that can be used with
-the Elvis API. For more info see http://www.elvisdam.com
+the Elvis API. For more info see http://www.woodwing.com/digital-asset-management
 
 Documentation can be found at:
-https://elvis.tenderapp.com/kb/api/javascript-library-introduction
+https://helpcenter.woodwing.com/hc/articles/202967415-JavaScript-library-introduction
 
 ------------------------------------------------------------------------------*/
 
@@ -45,7 +45,7 @@ https://elvis.tenderapp.com/kb/api/javascript-library-introduction
  * ElvisAPI
  * 
  * See documentation at community knowledge base on:
- * http://www.elvisdam.com
+ * http://www.woodwing.com/digital-asset-management
  */
 var ElvisAPI = $.Class({
 

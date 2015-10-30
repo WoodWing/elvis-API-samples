@@ -6,7 +6,7 @@
 			<requiresAtLeast>2.6.1.550</requiresAtLeast>
 		</version>
 		<description>Print contact sheets</description>
-		<documentationUrl>http://elvis.tenderapp.com/kb/bundled-plugins/action-print-contact-sheet</documentationUrl>
+		<documentationUrl>https://helpcenter.woodwing.com/hc/articles/202249849-Action-print-contact-sheet</documentationUrl>
 	</info>
 	<action>
 		<url>${pluginUrl}/index.html</url>

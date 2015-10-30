@@ -6,7 +6,7 @@
 			<requiresAtLeast>2.6.1.550</requiresAtLeast>
 		</version>
 		<description>Search on another Elvis Server</description>
-		<documentationUrl>http://elvis.tenderapp.com/kb/bundled-plugins/action-search-other-elvis-server</documentationUrl>
+		<documentationUrl>https://helpcenter.woodwing.com/hc/articles/202249909-Action-search-other-Elvis-server</documentationUrl>
 	</info>
 	<action>
 		<url>${pluginUrl}/index.html</url>

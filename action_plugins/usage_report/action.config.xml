@@ -6,7 +6,7 @@
 			<requiresAtLeast>2.6.1.550</requiresAtLeast>
 		</version>
 		<description>Report which displays photos from the latest issues (based on InDesign documents).</description>
-		<documentationUrl>http://elvis.tenderapp.com/kb/bundled-plugins/action-photo-usage-report</documentationUrl>
+		<documentationUrl>https://helpcenter.woodwing.com/hc/articles/202967145-Action-photo-usage-report</documentationUrl>
 	</info>
 	<action>
 		<url>${pluginUrl}/index.html</url>

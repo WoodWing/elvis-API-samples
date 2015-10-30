@@ -17,7 +17,7 @@ We encourage you to download the samples and customize them. They can provide a 
 
 To use the samples on your own Elvis server, place this folder in the "Config/plugins/active" folder of your Elvis server. They will then be available on the following url: http://yourserver/plugins/...name of folder...
 
-Some of the samples auto-login using the 'guest' user. You will have to either change that, or [enable the guest user](https://elvis.tenderapp.com/kb/special-configurations/creating-a-public-guest-account).
+Some of the samples auto-login using the 'guest' user. You will have to either change that, or [enable the guest user](https://helpcenter.woodwing.com/hc/articles/202250119-Creating-a-public-guest-account).
 
 
 jQuery
@@ -29,9 +29,9 @@ Old 'prototype-js' based samples are still available in the [prototype-js branch
 
 API Documentation
 --------
-Documentation for the Elvis API is available at: [https://elvis.tenderapp.com/kb](https://elvis.tenderapp.com/kb/api)
+Documentation for the Elvis API is available at: [https://helpcenter.woodwing.com/hc](https://helpcenter.woodwing.com/hc/sections/201092539-API)
 
-Some of the plugins here are described in the [Bundled plugins section](https://elvis.tenderapp.com/kb/bundled-plugins/bundled-plugins).
+Some of the plugins here are described in the [Bundled plugins section](https://helpcenter.woodwing.com/hc/articles/202249339-Bundled-plugins).
 
 
 How to contribute
@@ -55,4 +55,4 @@ Elvis is a digital asset management system. It's main features:
 - REST and SOAP API's
 - Plugin framework to customize server and client functionality
 
-For more information, go to: [www.elvisdam.com](http://www.elvisdam.com)
+For more information, go to: [woodwing.com](http://www.woodwing.com/digital-asset-management)

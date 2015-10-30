@@ -6,7 +6,7 @@
 			<requiresAtLeast>2.6.1.550</requiresAtLeast>
 		</version>
 		<description>Searching in Flickr</description>
-		<documentationUrl>http://elvis.tenderapp.com/kb/bundled-plugins/action-search-in-external-website</documentationUrl>
+		<documentationUrl>https://helpcenter.woodwing.com/hc/articles/202967095-Action-search-in-external-website</documentationUrl>
 	</info>
 	<action>
 		<url>${pluginUrl}/index.html</url>
