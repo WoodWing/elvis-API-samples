@@ -32,8 +32,8 @@ THE SOFTWARE.
 	<script src="${pluginsBaseRootUrl}/web.shared/jquery.js" type="text/javascript"></script>
 	<script src="${pluginsBaseRootUrl}/web.shared/jquery.class.js" type="text/javascript"></script>
 	<script src="${pluginsBaseRootUrl}/web.shared/jquery.cookie.js" type="text/javascript"></script>
-	<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.21/jquery-ui.min.js"></script>
-	<link  href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.21/themes/base/jquery-ui.css" rel="stylesheet" type="text/css"/>
+	<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.8.21/jquery-ui.min.js"></script>
+	<link  href="//ajax.googleapis.com/ajax/libs/jqueryui/1.8.21/themes/base/jquery-ui.css" rel="stylesheet" type="text/css"/>
 	<link  href="${pluginsBaseRootUrl}/web.shared/elvis_api/css/elvis.css" rel="stylesheet" type="text/css"/>
 	<script src="${pluginsBaseRootUrl}/web.shared/elvis_api/js/jquery.elvis.js" type="text/javascript"></script>
 	<!-- <script src="https://maps.googleapis.com/maps/api/js?key=API_KEY&sensor=false" type="text/javascript"></script>-->
@@ -150,7 +150,7 @@ $(function() {
 		var iconFilename = isActive ? "marker" : "marker_grey";
 		if (markerCount <= 25) {
 			var chr = String.fromCharCode(65 + markerCount);
-			return "http://www.google.com/mapfiles/" + iconFilename + chr + ".png";
+			return "//www.google.com/mapfiles/" + iconFilename + chr + ".png";
 		}
 		else {
 			return "resources/" + iconFilename + ".png";
